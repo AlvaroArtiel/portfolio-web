@@ -17,11 +17,39 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
 
 <section class="hero" data-reveal>
   <p class="hero-eyebrow">Álvaro Artiel</p>
-  <!-- El h1 real siempre existe: en F4 las partículas lo cubren visualmente -->
-  <h1 class="hero-title" id="hero-title">{title}<span class="hero-dot" aria-hidden="true">.</span></h1>
+  <!-- El h1 real siempre existe: las partículas solo lo cubren visualmente -->
+  <div class="hero-stage" id="hero-stage">
+    <h1 class="hero-title" id="hero-title">{title}<span class="hero-dot" aria-hidden="true">.</span></h1>
+  </div>
   <p class="hero-subtitle">{subtitle}</p>
   <p class="hero-scroll-hint" aria-hidden="true">{dict.scroll_hint} ↓</p>
+  <button class="hero-skip" id="hero-skip" type="button" hidden>
+    {lang === 'en' ? 'Skip effect' : 'Saltar efecto'}
+  </button>
 </section>
+
+<script>
+  import {mountScene} from '../../lib/three-island'
+
+  const stage = document.getElementById('hero-stage')
+  const titleEl = document.getElementById('hero-title')
+  const skip = document.getElementById('hero-skip') as HTMLButtonElement | null
+
+  if (stage && titleEl && skip) {
+    void mountScene(stage, () => import('../../scenes/hero-particles').then((m) => m.default), {eager: true}).then(
+      (unmount) => {
+        if (!unmount) return // sin WebGL/reduced-motion: titular HTML tal cual
+        titleEl.classList.add('is-covered')
+        skip.hidden = false
+        skip.addEventListener('click', () => {
+          unmount()
+          titleEl.classList.remove('is-covered')
+          skip.hidden = true
+        })
+      },
+    )
+  }
+</script>
 
 <style>
   .hero {
@@ -38,6 +66,37 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
     font-size: var(--step-mono-label);
     color: var(--accent);
     margin: 0 0 1.5rem;
+  }
+
+  .hero-stage {
+    position: relative;
+    min-height: 42vh;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Mientras las partículas están activas, el titular real queda cubierto
+     (sigue en el DOM para SEO/lectores; "saltar efecto" lo restaura). */
+  .hero-title.is-covered {
+    visibility: hidden;
+  }
+
+  .hero-skip {
+    position: absolute;
+    bottom: clamp(1rem, 4vh, 2.5rem);
+    left: clamp(1.5rem, 6vw, 4rem);
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--text-muted);
+    padding: 0 0 0.15em;
+    cursor: pointer;
+  }
+  .hero-skip:hover {
+    color: var(--accent);
+    border-color: var(--accent);
   }
 
   .hero-title {
