@@ -23,17 +23,12 @@ function initParallax(): void {
     cards.forEach((card, index) => {
       const next = cards[index + 1]
       if (!next) return
-      gsap.to(card, {
-        scale: 0.94,
-        opacity: 0.75,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: next,
-          start: 'top bottom',
-          end: 'top top+=12%',
-          scrub: true,
-        },
-      })
+      // Solo escala en la tarjeta; la atenuación va a la imagen para no
+      // hundir el contraste del texto (auditoría AA).
+      const scrollTrigger = {trigger: next, start: 'top bottom', end: 'top top+=12%', scrub: true}
+      gsap.to(card, {scale: 0.94, ease: 'none', scrollTrigger})
+      const media = card.querySelector('.pc-media, .card-media')
+      if (media) gsap.to(media, {opacity: 0.55, ease: 'none', scrollTrigger: {...scrollTrigger}})
     })
     // Los triggers dependen de la altura de las tarjetas (imágenes lazy).
     deck.querySelectorAll('img').forEach((img) => {
