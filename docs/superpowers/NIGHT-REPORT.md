@@ -2,7 +2,7 @@
 
 ## Resumen ejecutivo
 
-Las **8 fases del plan (F0–F7) están completadas** y desplegadas en staging. La web es publicable: contenido real bilingüe desde Sanity, sistema de diseño completo, capa de movimiento, los cuatro efectos WebGL insignia, la mesa revuelta con física y los dos easter eggs. Cada tarea pasó implementación + revisión independiente (spec y calidad) con sus fixes aplicados; hay una revisión final de toda la rama en curso cuyo resultado se anotará al final de este documento si arroja algo accionable.
+Las **8 fases del plan (F0–F7) están completadas** y desplegadas en staging. La web es publicable: contenido real bilingüe desde Sanity, sistema de diseño completo, capa de movimiento, los cuatro efectos WebGL insignia, la mesa revuelta con física y los dos easter eggs. Cada tarea pasó implementación + revisión independiente (spec y calidad) con sus fixes aplicados, y una revisión final de los 36 commits cerró con "Ready with fixes" — los tres hallazgos accionables están corregidos y redesplegados (ver última sección).
 
 ## URLs
 
