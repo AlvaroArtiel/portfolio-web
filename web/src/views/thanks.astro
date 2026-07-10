@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro'
+import type {Lang} from '../lib/i18n'
+
+interface Props {
+  lang: Lang
+}
+const {lang} = Astro.props
+
+const heading = lang === 'en' ? 'Thank you' : 'Gracias'
+const description =
+  lang === 'en' ? 'Your message was sent successfully.' : 'Tu mensaje se ha enviado correctamente.'
+---
+
+<Base title={`${heading} — Álvaro Artiel`} description={description} lang={lang} section="home" noindex>
+  <section class="stub">
+    <h1>{heading}</h1>
+    <p>{description}</p>
+  </section>
+</Base>
+
+<style>
+  .stub {
+    min-height: 60vh;
+    display: grid;
+    place-content: center;
+    gap: 1rem;
+    padding: clamp(1.5rem, 6vw, 4rem);
+  }
+  .stub h1 {
+    font-family: var(--font-display);
+    font-size: var(--step-h1);
+    letter-spacing: -0.03em;
+  }
+  .stub p {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+  }
+</style>
