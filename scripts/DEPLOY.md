@@ -42,3 +42,5 @@ if it is only a placeholder/test page at this stage).
   only supported path to staging.
 - `scripts/deploy.mjs` never uploads anything — it is safe to run repeatedly
   and locally, it only prepares `web/dist`.
+
+> **Nota operativa (2026-07-10):** `hosting_deployStaticWebsite` devuelve un 500 en el paso de deploy si el zip se genera con `bsdtar` (`tar -a`). Crear el archivo con PowerShell `Compress-Archive -Path web/dist/* -DestinationPath dist_YYYYMMDD_HHMMSS.zip` — con ese formato el deploy es aceptado. El subdominio `dev` ya existe; no hace falta `hosting_createWebsiteSubdomainV1`.
