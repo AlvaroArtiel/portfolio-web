@@ -45,7 +45,9 @@
 **Files:** ninguno (verificación).
 
 - [ ] Verificar Node ≥ 20: `node --version`
-- [ ] Verificar Sanity login: `npx sanity@latest projects list` → debe listar (posiblemente vacío) sin pedir login. Si pide login → PARAR y notificar (requiere al usuario).
+- [ ] **Sanity YA CONFIGURADO (pre-flight hecho el 2026-07-10):** proyecto `1qxvh1it` ("web-portfolio"), dataset `production` (aclMode public), token Editor en `.env` raíz (`SANITY_AUTH_TOKEN`, `SANITY_PROJECT_ID`, `SANITY_DATASET`). Ciclo write/read/delete verificado por API. NO crear proyecto nuevo.
+- [ ] **Hostinger YA CONFIGURADO:** site `dev.alvaroartiel.com` creado y activo (username `u706501682`, root `/home/u706501682/domains/dev.alvaroartiel.com/public_html`). NO crear otro site.
+- [ ] Verificar que el token sigue vivo: `curl` de lectura GROQ a `https://1qxvh1it.api.sanity.io/v2021-06-07/data/query/production?query=*%5B0..0%5D`.
 - [ ] Verificar GitHub: `gh auth status` → logged in como AlvaroArtiel.
 - [ ] Verificar Hostinger MCP: cargar vía ToolSearch `hosting_listWebsitesV1` y llamarlo → responde lista de sites.
 - [ ] Commit no necesario.
@@ -59,12 +61,11 @@
 **Interfaces — Produces:** estructura de carpetas que usan todas las tareas siguientes.
 
 - [ ] En la raíz del repo: `npm create astro@latest web -- --template minimal --typescript strict --no-install --no-git` y luego `cd web && npm install`
-- [ ] Crear Sanity Studio + proyecto en la organización del usuario:
+- [ ] Crear Sanity Studio apuntando al proyecto EXISTENTE:
 ```bash
-npm create sanity@latest -- --create-project "alvaroartiel-web" --dataset production --template clean --typescript --output-path studio --package-manager npm
+npm create sanity@latest -- --project 1qxvh1it --dataset production --template clean --typescript --output-path studio --package-manager npm
 ```
-  Guardar el `projectId` que devuelve (aparece en `studio/sanity.config.ts`). **Anotarlo en `web/.env`** como `PUBLIC_SANITY_PROJECT_ID=<id>` junto a `PUBLIC_SANITY_DATASET=production`.
-  *Fallback si el flag no interactivo falla:* `npx sanity@latest init` dentro de `studio/` respondiendo con los mismos valores vía flags `--yes`.
+  Si pide login interactivo, exportar antes `SANITY_AUTH_TOKEN` desde el `.env` raíz. Copiar a `web/.env`: `PUBLIC_SANITY_PROJECT_ID=1qxvh1it` y `PUBLIC_SANITY_DATASET=production`.
 - [ ] Añadir a `.gitignore`: `web/.env`, `.astro/`, `studio/dist/`
 - [ ] `api/contact.php` — crear con este contenido exacto:
 ```php
@@ -142,7 +143,7 @@ export const localeBlock = mk('localeBlock', 'array')
   - 1 `blogPost` ("Por qué esta web es como es" — 4 párrafos sobre las decisiones del spec, meta 😉).
   - 1 `siteSettings` (heroTitle es: "Diseño productos digitales de punta a punta"; email soy@alvaroartiel.com; socials placeholder: LinkedIn/GitHub con url "#").
 - [ ] Generar placeholders de imagen: script que crea PNGs 1600×1000 con arte generativo simple (canvas de node o SVG→sharp): fondo `#16161A`, formas geométricas con el acento del proyecto y el título en Clash/system font. 2 por proyecto + 1 cover + 8 personal. Guardar en `studio/seed/img/`.
-- [ ] `seed.mjs`: usa `@sanity/client` con token (crear token: `npx sanity@latest tokens add "seed" --role editor` dentro de studio/ — guardarlo SOLO en `studio/.env`, gitignored) — sube imágenes como assets y crea documentos con `createOrReplace` e `_id` deterministas (`experience-tentuplaza`, etc., para idempotencia).
+- [ ] `seed.mjs`: usa `@sanity/client` con el token Editor del `.env` raíz (ya creado y verificado) — sube imágenes como assets y crea documentos con `createOrReplace` e `_id` deterministas (`experience-tentuplaza`, etc., para idempotencia).
 - [ ] Ejecutar `node studio/seed/seed.mjs` → verificar con GROQ: `npx sanity documents query "count(*[_type=='project'])"` → 10.
 - [ ] Commit: `feat(studio): seed de contenido inicial es/en`
 
