@@ -46,16 +46,32 @@ const href = lang === 'en' ? '/en/house/' : '/casa/'
     text-align: center;
     overflow: hidden;
   }
-  /* La pieza 3D queda detrás del texto */
+  /* La pieza 3D queda SIEMPRE detrás del texto (z-order explícito: el canvas
+     se añade al DOM después del contenido) y compone descentrada a la
+     derecha desde la escena (post-footer.ts). */
   .pf-stage :global(canvas) {
     pointer-events: none;
-    opacity: 0.5;
+    opacity: 0.9;
+    z-index: 0;
   }
 
   .pf-content {
     position: relative;
+    z-index: 1;
     display: grid;
     gap: 1.25rem;
+    justify-items: start;
+    text-align: left;
+    /* El texto ancla a la izquierda del centro; la pieza vive a la derecha */
+    transform: translateX(clamp(-14rem, -18vw, -6rem));
+  }
+
+  @media (max-width: 720px) {
+    .pf-content {
+      transform: none;
+      justify-items: center;
+      text-align: center;
+    }
   }
 
   .pf-line {

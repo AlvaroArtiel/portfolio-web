@@ -17,6 +17,11 @@ const postFooterScene: SceneModule = {
       if (disposed) return
       built = makeMonogramGroup(THREE)
       built.group.scale.setScalar(1.3)
+      // Composición del momento: la pieza vive a la derecha del centro,
+      // en diálogo con el texto (que ancla a la izquierda); nunca debajo.
+      const isMobile = window.matchMedia('(max-width: 720px)').matches
+      built.group.position.x = isMobile ? 0 : 1.6
+      built.group.position.y = isMobile ? 0.9 : 0.1
       scene.add(built.group)
       const key = new THREE.DirectionalLight('#ffffff', 1.6)
       key.position.set(2, 3, 4)
