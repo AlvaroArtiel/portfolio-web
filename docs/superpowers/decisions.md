@@ -8,3 +8,7 @@
 - **Qué decía el plan:** desplegar `web/dist` con `hosting_deployStaticWebsite` (sin detallar formato).
 - **Qué se hace:** generar el zip con PowerShell `Compress-Archive`; los zips de `bsdtar` provocan error 500 en el extractor de Hostinger. Documentado en `scripts/DEPLOY.md`.
 - **Por qué:** verificado empíricamente con dos intentos fallidos + uno exitoso.
+## 2026-07-10 F3 — View transitions cross-document (CSS) en lugar de ClientRouter de Astro
+- **Qué decía el plan:** "View Transitions API de Astro con crossfade del --accent (fallback: cambio directo)".
+- **Qué se hace:** `@view-transition { navigation: auto }` en CSS (cross-document view transitions, MPA). Mismo efecto de crossfade del acento entre páginas.
+- **Por qué:** el ClientRouter de Astro convierte la navegación en SPA y los scripts por página (deck, filtros, lightbox, overlay) dejarían de reinicializarse sin refactorizar todos a `astro:page-load`. La variante cross-document es CSS puro, cero riesgo, y el fallback (cambio directo) es exactamente el que pide el plan para navegadores sin soporte.
