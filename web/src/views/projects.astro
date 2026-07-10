@@ -33,6 +33,11 @@ const description =
   </section>
 </Base>
 
+<script>
+  import {initDeck} from '../components/projects/Deck'
+  initDeck()
+</script>
+
 <style>
   .projects-page {
     padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
@@ -50,5 +55,15 @@ const description =
     display: grid;
     gap: clamp(2rem, 6vh, 4rem);
     max-width: 72rem;
+  }
+
+  /* Apilado del deck: cada tarjeta se pega al mismo offset y la siguiente
+     la cubre (la capa de parallax vive en Deck.ts). Solo desktop: en móvil
+     el scroll es nativo sin pin. */
+  @media (min-width: 721px) {
+    .projects-list :global(.project-card) {
+      position: sticky;
+      top: clamp(4.5rem, 12vh, 7rem);
+    }
   }
 </style>

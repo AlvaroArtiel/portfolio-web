@@ -84,6 +84,14 @@ export function reveal(selector: string, opts: RevealOptions = {}): void {
   })
 }
 
+/**
+ * Access the initialized GSAP instances. Returns null before init or under
+ * reduced-motion — always call from inside `onReady`.
+ */
+export function getMotion(): {gsap: NonNullable<typeof gsapInstance>; ScrollTrigger: NonNullable<typeof ScrollTrigger>} | null {
+  return gsapInstance && ScrollTrigger ? {gsap: gsapInstance, ScrollTrigger} : null
+}
+
 async function init(): Promise<void> {
   if (prefersReducedMotion()) {
     reducedMotion = true

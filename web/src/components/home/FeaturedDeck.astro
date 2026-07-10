@@ -19,11 +19,11 @@ const projectHref = (slug: string) =>
 <section class="featured" data-reveal>
   <p class="section-kicker">{dict.featured_projects}</p>
 
-  <!-- Base estática del futuro deck (F3 añade pin/apilado con scroll) -->
-  <ol class="deck">
+  <!-- Deck apilado: sticky CSS + parallax en Deck.ts -->
+  <ol class="deck" data-deck>
     {
       projects.map((project, index) => (
-        <li class="card" style={`--card-index: ${index}`}>
+        <li class="card" style={`--card-index: ${index}`} data-deck-card>
           <a href={projectHref(project.slug.current)}>
             <div class="card-media">
               {project.cover && (
@@ -53,6 +53,11 @@ const projectHref = (slug: string) =>
   <a class="featured-cta" href={pathFor('proyectos', lang)}>{dict.view_all_projects} →</a>
 </section>
 
+<script>
+  import {initDeck} from '../projects/Deck'
+  initDeck()
+</script>
+
 <style>
   .featured {
     padding: clamp(4rem, 12vh, 8rem) clamp(1.5rem, 6vw, 4rem);
@@ -71,6 +76,14 @@ const projectHref = (slug: string) =>
     padding: 0;
     display: grid;
     gap: clamp(2rem, 6vh, 4rem);
+  }
+
+  /* Apilado sticky (la siguiente carta cubre a la anterior); móvil: flujo nativo */
+  @media (min-width: 721px) {
+    .card {
+      position: sticky;
+      top: clamp(4.5rem, 12vh, 7rem);
+    }
   }
 
   .card a {

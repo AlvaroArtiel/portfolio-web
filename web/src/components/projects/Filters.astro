@@ -30,14 +30,18 @@ const filters: {value: string; es: string; en: string}[] = [
 
 <script>
   // Filtrado progresivo: lee ?cat=, oculta tarjetas no coincidentes y evita recargas.
-  function applyFilter(cat: string): void {
-    document.querySelectorAll<HTMLElement>('[data-category]').forEach((card) => {
-      card.hidden = cat !== '' && card.dataset.category !== cat
-    })
+  function updateCurrent(cat: string): void {
     document.querySelectorAll<HTMLAnchorElement>('[data-filters] a').forEach((link) => {
       if ((link.dataset.cat ?? '') === cat) link.setAttribute('aria-current', 'true')
       else link.removeAttribute('aria-current')
     })
+  }
+
+  function applyFilter(cat: string): void {
+    document.querySelectorAll<HTMLElement>('[data-category]').forEach((card) => {
+      card.hidden = cat !== '' && card.dataset.category !== cat
+    })
+    updateCurrent(cat)
   }
 
   function currentCat(): string {
@@ -50,7 +54,11 @@ const filters: {value: string; es: string; en: string}[] = [
       const cat = link.dataset.cat ?? ''
       const url = cat ? `?cat=${cat}` : location.pathname
       history.replaceState(null, '', url)
-      applyFilter(cat)
+      // El deck animado (Deck.ts) puede reclamar el filtrado con preventDefault;
+      // si nadie lo reclama, corte directo.
+      const claimed = !document.dispatchEvent(new CustomEvent('deck:filter', {detail: {cat}, cancelable: true}))
+      if (!claimed) applyFilter(cat)
+      else updateCurrent(cat)
     })
   })
 
