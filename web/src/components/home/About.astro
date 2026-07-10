@@ -46,11 +46,11 @@ const meta =
 
 {
   about && (
-    <section class="about" data-reveal>
-      <p class="section-kicker">{dict.who_am_i}</p>
+    <section class="about">
+      <p class="section-kicker" data-reveal>{dict.who_am_i}</p>
       <div class="about-body">
         <p class="about-text" set:html={aboutHtml} />
-        <aside class="about-meta">
+        <aside class="about-meta" data-reveal>
           {meta.map((item) => (
             <div class="meta-item">
               <span class="meta-num">{item.num}</span>
@@ -62,6 +62,11 @@ const meta =
     </section>
   )
 }
+
+<script>
+  import {initLineReveal} from '../../lib/line-reveal'
+  initLineReveal('.about-text')
+</script>
 
 <style>
   .about {
@@ -96,6 +101,12 @@ const meta =
   .about-text :global(.hl) {
     font-style: normal;
     color: var(--accent);
+  }
+  /* Palabras generadas por initLineReveal (web/src/lib/line-reveal.ts):
+     inline-block para que la transform del reveal (translateY) aplique. */
+  .about-text :global(.lr-word) {
+    display: inline-block;
+    will-change: transform, opacity;
   }
 
   .about-meta {
