@@ -103,6 +103,9 @@ const projectHref = (slug: string) =>
   }
   .card a:hover {
     outline-color: var(--accent);
+    /* Estado activo: sube un nivel de elevación */
+    background: var(--surface-2);
+    box-shadow: var(--shadow-2);
   }
   /* Alternancia editorial: las pares invierten la composición */
   .card:nth-child(even) a {
