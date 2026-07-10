@@ -115,6 +115,10 @@ const chapterData = chapters
   import {initMessyTable} from '../components/personal/MessyTable'
   initMessyTable()
 
+  // Patrón camaleón suave (A3): tinte del acento naranja durante el scroll.
+  import {initChameleonTint} from '../lib/chameleon'
+  initChameleonTint('#ff7847')
+
   // Chapter filters: progressive links (?cap=<chapterId>), same pattern as
   // components/projects/Filters.astro but toggling whole chapter sections
   // (which carry their own intro) instead of individual cards.

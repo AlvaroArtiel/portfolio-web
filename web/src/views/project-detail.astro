@@ -114,6 +114,14 @@ const jsonLdProject = JSON.stringify(creativeWorkLd).replace(/</g, '\\u003c')
   {project.nextProject && <NextProject lang={lang} next={project.nextProject} />}
 </Base>
 
+<script>
+  import {initChameleonTint} from '../lib/chameleon'
+
+  // Patrón camaleón suave (A3) en página larga: el fondo gana un tinte
+  // sutil del acento de proyectos a lo largo del recorrido.
+  initChameleonTint('#5b8cff')
+</script>
+
 <style>
   .project-detail {
     padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);

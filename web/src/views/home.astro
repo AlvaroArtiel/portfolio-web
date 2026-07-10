@@ -55,7 +55,22 @@ const jsonLdHome = JSON.stringify(personLd).replace(/</g, '\\u003c')
   <Hero lang={lang} settings={settings} />
   <About lang={lang} settings={settings} />
   <FeaturedDeck lang={lang} projects={featured} />
-  <CtaBand lang={lang} />
+  <!-- Orden narrativo del camaleón (spec §5.3): deck azul → teaser naranja
+       → CTA/contacto lima (el CTA queda pegado al footer de contacto). -->
   <PersonalTeaser lang={lang} items={teaserItems} />
+  <CtaBand lang={lang} />
   <PostFooter slot="post-footer" lang={lang} />
 </Base>
+
+<script>
+  import {initChameleon} from '../lib/chameleon'
+
+  // Camaleón intra-página (A3): el acento muta DURANTE el scroll —
+  // hero lima → deck azul → CTA/contacto lima → teaser naranja → cierre lima.
+  initChameleon([
+    {selector: '.hero', accent: '#d4ff3f'},
+    {selector: '.featured', accent: '#5b8cff'},
+    {selector: '.personal-teaser', accent: '#ff7847'},
+    {selector: '.cta-band', accent: '#d4ff3f'},
+  ])
+</script>
