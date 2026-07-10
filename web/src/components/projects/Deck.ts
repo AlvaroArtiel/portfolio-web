@@ -27,7 +27,9 @@ function initParallax(): void {
       // Solo escala en la tarjeta; la atenuación va a la imagen para no
       // hundir el contraste del texto (auditoría AA).
       const scrollTrigger = {trigger: next, start: 'top bottom', end: 'top top+=12%', scrub: SCRUB}
-      gsap.to(card, {scale: 0.94, ease: 'none', scrollTrigger})
+      // Origen arriba: al encoger, la franja de identidad (pestaña) de la
+      // carta tapada queda pegada a su offset sticky (patrón fichero, B5).
+      gsap.to(card, {scale: 0.97, transformOrigin: 'top center', ease: 'none', scrollTrigger})
       const media = card.querySelector('.pc-media, .card-media')
       if (media) gsap.to(media, {opacity: 0.55, ease: 'none', scrollTrigger: {...scrollTrigger}})
     })

@@ -54,14 +54,25 @@ const description =
     margin: 0 0 clamp(1.5rem, 4vh, 2.5rem);
   }
 
+  /* Cartas a ~88% centradas (B6: muere la columna derecha vacía); el
+     encabezado acompaña a las cartas. */
   .projects-list {
     display: grid;
-    gap: clamp(2rem, 6vh, 4rem);
-    max-width: 72rem;
+    gap: clamp(2rem, 5vh, 3rem);
+    width: min(88%, 74rem);
+    margin-inline: auto;
+  }
+
+  .projects-header {
+    width: min(88%, 74rem);
+    margin-inline: auto;
   }
 
   /* Apilado del deck: cada tarjeta se pega al mismo offset y la siguiente
-     la cubre (la capa de parallax vive en Deck.ts). Solo desktop: en móvil
+     la cubre — con la franja de identidad al top (B5), la entrante anuncia
+     su proyecto y la tapada muere mostrando el suyo. Con 10 cartas, las
+     pestañas acumuladas del patrón fichero no caben en un viewport: esa
+     variante vive en el deck de la home (4 cartas). Solo desktop: en móvil
      el scroll es nativo sin pin. */
   @media (min-width: 721px) {
     .projects-list :global(.project-card) {

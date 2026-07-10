@@ -1,10 +1,20 @@
 /**
- * CTA líquido (efecto noth.in): un plano con la textura del texto
- * "¿Trabajamos juntos?" cuya UV se desplaza con ruido alrededor del cursor.
- * En móvil reacciona a la velocidad de scroll. El <a> real queda debajo
- * (cubierto visualmente) y sigue siendo el destino del clic.
+ * CTA líquido (remediación B1, patrón noth.in real):
+ *
+ * - REPOSO = texto perfectamente legible: solo una ondulación lenta de
+ *   ≤2px de amplitud.
+ * - La distorsión responde SOLO a la proximidad del cursor: radial y local
+ *   (radio ~150px alrededor del puntero), amplitud máxima ~8% del cuerpo
+ *   de letra. Al salir el cursor, vuelve a reposo en ~500ms
+ *   (DURATION.element).
+ * - Móvil (sin cursor): micro-ondulación alimentada por la velocidad de
+ *   scroll — siempre legible.
+ *
+ * El <a> real queda debajo (cubierto visualmente) y sigue siendo el
+ * destino del clic.
  */
 import type {SceneModule} from '../lib/three-island'
+import {DURATION} from '../lib/motion-tokens'
 
 const VERT = /* glsl */ `
   varying vec2 vUv;
@@ -16,9 +26,12 @@ const VERT = /* glsl */ `
 
 const FRAG = /* glsl */ `
   uniform sampler2D uMap;
-  uniform vec2 uMouse;
+  uniform vec2 uMousePx;     // cursor en píxeles del band
+  uniform vec2 uResolution;  // tamaño del band en píxeles
   uniform float uTime;
-  uniform float uIntensity;
+  uniform float uHover;      // 0-1, con decay de ~500ms al salir
+  uniform float uScroll;     // micro-intensidad por scroll (móvil)
+  uniform float uAmpPx;      // amplitud máxima de la distorsión, en px (~8% del cuerpo)
   varying vec2 vUv;
 
   // Ruido simplex 2D compacto (Ashima)
@@ -45,13 +58,23 @@ const FRAG = /* glsl */ `
   }
 
   void main() {
-    float dist = distance(vUv, uMouse);
-    float influence = smoothstep(0.45, 0.0, dist) + uIntensity;
-    float n1 = snoise(vUv * 6.0 + uTime * 0.6);
-    float n2 = snoise(vUv * 11.0 - uTime * 0.4);
-    vec2 displaced = vUv + vec2(n1, n2) * 0.035 * influence;
-    vec4 color = texture2D(uMap, displaced);
-    gl_FragColor = color;
+    vec2 fragPx = vUv * uResolution;
+
+    // Influencia radial y local: 1 en el cursor, 0 a 150px.
+    float dist = distance(fragPx, uMousePx);
+    float local = smoothstep(150.0, 0.0, dist) * uHover;
+
+    // Reposo: ondulación lenta de ≤2px. Scroll móvil: micro-extra (≤3px).
+    float idlePx = 2.0 + uScroll * 3.0;
+
+    float n1 = snoise(vUv * 5.0 + uTime * 0.35);
+    float n2 = snoise(vUv * 9.0 - uTime * 0.25);
+
+    // Desplazamiento total en píxeles → uv.
+    vec2 ampPx = vec2(idlePx + uAmpPx * local);
+    vec2 displaced = vUv + vec2(n1, n2) * (ampPx / uResolution);
+
+    gl_FragColor = texture2D(uMap, displaced);
   }
 `
 
@@ -60,9 +83,12 @@ const liquidText: SceneModule = {
     let disposed = false
     let mesh: import('three').Mesh | null = null
     let uniforms: Record<string, {value: unknown}> | null = null
-    const mouse = {x: 0.5, y: 0.5, tx: 0.5, ty: 0.5}
+    const mouse = {x: -9999, y: -9999, tx: -9999, ty: -9999}
+    let hover = 0
+    let hoverTarget = 0
     let lastScroll = window.scrollY
     let scrollIntensity = 0
+    let fontPx = 150 // se ajusta al pintar la textura
 
     const text = el.querySelector('a')?.textContent?.trim() || '¿Trabajamos juntos?'
 
@@ -80,7 +106,6 @@ const liquidText: SceneModule = {
       canvas.width = 2048
       canvas.height = 512
       const ctx = canvas.getContext('2d')!
-      ctx.fillStyle = 'rgba(0,0,0,0)'
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       const style = getComputedStyle(document.documentElement)
       ctx.fillStyle = style.getPropertyValue('--text').trim() || '#F4F4F0'
@@ -103,11 +128,19 @@ const liquidText: SceneModule = {
       const planeW = worldW * 0.96
       const planeH = planeW * (canvas.height / canvas.width)
 
+      // Cuerpo de letra en píxeles de pantalla: la textura se estira al ancho
+      // del band, así que el font px real ≈ fontSize · (bandW/canvasW).
+      const rect = el.getBoundingClientRect()
+      fontPx = fontSize * ((rect.width * 0.96) / canvas.width)
+
       uniforms = {
         uMap: {value: texture},
-        uMouse: {value: new THREE.Vector2(0.5, 0.5)},
+        uMousePx: {value: new THREE.Vector2(-9999, -9999)},
+        uResolution: {value: new THREE.Vector2(rect.width, rect.height)},
         uTime: {value: 0},
-        uIntensity: {value: 0},
+        uHover: {value: 0},
+        uScroll: {value: 0},
+        uAmpPx: {value: fontPx * 0.08},
       }
       const material = new THREE.ShaderMaterial({
         uniforms: uniforms as never,
@@ -122,29 +155,48 @@ const liquidText: SceneModule = {
 
     const onPointerMove = (e: PointerEvent) => {
       const rect = el.getBoundingClientRect()
-      mouse.tx = (e.clientX - rect.left) / rect.width
-      mouse.ty = 1 - (e.clientY - rect.top) / rect.height
+      mouse.tx = e.clientX - rect.left
+      mouse.ty = rect.height - (e.clientY - rect.top) // uv y crece hacia arriba
+      hoverTarget = 1
+    }
+    const onPointerLeave = () => {
+      hoverTarget = 0
     }
     el.addEventListener('pointermove', onPointerMove, {passive: true})
+    el.addEventListener('pointerleave', onPointerLeave)
 
     return {
-      update(t) {
+      update(t, dt) {
         if (!uniforms) return
-        mouse.x += (mouse.tx - mouse.x) * 0.1
-        mouse.y += (mouse.ty - mouse.y) * 0.1
+        // Primer movimiento: el cursor aparece donde está, sin barrido
+        if (mouse.x < -999 && mouse.tx > -999) {
+          mouse.x = mouse.tx
+          mouse.y = mouse.ty
+        }
+        mouse.x += (mouse.tx - mouse.x) * 0.18
+        mouse.y += (mouse.ty - mouse.y) * 0.18
 
-        // Móvil/scroll: la velocidad de scroll alimenta la intensidad global
+        // Vuelta a reposo en ~DURATION.element (500ms): aproximación
+        // exponencial con constante de tiempo ~ element/4.
+        const k = Math.min(1, (dt || 0.016) / (DURATION.element / 4))
+        hover += (hoverTarget - hover) * k
+
+        // Móvil/scroll: la velocidad de scroll alimenta la micro-ondulación
         const delta = Math.abs(window.scrollY - lastScroll)
         lastScroll = window.scrollY
-        scrollIntensity = Math.min(1.2, scrollIntensity * 0.92 + delta * 0.01)
+        scrollIntensity = Math.min(1, scrollIntensity * 0.9 + delta * 0.008)
 
-        ;(uniforms.uMouse.value as import('three').Vector2).set(mouse.x, mouse.y)
+        const rect = el.getBoundingClientRect()
+        ;(uniforms.uResolution.value as import('three').Vector2).set(rect.width, rect.height)
+        ;(uniforms.uMousePx.value as import('three').Vector2).set(mouse.x, mouse.y)
         uniforms.uTime.value = t
-        uniforms.uIntensity.value = scrollIntensity * 0.5
+        uniforms.uHover.value = hover
+        uniforms.uScroll.value = scrollIntensity
       },
       dispose() {
         disposed = true
         el.removeEventListener('pointermove', onPointerMove)
+        el.removeEventListener('pointerleave', onPointerLeave)
         if (mesh) {
           mesh.geometry.dispose()
           const material = mesh.material as import('three').ShaderMaterial

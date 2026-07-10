@@ -22,9 +22,18 @@ const categoryLabels: Record<string, {es: string; en: string}> = {
 const category = project.category ? categoryLabels[project.category]?.[lang] : undefined
 ---
 
-<!-- Tarjeta grande vertical: base visual del deck apilado de F3 -->
-<article class="project-card" data-category={project.category} data-deck-card>
+<!-- Carta del deck (remediación B5): la identidad vive en una franja superior
+     de ~72px — cuando la carta siguiente cubre a esta, lo primero que asoma
+     de la entrante (y lo último visible de la tapada) es su identidad. -->
+<article class="project-card" style={`--card-index: ${index}`} data-category={project.category} data-deck-card>
   <a href={href}>
+    <div class="pc-tab">
+      <h2 class="pc-title">{t(project.title, lang)}</h2>
+      <p class="pc-meta">
+        <span>{project.year}</span>
+        {category && <span>{category}</span>}
+      </p>
+    </div>
     <div class="pc-media">
       {
         project.cover && (
@@ -39,15 +48,8 @@ const category = project.category ? categoryLabels[project.category]?.[lang] : u
       }
     </div>
     <div class="pc-body">
-      <div class="pc-heading">
-        <h2 class="pc-title">{t(project.title, lang)}</h2>
-        <p class="pc-meta">
-          <span>{project.year}</span>
-          {category && <span>{category}</span>}
-          {project.stack && <span class="pc-stack">{project.stack.slice(0, 4).join(' · ')}</span>}
-        </p>
-      </div>
       <p class="pc-summary">{t(project.summary, lang)}</p>
+      {project.stack && <p class="pc-stack">{project.stack.slice(0, 4).join(' · ')}</p>}
     </div>
   </a>
 </article>
@@ -72,29 +74,27 @@ const category = project.category ? categoryLabels[project.category]?.[lang] : u
     box-shadow: var(--shadow-2);
   }
 
-  .pc-media img {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-  }
-
-  .pc-body {
-    display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  /* Franja de identidad: 72px fijos, siempre lo primero/último visible */
+  .pc-tab {
+    height: 4.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 1.5rem;
-    padding: clamp(1.25rem, 3vw, 2rem);
-    align-items: start;
+    padding-inline: clamp(1.25rem, 3vw, 2rem);
+    border-bottom: var(--border-soft);
   }
 
   .pc-title {
     font-family: var(--font-display);
     font-weight: 550;
-    font-size: clamp(1.75rem, 4.5vw, 3.25rem);
+    font-size: clamp(1.4rem, 2.4vw, 2rem);
     line-height: 1;
     letter-spacing: -0.02em;
-    margin: 0 0 0.75rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .project-card a:hover .pc-title {
     color: var(--accent);
@@ -102,12 +102,28 @@ const category = project.category ? categoryLabels[project.category]?.[lang] : u
 
   .pc-meta {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 1.25rem;
+    flex-shrink: 0;
+    gap: 1.25rem;
     font-family: var(--font-mono);
     font-size: var(--step-mono-label);
     color: var(--text-muted);
     margin: 0;
+  }
+
+  .pc-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 21 / 9;
+    object-fit: cover;
+  }
+
+  .pc-body {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1rem, 2vw, 1.5rem) clamp(1.25rem, 3vw, 2rem);
   }
 
   .pc-summary {
@@ -115,12 +131,33 @@ const category = project.category ? categoryLabels[project.category]?.[lang] : u
     line-height: 1.5;
     color: var(--text-muted);
     margin: 0;
-    max-width: 44ch;
+    max-width: 58ch;
+  }
+
+  .pc-stack {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0;
+    flex-shrink: 0;
   }
 
   @media (max-width: 720px) {
+    .pc-tab {
+      height: auto;
+      min-height: 3.5rem;
+      flex-wrap: wrap;
+      padding-block: 0.75rem;
+      gap: 0.25rem 1rem;
+    }
+    .pc-title {
+      white-space: normal;
+    }
+    .pc-media img {
+      aspect-ratio: 16 / 9;
+    }
     .pc-body {
-      grid-template-columns: 1fr;
+      flex-direction: column;
       gap: 0.75rem;
     }
   }

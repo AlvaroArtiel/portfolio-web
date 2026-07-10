@@ -16,32 +16,37 @@ const projectHref = (slug: string) =>
   lang === 'en' ? `/en/projects/${slug}/` : `/proyectos/${slug}/`
 ---
 
+<!-- Deck destacados (remediación B5/B6): fichero de cartas con pestañas —
+     cada carta pega 72px más abajo que la anterior, de modo que al cubrirse
+     queda visible su franja de identidad (patrón pxpush real; con 4 cartas
+     las pestañas caben de sobra en el viewport). -->
 <section class="featured" data-reveal>
   <p class="section-kicker">{dict.featured_projects}</p>
 
-  <!-- Deck apilado: sticky CSS + parallax en Deck.ts -->
   <ol class="deck" data-deck>
     {
       projects.map((project, index) => (
         <li class="card" style={`--card-index: ${index}`} data-deck-card>
           <a href={projectHref(project.slug.current)}>
-            <div class="card-media">
-              {project.cover && (
-                <img
-                  src={urlFor(project.cover, {w: 1280, h: 800}).url()}
-                  alt=""
-                  width="1280"
-                  height="800"
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                />
-              )}
-            </div>
-            <div class="card-body">
+            <div class="card-tab">
               <h3 class="card-title">{t(project.title, lang)}</h3>
               <p class="card-meta">
                 <span>{project.year}</span>
-                {project.stack && <span class="card-stack">{project.stack.slice(0, 4).join(' · ')}</span>}
+                {project.stack && <span class="card-stack">{project.stack.slice(0, 3).join(' · ')}</span>}
               </p>
+            </div>
+            <div class="card-inner">
+              <div class="card-media">
+                {project.cover && (
+                  <img
+                    src={urlFor(project.cover, {w: 1280, h: 800}).url()}
+                    alt=""
+                    width="1280"
+                    height="800"
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                  />
+                )}
+              </div>
               <p class="card-summary">{t(project.summary, lang)}</p>
             </div>
           </a>
@@ -69,11 +74,11 @@ const projectHref = (slug: string) =>
     color: var(--accent);
     margin: 0 0 2.5rem;
     /* El kicker acompaña a las cartas, no al borde de la página */
-    width: min(88%, 76rem);
+    width: min(88%, 74rem);
     margin-inline: auto;
   }
 
-  /* Cartas a ~88% de ancho centradas (remediación B6: sin columna muerta) */
+  /* Cartas a ~88% de ancho centradas (remediación B6) */
   .deck {
     list-style: none;
     margin: 0 auto;
@@ -83,26 +88,25 @@ const projectHref = (slug: string) =>
     width: min(88%, 74rem);
   }
 
-  /* Apilado sticky (la siguiente carta cubre a la anterior); móvil: flujo nativo */
+  /* Fichero con pestañas: cada carta pega 4.5rem (72px) más abajo que la
+     anterior — al cubrirse, lo último visible de cada tapada es su franja
+     de identidad. Móvil: flujo nativo. */
   @media (min-width: 721px) {
     .card {
       position: sticky;
-      top: clamp(4.5rem, 12vh, 7rem);
+      top: calc(clamp(3.5rem, 9vh, 4.5rem) + var(--card-index) * 4.5rem);
     }
   }
 
   .card a {
-    display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    gap: clamp(1.25rem, 3vw, 2.5rem);
-    align-items: end;
+    display: block;
     text-decoration: none;
     color: var(--text);
     /* Elevación (A5): la carta existe como objeto sobre el fondo */
     background: var(--surface-1);
     border: var(--border-soft);
-    padding: clamp(1rem, 2.5vw, 2rem);
     border-radius: 4px;
+    overflow: hidden;
     transition: outline-color var(--transition-fast);
     outline: 1px solid transparent;
   }
@@ -112,8 +116,52 @@ const projectHref = (slug: string) =>
     background: var(--surface-2);
     box-shadow: var(--shadow-2);
   }
+
+  /* Franja de identidad: 72px fijos */
+  .card-tab {
+    height: 4.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-inline: clamp(1.25rem, 3vw, 2rem);
+    border-bottom: var(--border-soft);
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: clamp(1.4rem, 2.4vw, 2rem);
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card a:hover .card-title {
+    color: var(--accent);
+  }
+
+  .card-meta {
+    display: flex;
+    flex-shrink: 0;
+    gap: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .card-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: end;
+    padding: clamp(1rem, 2.5vw, 2rem);
+  }
   /* Alternancia editorial: las pares invierten la composición */
-  .card:nth-child(even) a {
+  .card:nth-child(even) .card-inner {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   }
   .card:nth-child(even) .card-media {
@@ -125,27 +173,6 @@ const projectHref = (slug: string) =>
     width: 100%;
     height: auto;
     border-radius: 2px;
-  }
-
-  .card-title {
-    font-family: var(--font-display);
-    font-weight: 550;
-    font-size: clamp(1.75rem, 4vw, 3rem);
-    letter-spacing: -0.02em;
-    line-height: 1.02;
-    margin: 0 0 0.75rem;
-  }
-  .card a:hover .card-title {
-    color: var(--accent);
-  }
-
-  .card-meta {
-    display: flex;
-    gap: 1.25rem;
-    font-family: var(--font-mono);
-    font-size: var(--step-mono-label);
-    color: var(--text-muted);
-    margin: 0 0 1rem;
   }
 
   .card-summary {
@@ -174,8 +201,18 @@ const projectHref = (slug: string) =>
   }
 
   @media (max-width: 720px) {
-    .card a,
-    .card:nth-child(even) a {
+    .card-tab {
+      height: auto;
+      min-height: 3.5rem;
+      flex-wrap: wrap;
+      padding-block: 0.75rem;
+      gap: 0.25rem 1rem;
+    }
+    .card-title {
+      white-space: normal;
+    }
+    .card-inner,
+    .card:nth-child(even) .card-inner {
       grid-template-columns: 1fr;
     }
     .card:nth-child(even) .card-media {
