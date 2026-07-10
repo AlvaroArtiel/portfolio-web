@@ -6,3 +6,5 @@ dist/
 web/.env
 .astro/
 studio/dist/
+
+dist_*.zip
