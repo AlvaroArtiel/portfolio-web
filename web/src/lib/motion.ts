@@ -123,4 +123,4 @@ async function init(): Promise<void> {
   reveal('[data-reveal]')
 }
 
-void init()
+init().catch((e) => console.error('motion init failed', e))

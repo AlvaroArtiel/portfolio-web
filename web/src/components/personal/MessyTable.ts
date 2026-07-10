@@ -53,7 +53,7 @@ async function initPhysics(): Promise<void> {
   sections.forEach((section) => (section.style.display = 'none'))
 
   const bounds = () => ({w: table.clientWidth, h: table.clientHeight})
-  const {w: W, h: H} = bounds()
+  let {w: W, h: H} = bounds()
 
   const engine = Engine.create({enableSleeping: true})
   engine.gravity.y = 1
@@ -66,6 +66,21 @@ async function initPhysics(): Promise<void> {
     Bodies.rectangle(W / 2, -H - 60, W + 400, 120, wallOpts), // techo alto: deja caer desde arriba
   ]
   Composite.add(engine.world, walls)
+
+  // Reajustar paredes si la mesa cambia de tamaño (resize de ventana)
+  let resizeTimer: ReturnType<typeof setTimeout> | undefined
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer)
+    resizeTimer = setTimeout(() => {
+      const next = bounds()
+      W = next.w
+      H = next.h
+      Body.setPosition(walls[0], {x: W / 2, y: H + 60})
+      Body.setPosition(walls[1], {x: -60, y: H / 2})
+      Body.setPosition(walls[2], {x: W + 60, y: H / 2})
+      Body.setPosition(walls[3], {x: W / 2, y: -H - 60})
+    }, 250)
+  })
 
   const bodies = items.map((item, index) => {
     const body = Bodies.rectangle(
@@ -81,6 +96,9 @@ async function initPhysics(): Promise<void> {
 
   // Agarrar y lanzar
   const mouse = Mouse.create(table)
+  // Matter añade un listener 'wheel' no-pasivo que hace preventDefault y
+  // bloquea el scroll nativo sobre la mesa (120vh): lo quitamos.
+  table.removeEventListener('wheel', (mouse as unknown as {mousewheel: EventListener}).mousewheel)
   const mouseConstraint = MouseConstraint.create(engine, {mouse, constraint: {stiffness: 0.12, damping: 0.12}})
   Composite.add(engine.world, mouseConstraint)
 

@@ -3,11 +3,12 @@
 header('Content-Type: application/json; charset=utf-8');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit; }
 $name = trim($_POST['name'] ?? '');
+$name = str_replace(["\r", "\n"], ' ', $name);
 $email = trim($_POST['email'] ?? '');
 $message = trim($_POST['message'] ?? '');
 $honeypot = trim($_POST['website'] ?? ''); // campo oculto anti-bots
 $lang = ($_POST['lang'] ?? 'es') === 'en' ? 'en' : 'es';
-if ($honeypot !== '') { header('Location: /gracias'); exit; } // bot: fingir éxito
+if ($honeypot !== '') { header('Location: ' . ($lang === 'en' ? '/en/thanks' : '/gracias')); exit; } // bot: fingir éxito
 if ($name === '' || $message === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
   http_response_code(422); echo json_encode(['error' => 'invalid']); exit;
 }
