@@ -50,3 +50,14 @@ Detalladas en [`decisions.md`](./decisions.md):
 - [ ] /experiencia: línea que se dibuja; /personal: lanzar polaroids; /cv: imprimir; /blog.
 - [ ] Todo en EN (`/en/`), móvil y con "reducir movimiento" activado (todo debe degradar).
 - [ ] /casa con teclado y con móvil.
+
+## Revisión final de la rama (post-cierre)
+
+Una revisión independiente de los 36 commits dio **"Ready with fixes"**; los tres hallazgos accionables quedaron corregidos y redesplegados (commit `c645cf8`):
+1. **Crítico** — inyección de cabeceras de email vía `name` en `api/contact.php` (heredado del código literal del plan; ver decisions.md). Corregido.
+2. **Importante** — Matter.js bloqueaba el scroll nativo sobre la mesa revuelta. Corregido y verificado en navegador.
+3. **Importante** — la mesa no recalculaba sus paredes al redimensionar la ventana. Corregido (debounce + reposición).
+
+Backlog no bloqueante que dejó la revisión: realineado de lonas/CTA en resize, listener del snake-trail tras el primer cierre, wrap de ángulo del personaje de la casa, `og:locale`/`og:site_name`, respuesta 422 del PHP como página en vez de JSON.
+
+**Para el paso a producción** (cuando lo ordenes): cambiar `SITE_URL` en `web/astro.config.mjs` y la URL del sitemap en `web/public/robots.txt` (todo lo demás — canonical, OG, JSON-LD — deriva de `Astro.site`); el CORS de Sanity ya incluye el dominio raíz.

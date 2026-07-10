@@ -20,3 +20,7 @@
 - **Qué decía el plan:** "OG images: plantilla generativa por página con título".
 - **Qué se hace:** una imagen OG generativa por sección (7 PNGs con el acento correspondiente); las fichas de proyecto heredan la de proyectos.
 - **Por qué:** con arte placeholder, generar 20+ OG con títulos aporta poco; cuando el usuario suba media real conviene regenerarlas con arte definitivo. `web/scripts/generate-og.mjs` queda listo para ampliarse por página.
+## 2026-07-10 Cierre — contact.php: sanitización añadida sobre el código literal del plan
+- **Qué decía el plan:** crear `api/contact.php` "con este contenido exacto".
+- **Qué se hace:** se añade `str_replace(["\r","\n"], ' ', $name)` (el nombre entra en la cabecera Subject: vector de inyección de cabeceras / spam relay detectado por la revisión final) y el redirect del honeypot respeta `lang`.
+- **Por qué:** vulnerabilidad real que no debe desplegarse; cambio mínimo que preserva el comportamiento especificado.
