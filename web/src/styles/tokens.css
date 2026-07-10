@@ -109,12 +109,23 @@
   --space-m: 10rem;
   --space-l: 15rem;
 
-  /* -- Motion -------------------------------------------------------------
-     Single source for the "snappy but not jumpy" feel; reduced-motion
-     override lives in global.css. */
-  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-fast: 150ms;
-  --transition-base: 250ms;
+  /* -- Motion (remediación A4) ---------------------------------------------
+     Fuente única del lenguaje de movimiento: dos curvas (entrada/trayecto)
+     y tres duraciones (micro/elemento/sección), espejo de
+     `web/src/lib/motion-tokens.ts` (EASE/DURATION) para quien anima en CSS
+     puro. --ease-standard y --transition-fast/base quedan como ALIAS de
+     estos — no se renombran sus usos existentes, solo convergen en la
+     misma fuente. --transition-fast y --transition-base convergen ambos en
+     --dur-micro: los hovers/estados son "micro" por definición (§5.1). */
+  --ease-out-token: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-inout-token: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 200ms;
+  --dur-element: 500ms;
+  --dur-section: 900ms;
+
+  --ease-standard: var(--ease-out-token);
+  --transition-fast: var(--dur-micro);
+  --transition-base: var(--dur-micro);
 }
 
 /* -- Color: per-section accent -------------------------------------------

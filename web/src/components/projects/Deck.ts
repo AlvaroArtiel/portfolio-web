@@ -10,6 +10,7 @@
  * inert when `motion.ts` is inert.
  */
 import {onReady, getMotion} from '../../lib/motion'
+import {SCRUB, DURATION, REVEAL, EASE_GSAP} from '../../lib/motion-tokens'
 
 const MOBILE_QUERY = '(max-width: 720px)'
 
@@ -25,7 +26,7 @@ function initParallax(): void {
       if (!next) return
       // Solo escala en la tarjeta; la atenuación va a la imagen para no
       // hundir el contraste del texto (auditoría AA).
-      const scrollTrigger = {trigger: next, start: 'top bottom', end: 'top top+=12%', scrub: true}
+      const scrollTrigger = {trigger: next, start: 'top bottom', end: 'top top+=12%', scrub: SCRUB}
       gsap.to(card, {scale: 0.94, ease: 'none', scrollTrigger})
       const media = card.querySelector('.pc-media, .card-media')
       if (media) gsap.to(media, {opacity: 0.55, ease: 'none', scrollTrigger: {...scrollTrigger}})
@@ -59,9 +60,11 @@ function initReshuffle(): void {
         y: 320 + Math.random() * 240,
         rotation: (Math.random() - 0.5) * 40,
         opacity: 0,
-        duration: 0.55,
-        delay: index * 0.06,
-        ease: 'power2.in',
+        duration: DURATION.element,
+        delay: index * REVEAL.stagger,
+        // Trayecto de salida (la carta recorre A→B fuera de pantalla):
+        // materialización de EASE.inOut, igual que el resto de trayectos.
+        ease: EASE_GSAP.inOut,
         onComplete: () => {
           card.hidden = true
           gsap.set(card, {clearProps: 'all'})
@@ -78,7 +81,16 @@ function initReshuffle(): void {
       gsap.fromTo(
         entering,
         {y: 120, opacity: 0, rotation: () => (Math.random() - 0.5) * 6},
-        {y: 0, opacity: 1, rotation: 0, duration: 0.6, stagger: 0.08, ease: 'power2.out', delay: leaving.length > 0 ? 0.25 : 0, onComplete: () => ScrollTrigger.refresh()},
+        {
+          y: 0,
+          opacity: 1,
+          rotation: 0,
+          duration: DURATION.element,
+          stagger: REVEAL.stagger,
+          ease: EASE_GSAP.out, // entrada: materialización de EASE.out
+          delay: leaving.length > 0 ? 0.25 : 0,
+          onComplete: () => ScrollTrigger.refresh(),
+        },
       )
     }
     if (leaving.length === 0 && entering.length === 0 && staying.length > 0) ScrollTrigger.refresh()

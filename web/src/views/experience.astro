@@ -97,6 +97,7 @@ const description =
 
 <script>
   import {onReady, getMotion} from '../lib/motion'
+  import {SCRUB} from '../lib/motion-tokens'
 
   // Línea de tiempo que se dibuja con el scroll (stroke-dashoffset + scrub).
   onReady(() => {
@@ -129,7 +130,7 @@ const description =
         trigger: timeline,
         start: 'top 75%',
         end: 'bottom 60%',
-        scrub: 0.4,
+        scrub: SCRUB,
       },
     })
   })

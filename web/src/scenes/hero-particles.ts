@@ -10,10 +10,16 @@
 import type {SceneModule} from '../lib/three-island'
 
 const ACCENT_RATIO = 0.08
-const SPRING = 0.045
-const FRICTION = 0.88
+// Constantes de simulación física, no cubiertas por EASE/DURATION (que son
+// para tweens GSAP con tiempo fijo): esta es una simulación de muelle+
+// fricción por frame. Re-tempadas (A4) para que el reagrupado "respire"
+// igual de lento y elegante que el resto del sitio — antes era más nervioso
+// (SPRING/FRICTION altos = respuesta rápida y seca). El titular debe
+// reformarse en ~1.5-2s tras espantar las partículas.
+const SPRING = 0.028
+const FRICTION = 0.9
 const REPULSE_RADIUS = 0.85
-const REPULSE_FORCE = 0.055
+const REPULSE_FORCE = 0.045
 
 type Sampled = {targets: Float32Array; count: number; aspect: number}
 

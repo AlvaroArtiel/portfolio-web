@@ -7,6 +7,7 @@
  * (dynamic `import()`), so reduced-motion users never download it and it
  * never blocks first paint.
  */
+import {EASE_GSAP, DURATION, REVEAL} from './motion-tokens'
 
 type RevealOptions = {
   /** Selector (relative to each matched element) for children to stagger in. */
@@ -51,9 +52,9 @@ export function onReady(cb: ReadyCallback): void {
 }
 
 /**
- * Standard site reveal: fade + rise 24px, triggered once the element enters
- * the viewport. No-op (elements stay visible, untouched) when reduced-motion
- * is active or before GSAP has initialized.
+ * Standard site reveal: fade + rise (REVEAL.rise px), triggered once the
+ * element enters the viewport. No-op (elements stay visible, untouched)
+ * when reduced-motion is active or before GSAP has initialized.
  */
 export function reveal(selector: string, opts: RevealOptions = {}): void {
   if (reducedMotion) return
@@ -66,14 +67,14 @@ export function reveal(selector: string, opts: RevealOptions = {}): void {
       const hasChildren = Array.isArray(targets) ? targets.length > 0 : true
       if (!hasChildren) return
 
-      gsap.set(targets, {opacity: 0, y: 24})
+      gsap.set(targets, {opacity: 0, y: REVEAL.rise})
 
       gsap.to(targets, {
         opacity: 1,
         y: 0,
-        duration: 0.8,
-        ease: 'power2.out',
-        stagger: opts.stagger ? (opts.staggerAmount ?? 0.08) : 0,
+        duration: DURATION.element,
+        ease: EASE_GSAP.out,
+        stagger: opts.stagger ? (opts.staggerAmount ?? REVEAL.stagger) : 0,
         scrollTrigger: {
           trigger: el,
           start: 'top 85%',

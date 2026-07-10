@@ -17,6 +17,7 @@
  */
 import type {SceneModule} from '../lib/three-island'
 import {onReady, getMotion} from '../lib/motion'
+import {SCRUB} from '../lib/motion-tokens'
 
 /* ------------------------------------------------------------------ */
 /* Silueta compartida 2D/3D                                            */
@@ -97,7 +98,14 @@ function screenToWorld(camera: import('three').PerspectiveCamera, x: number, y: 
   }
 }
 
-/** Curva de trayecto (ease-in-out cúbica): materializa EASE.inOut sin GSAP por frame. */
+/**
+ * Curva de trayecto (ease-in-out cúbica), evaluada a mano por frame porque
+ * este vuelo no es un tween GSAP de duración fija sino una interpolación
+ * continua atada al progreso de scroll (`p`, 0-1). Es la materialización
+ * local de EASE.inOut (motion-tokens.ts) — incluida aquí, no importada,
+ * porque opera sobre un progreso normalizado y no sobre una curva de
+ * bezier de string; misma familia de curva, coreografía sin tocar (A4).
+ */
 function easeInOut(p: number): number {
   return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2
 }
@@ -153,7 +161,7 @@ const monogram: SceneModule = {
           {
             p: 1,
             ease: 'none',
-            scrollTrigger: {start: 0, end: () => window.innerHeight * 1.1, scrub: 1},
+            scrollTrigger: {start: 0, end: () => window.innerHeight * 1.1, scrub: SCRUB},
             onUpdate() {
               dockProgress = (this.targets()[0] as {p: number}).p
               // Móvil: acople por match-cut (la pieza se funde en su esquina
