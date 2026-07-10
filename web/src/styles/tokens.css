@@ -50,6 +50,17 @@
   font-display: swap;
 }
 
+/* Handwriting face, used ONLY on personal/ (polaroid captions). Not preloaded
+   in Base.astro since it is not needed above the fold on most pages. */
+@font-face {
+  font-family: 'Caveat Variable';
+  src: url('/fonts/Caveat-Variable.woff2') format('woff2-variations'),
+    url('/fonts/Caveat-Variable.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* -- Color: base ------------------------------------------------------ */
   --bg: #0c0c0e;
@@ -67,6 +78,8 @@
   --font-display: 'Clash Display', 'Instrument Sans', system-ui, sans-serif;
   --font-text: 'Instrument Sans', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* Handwriting: personal/ polaroid captions only, never used elsewhere. */
+  --font-hand: 'Caveat Variable', cursive;
 
   /* -- Typography: fluid scale --------------------------------------------
      clamp(min, preferred-vw, max). Hero sits in the 8-14vw band requested

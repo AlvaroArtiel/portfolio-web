@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro'
+import {ui} from '../lib/i18n'
 import type {Lang} from '../lib/i18n'
+import {pathFor} from '../lib/routes'
 
 interface Props {
   lang: Lang
@@ -10,31 +12,59 @@ const {lang} = Astro.props
 const heading = lang === 'en' ? 'Thank you' : 'Gracias'
 const description =
   lang === 'en' ? 'Your message was sent successfully.' : 'Tu mensaje se ha enviado correctamente.'
+const message =
+  lang === 'en'
+    ? 'Message received. I will get back to you soon.'
+    : 'Mensaje recibido. Te contesto pronto.'
 ---
 
 <Base title={`${heading} — Álvaro Artiel`} description={description} lang={lang} section="home" noindex>
-  <section class="stub">
+  <section class="thanks-page">
     <h1>{heading}</h1>
-    <p>{description}</p>
+    <p>{message}</p>
+    <nav class="thanks-cta">
+      <a href={pathFor('', lang)}>{lang === 'en' ? '← Back home' : '← Volver al inicio'}</a>
+      <a href={pathFor('proyectos', lang)}>{ui[lang].view_all_projects}</a>
+    </nav>
   </section>
 </Base>
 
 <style>
-  .stub {
+  .thanks-page {
     min-height: 60vh;
     display: grid;
     place-content: center;
-    gap: 1rem;
+    justify-items: start;
+    gap: 1.25rem;
     padding: clamp(1.5rem, 6vw, 4rem);
   }
-  .stub h1 {
+  .thanks-page h1 {
     font-family: var(--font-display);
+    font-weight: 580;
     font-size: var(--step-h1);
     letter-spacing: -0.03em;
   }
-  .stub p {
+  .thanks-page p {
     font-family: var(--font-mono);
     font-size: var(--step-mono-label);
     color: var(--text-muted);
+  }
+  .thanks-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  .thanks-cta a {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 0.2em;
+    transition: color var(--transition-fast);
+  }
+  .thanks-cta a:hover {
+    color: var(--accent);
   }
 </style>

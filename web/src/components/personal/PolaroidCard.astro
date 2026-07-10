@@ -1,0 +1,158 @@
+---
+import type {Lang} from '../../lib/i18n'
+import {t} from '../../lib/i18n'
+import type {PersonalItem} from '../../lib/queries'
+import {urlFor} from '../../lib/sanity'
+
+interface Props {
+  lang: Lang
+  item: PersonalItem
+  /**
+   * Whether this polaroid is clickable. The home teaser renders inert
+   * polaroids (the whole stack is a single link to /personal); the personal
+   * grid renders interactive ones (photo → lightbox, video → inline embed).
+   */
+  interactive?: boolean
+  /** Index into the page's flat list of photo items, used by Lightbox.ts. Only needed when interactive. */
+  photoIndex?: number
+}
+const {lang, item, interactive = true, photoIndex} = Astro.props
+
+/** Deterministic rotation from the _id hash: same photo, same tilt, every render. */
+function rotationDeg(id: string): number {
+  let hash = 0
+  for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) % 997
+  return ((hash % 9) - 4) * 1.5 // -6deg..+6deg
+}
+
+/** Extracts the video id from a YouTube URL (watch, youtu.be, shorts, embed). */
+function youtubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/)
+  return match ? match[1] : null
+}
+
+const caption = t(item.caption, lang)
+const isVideo = item.kind === 'video'
+const ytId = isVideo && item.youtubeUrl ? youtubeId(item.youtubeUrl) : null
+const rotation = rotationDeg(item._id)
+---
+
+{
+  (isVideo ? !!ytId : !!item.image) && (
+    <figure class="polaroid" style={`--rot: ${rotation}deg`}>
+      {!isVideo && item.image && interactive && (
+        <button
+          type="button"
+          class="polaroid-trigger"
+          data-lightbox-trigger
+          data-lightbox-index={photoIndex}
+          data-lightbox-src={urlFor(item.image, {w: 1600}).url()}
+          data-lightbox-alt={caption}
+          aria-label={caption || (lang === 'en' ? 'Open photo' : 'Ampliar foto')}
+        >
+          <img
+            src={urlFor(item.image, {w: 480, h: 360}).url()}
+            alt=""
+            width="480"
+            height="360"
+            loading="lazy"
+          />
+        </button>
+      )}
+      {!isVideo && item.image && !interactive && (
+        <img
+          src={urlFor(item.image, {w: 480, h: 360}).url()}
+          alt={caption || ''}
+          width="480"
+          height="360"
+          loading="lazy"
+        />
+      )}
+      {isVideo && ytId && (
+        <button
+          type="button"
+          class="polaroid-trigger polaroid-video"
+          data-video-facade
+          data-youtube-id={ytId}
+          aria-label={lang === 'en' ? 'Play video' : 'Reproducir vídeo'}
+        >
+          <img
+            src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
+            alt=""
+            width="480"
+            height="360"
+            loading="lazy"
+          />
+          <span class="polaroid-play" aria-hidden="true">
+            ▶
+          </span>
+        </button>
+      )}
+      {caption && <figcaption>{caption}</figcaption>}
+    </figure>
+  )
+}
+
+<style>
+  .polaroid {
+    margin: 0;
+    padding: 0.6rem 0.6rem 2rem;
+    background: #fdfdf8;
+    transform: rotate(var(--rot));
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+    transition: transform var(--transition-base);
+  }
+
+  .polaroid img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Base caption look; the personal grid (views/personal.astro) overrides
+     this to the handwriting face — kept out of this shared component so the
+     Caveat font never leaks onto the home teaser, which reuses this card. */
+  .polaroid figcaption {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: #333;
+    padding-top: 0.5rem;
+    text-align: center;
+  }
+
+  .polaroid-trigger {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .polaroid-video .polaroid-play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    font-size: 1.5rem;
+    color: var(--bg);
+  }
+  .polaroid-video .polaroid-play::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--accent);
+    z-index: -1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .polaroid {
+      transition: none;
+    }
+  }
+</style>

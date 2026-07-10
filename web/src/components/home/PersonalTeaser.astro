@@ -1,9 +1,9 @@
 ---
 import type {Lang} from '../../lib/i18n'
-import {t, ui} from '../../lib/i18n'
+import {ui} from '../../lib/i18n'
 import type {PersonalItem} from '../../lib/queries'
-import {urlFor} from '../../lib/sanity'
 import {pathFor} from '../../lib/routes'
+import PolaroidCard from '../personal/PolaroidCard.astro'
 
 interface Props {
   lang: Lang
@@ -11,13 +11,6 @@ interface Props {
 }
 const {lang, items} = Astro.props
 const dict = ui[lang]
-
-/** Rotación determinista a partir del _id (misma foto, mismo giro). */
-const rotation = (id: string) => {
-  let hash = 0
-  for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) % 997
-  return ((hash % 9) - 4) * 1.5 // -6º..+6º
-}
 
 const photos = items.filter((item) => item.image).slice(0, 4)
 ---
@@ -27,17 +20,8 @@ const photos = items.filter((item) => item.image).slice(0, 4)
     <section class="personal-teaser" data-reveal>
       <p class="section-kicker">{dict.personal_teaser_kicker}</p>
       <a class="teaser-stack" href={pathFor('personal', lang)}>
-        {photos.map((item, index) => (
-          <figure class="polaroid" style={`--rot: ${rotation(item._id)}deg; --i: ${index}`}>
-            <img
-              src={urlFor(item.image!, {w: 480, h: 360}).url()}
-              alt={t(item.caption, lang) || ''}
-              width="480"
-              height="360"
-              loading="lazy"
-            />
-            {t(item.caption, lang) && <figcaption>{t(item.caption, lang)}</figcaption>}
-          </figure>
+        {photos.map((item) => (
+          <PolaroidCard lang={lang} item={item} interactive={false} />
         ))}
         <span class="teaser-cta">{dict.personal_teaser_cta} →</span>
       </a>
@@ -65,34 +49,14 @@ const photos = items.filter((item) => item.image).slice(0, 4)
     text-decoration: none;
   }
 
-  .polaroid {
-    margin: 0;
-    padding: 0.6rem 0.6rem 2rem;
-    background: #fdfdf8;
-    transform: rotate(var(--rot));
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+  .teaser-stack :global(.polaroid) {
     max-width: clamp(9rem, 18vw, 14rem);
-    transition: transform var(--transition-base);
   }
-  .teaser-stack:hover .polaroid {
+  .teaser-stack:hover :global(.polaroid) {
     transform: rotate(calc(var(--rot) * 1.6)) translateY(-4px);
   }
-  .polaroid + .polaroid {
+  .teaser-stack :global(.polaroid) + :global(.polaroid) {
     margin-left: clamp(-2.5rem, -4vw, -1rem);
-  }
-
-  .polaroid img {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-
-  .polaroid figcaption {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: #333;
-    padding-top: 0.5rem;
-    text-align: center;
   }
 
   .teaser-cta {

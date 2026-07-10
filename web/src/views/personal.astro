@@ -1,34 +1,331 @@
 ---
 import Base from '../layouts/Base.astro'
-import {ui} from '../lib/i18n'
+import PolaroidCard from '../components/personal/PolaroidCard.astro'
+import {t, ui} from '../lib/i18n'
 import type {Lang} from '../lib/i18n'
+import {getChaptersWithItems} from '../lib/queries'
 
 interface Props {
   lang: Lang
 }
 const {lang} = Astro.props
+const dict = ui[lang]
 
-const heading = ui[lang].nav_personal
+const chapters = await getChaptersWithItems()
+
+const heading = dict.nav_personal
 const description =
-  lang === 'en' ? 'Personal work — full content coming in Phase 2.' : 'Trabajo personal — contenido completo en la Fase 2.'
+  lang === 'en'
+    ? 'Photos and videos from outside the day job: hobbies, trips and everything that does not fit on a CV.'
+    : 'Fotos y vídeos de fuera del horario laboral: aficiones, viajes y todo lo que no cabe en un CV.'
+
+/**
+ * Each chapter keeps its items, but photo items also get a page-wide index
+ * (in render order) so Lightbox.ts can navigate prev/next across chapters.
+ * Video items are excluded from that count: they open an inline embed
+ * instead of the lightbox (see the `data-video-facade` script below).
+ */
+let photoCounter = 0
+const chapterData = chapters
+  .map((chapter) => {
+    const items = (chapter.items ?? []).filter((item) =>
+      item.kind === 'video' ? !!item.youtubeUrl : !!item.image,
+    )
+    const withIndex = items.map((item) => {
+      const photoIndex = item.kind === 'video' ? undefined : photoCounter++
+      return {item, photoIndex}
+    })
+    return {chapter, items: withIndex}
+  })
+  .filter(({items}) => items.length > 0)
 ---
 
 <Base title={`${heading} — Álvaro Artiel`} description={description} lang={lang} section="personal">
-  <section class="stub">
-    <h1>{heading}</h1>
+  <section class="personal-page">
+    <header class="personal-header" data-reveal>
+      <h1>{heading}</h1>
+      <p class="lede">{description}</p>
+      <nav
+        class="chapter-filters"
+        aria-label={lang === 'en' ? 'Filter by chapter' : 'Filtrar por capítulo'}
+        data-personal-filters
+      >
+        <a href="?" data-cap="" aria-current="true">
+          {lang === 'en' ? 'All' : 'Todo'}
+        </a>
+        {
+          chapterData.map(({chapter}) => (
+            <a href={`?cap=${chapter._id}`} data-cap={chapter._id}>
+              {chapter.emoji} {t(chapter.title, lang)}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+
+    {
+      chapterData.map(({chapter, items}) => (
+        <section class="chapter" data-chapter-section data-cap={chapter._id}>
+          <h2>
+            {chapter.emoji} {t(chapter.title, lang)}
+          </h2>
+          {t(chapter.description, lang) && <p class="chapter-desc">{t(chapter.description, lang)}</p>}
+          <div class="polaroid-grid">
+            {items.map(({item, photoIndex}) => (
+              <PolaroidCard lang={lang} item={item} photoIndex={photoIndex} />
+            ))}
+          </div>
+        </section>
+      ))
+    }
   </section>
+
+  <dialog id="lightbox" class="lightbox" aria-label={lang === 'en' ? 'Photo viewer' : 'Visor de fotos'}>
+    <button type="button" class="lightbox-close" data-lightbox-close aria-label={lang === 'en' ? 'Close' : 'Cerrar'}>
+      ✕
+    </button>
+    <button
+      type="button"
+      class="lightbox-nav lightbox-prev"
+      data-lightbox-prev
+      aria-label={lang === 'en' ? 'Previous photo' : 'Foto anterior'}
+    >
+      ‹
+    </button>
+    <figure class="lightbox-figure">
+      <img data-lightbox-img alt="" />
+      <figcaption data-lightbox-caption></figcaption>
+    </figure>
+    <button
+      type="button"
+      class="lightbox-nav lightbox-next"
+      data-lightbox-next
+      aria-label={lang === 'en' ? 'Next photo' : 'Foto siguiente'}
+    >
+      ›
+    </button>
+  </dialog>
 </Base>
 
-<style>
-  .stub {
-    min-height: 60vh;
-    display: grid;
-    place-content: center;
-    padding: clamp(1.5rem, 6vw, 4rem);
+<script>
+  import {initLightbox} from '../components/Lightbox'
+
+  initLightbox()
+
+  // Chapter filters: progressive links (?cap=<chapterId>), same pattern as
+  // components/projects/Filters.astro but toggling whole chapter sections
+  // (which carry their own intro) instead of individual cards.
+  function applyFilter(cap: string): void {
+    document.querySelectorAll<HTMLElement>('[data-chapter-section]').forEach((section) => {
+      section.hidden = cap !== '' && section.dataset.cap !== cap
+    })
+    document.querySelectorAll<HTMLAnchorElement>('[data-personal-filters] a').forEach((link) => {
+      if ((link.dataset.cap ?? '') === cap) link.setAttribute('aria-current', 'true')
+      else link.removeAttribute('aria-current')
+    })
   }
-  .stub h1 {
+
+  function currentCap(): string {
+    return new URLSearchParams(location.search).get('cap') ?? ''
+  }
+
+  document.querySelectorAll<HTMLAnchorElement>('[data-personal-filters] a').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault()
+      const cap = link.dataset.cap ?? ''
+      const url = cap ? `?cap=${cap}` : location.pathname
+      history.replaceState(null, '', url)
+      applyFilter(cap)
+    })
+  })
+
+  applyFilter(currentCap())
+
+  // Video facade: swap the YouTube-thumbnail button for a live embed on click,
+  // same lazy-load trick as components/projects/BodyBlocks.astro.
+  document.querySelectorAll<HTMLButtonElement>('[data-video-facade]').forEach((facade) => {
+    facade.addEventListener('click', () => {
+      const id = facade.dataset.youtubeId
+      const iframe = document.createElement('iframe')
+      iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`
+      iframe.allow = 'autoplay; encrypted-media; picture-in-picture'
+      iframe.allowFullscreen = true
+      iframe.title = 'YouTube'
+      iframe.className = 'polaroid-embed'
+      facade.replaceWith(iframe)
+    })
+  })
+</script>
+
+<style>
+  .personal-page {
+    padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
+  }
+
+  .personal-header {
+    max-width: 60rem;
+    margin-bottom: clamp(2rem, 5vh, 3.5rem);
+  }
+
+  .personal-header h1 {
     font-family: var(--font-display);
+    font-weight: 580;
     font-size: var(--step-h1);
     letter-spacing: -0.03em;
+    margin: 0 0 1rem;
+  }
+
+  .lede {
+    font-size: var(--step-body);
+    color: var(--text-muted);
+    max-width: 48ch;
+    margin: 0 0 2rem;
+  }
+
+  .chapter-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+  }
+  .chapter-filters a {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text-muted);
+    text-decoration: none;
+    padding-bottom: 0.2em;
+    border-bottom: 1px solid transparent;
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+  }
+  .chapter-filters a:hover {
+    color: var(--text);
+  }
+  .chapter-filters a[aria-current='true'] {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .chapter {
+    margin-bottom: clamp(3.5rem, 10vh, 6rem);
+  }
+  .chapter h2 {
+    font-family: var(--font-display);
+    font-size: var(--step-h3);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+  }
+  .chapter-desc {
+    max-width: 60ch;
+    color: var(--text-muted);
+    margin: 0 0 2rem;
+  }
+
+  .polaroid-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+    gap: clamp(1.5rem, 4vw, 2.5rem);
+    align-items: start;
+  }
+  .polaroid-grid :global(.polaroid):hover {
+    transform: rotate(calc(var(--rot) * 1.4)) translateY(-4px) scale(1.03);
+  }
+  /* Handwriting face lives here, not in PolaroidCard: it's reused by the home
+     teaser, which must keep the plain mono caption. */
+  .polaroid-grid :global(.polaroid figcaption) {
+    font-family: var(--font-hand);
+    font-size: 1.4rem;
+    line-height: 1.2;
+    color: #222;
+    padding-top: 0.4rem;
+  }
+  .polaroid-grid :global(.polaroid-embed) {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .polaroid-grid :global(.polaroid):hover {
+      transform: rotate(var(--rot));
+    }
+  }
+
+  /* Lightbox: native <dialog>, full-viewport backdrop, centered figure. */
+  .lightbox {
+    padding: 0;
+    border: 0;
+    max-width: 100vw;
+    max-height: 100vh;
+    width: 100vw;
+    height: 100vh;
+    background: transparent;
+  }
+  .lightbox::backdrop {
+    background: rgb(0 0 0 / 0.9);
+  }
+  .lightbox[open] {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: clamp(1rem, 4vw, 3rem);
+  }
+
+  .lightbox-figure {
+    margin: 0;
+    max-width: 100%;
+    max-height: 100%;
+    display: grid;
+    justify-items: center;
+    gap: 0.75rem;
+  }
+  .lightbox-figure img {
+    max-width: 100%;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+  .lightbox-figure figcaption {
+    font-family: var(--font-hand);
+    font-size: 1.5rem;
+    color: var(--text);
+    text-align: center;
+  }
+
+  .lightbox-close {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    color: var(--text);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+  .lightbox-nav {
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--text);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+  }
+  .lightbox-nav:hover {
+    color: var(--accent);
+  }
+
+  @media (max-width: 640px) {
+    .lightbox[open] {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr auto;
+    }
+    .lightbox-nav {
+      justify-self: center;
+    }
   }
 </style>

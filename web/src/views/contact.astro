@@ -7,27 +7,142 @@ interface Props {
   lang: Lang
 }
 const {lang} = Astro.props
+const dict = ui[lang]
 
-const heading = ui[lang].nav_contact
-const description = lang === 'en' ? 'Get in touch — full content coming in Phase 2.' : 'Contacto — contenido completo en la Fase 2.'
+const heading = dict.nav_contact
+const description =
+  lang === 'en'
+    ? 'Get in touch about a project, a role, or just to say hi.'
+    : 'Escríbeme para hablar de un proyecto, una vacante o simplemente para saludar.'
+const lede =
+  lang === 'en'
+    ? 'Tell me a bit about what you have in mind — I read every message and reply personally.'
+    : 'Cuéntame en pocas líneas qué tienes en mente — leo todos los mensajes y respondo en persona.'
 ---
 
 <Base title={`${heading} — Álvaro Artiel`} description={description} lang={lang} section="home">
-  <section class="stub">
-    <h1>{heading}</h1>
+  <section class="contact-page">
+    <header class="contact-header" data-reveal>
+      <h1>{heading}</h1>
+      <p class="lede">{lede}</p>
+    </header>
+
+    <!--
+      Posts to a PHP endpoint that does not exist in dev (expected 404 locally;
+      the production host serves web/public/api/contact.php). `website` is a
+      honeypot: hidden from sighted users and unreachable by keyboard, so a
+      human never fills it in but most bots do.
+    -->
+    <form class="contact-form" method="post" action="/api/contact.php" data-reveal>
+      <input type="hidden" name="lang" value={lang} />
+
+      <p class="honeypot" aria-hidden="true">
+        <label for="website">Website</label>
+        <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+      </p>
+
+      <label class="field">
+        <span>{dict.form_name}</span>
+        <input type="text" name="name" required minlength="2" autocomplete="name" />
+      </label>
+
+      <label class="field">
+        <span>{dict.form_email}</span>
+        <input type="email" name="email" required autocomplete="email" />
+      </label>
+
+      <label class="field">
+        <span>{dict.form_message}</span>
+        <textarea name="message" required minlength="10" rows="6"></textarea>
+      </label>
+
+      <button type="submit" class="submit">{dict.form_submit}</button>
+    </form>
   </section>
 </Base>
 
 <style>
-  .stub {
-    min-height: 60vh;
+  .contact-page {
+    padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(5rem, 12vh, 7rem);
     display: grid;
-    place-content: center;
-    padding: clamp(1.5rem, 6vw, 4rem);
+    gap: clamp(2.5rem, 6vh, 4rem);
   }
-  .stub h1 {
+
+  .contact-header {
+    max-width: 40rem;
+  }
+  .contact-header h1 {
     font-family: var(--font-display);
+    font-weight: 580;
     font-size: var(--step-h1);
     letter-spacing: -0.03em;
+    margin: 0 0 1rem;
+  }
+  .lede {
+    font-size: var(--step-body);
+    color: var(--text-muted);
+    max-width: 48ch;
+  }
+
+  .contact-form {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 34rem;
+  }
+
+  /* Visually hidden yet still in the tab order would defeat the honeypot's
+     purpose, so it is also pulled out of the tab order (tabindex="-1") and
+     marked aria-hidden so assistive tech skips it entirely. */
+  .honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .field {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .field span {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+  }
+  .field input,
+  .field textarea {
+    background: var(--bg-elevated);
+    border: 1px solid color-mix(in srgb, var(--text) 15%, transparent);
+    border-radius: 3px;
+    padding: 0.75rem 1rem;
+    color: var(--text);
+    font-size: var(--step-body);
+  }
+  .field input:focus-visible,
+  .field textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .field textarea {
+    resize: vertical;
+  }
+
+  .submit {
+    justify-self: start;
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--bg);
+    background: var(--accent);
+    padding: 0.85rem 2rem;
+    border-radius: 3px;
+    transition: opacity var(--transition-fast);
+  }
+  .submit:hover {
+    opacity: 0.85;
   }
 </style>
