@@ -188,7 +188,9 @@ const exitLabel = lang === 'en' ? '← Leave the house' : '← Salir de la casa'
   }
 
   .house-modal {
-    background: var(--bg-elevated);
+    /* Elevación (A5): modal por encima de la escena 3D */
+    background: var(--surface-2);
+    box-shadow: var(--shadow-2);
     color: var(--text);
     border: 1px solid color-mix(in srgb, var(--text-muted) 30%, transparent);
     border-radius: 6px;

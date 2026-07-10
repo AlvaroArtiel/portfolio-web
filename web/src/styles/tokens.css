@@ -62,9 +62,18 @@
 }
 
 :root {
-  /* -- Color: base ------------------------------------------------------ */
-  --bg: #0c0c0e;
-  --bg-elevated: #16161a;
+  /* -- Elevación (remediación A5) ---------------------------------------- */
+  --surface-0: #0c0c0e;
+  --surface-1: #141419;
+  --surface-2: #1a1a21;
+  --border-soft: 1px solid rgba(244, 244, 240, 0.07);
+  --shadow-2: 0 24px 60px rgba(0, 0, 0, 0.5);
+
+  /* -- Color: base ------------------------------------------------------
+     --bg y --bg-elevated quedan como alias de las superficies de arriba:
+     una sola fuente de verdad para el mismo valor computado del fondo. */
+  --bg: var(--surface-0);
+  --bg-elevated: var(--surface-1);
   --text: #f4f4f0;
   --text-muted: #8a8a93;
 

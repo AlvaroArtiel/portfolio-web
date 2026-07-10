@@ -93,7 +93,9 @@ const projectHref = (slug: string) =>
     align-items: end;
     text-decoration: none;
     color: var(--text);
-    background: var(--bg-elevated);
+    /* Elevación (A5): la carta existe como objeto sobre el fondo */
+    background: var(--surface-1);
+    border: var(--border-soft);
     padding: clamp(1rem, 2.5vw, 2rem);
     border-radius: 4px;
     transition: outline-color var(--transition-fast);

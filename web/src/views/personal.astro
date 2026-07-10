@@ -263,7 +263,9 @@ const chapterData = chapters
     max-height: 100vh;
     width: 100vw;
     height: 100vh;
-    background: transparent;
+    /* Elevación (A5): el visor es la superficie más alta de la jerarquía */
+    background: var(--surface-2);
+    box-shadow: var(--shadow-2);
   }
   .lightbox::backdrop {
     background: rgb(0 0 0 / 0.9);
