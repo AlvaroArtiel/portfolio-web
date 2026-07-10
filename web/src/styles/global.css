@@ -135,3 +135,25 @@ ol[role='list'] {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------------------------------------------------------------------- */
+/* Cross-document view transitions: crossfade entre páginas (el acento    */
+/* funde de un color a otro como parte del espectáculo). Navegadores sin  */
+/* soporte: cambio directo, sin transición.                               */
+/* ---------------------------------------------------------------------- */
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 320ms;
+  animation-timing-function: ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}

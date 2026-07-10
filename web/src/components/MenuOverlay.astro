@@ -50,7 +50,9 @@ const slugLabel = (key: string) => (lang === 'en' ? `/en/${routeMap[key] ?? key}
 
 <script>
   import {initMenuOverlay} from './MenuOverlay.ts'
+  import {initSnakeTrail} from './SnakeTrail.ts'
   initMenuOverlay()
+  initSnakeTrail()
 </script>
 
 <style>

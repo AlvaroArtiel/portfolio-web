@@ -90,6 +90,46 @@ const description =
   </section>
 </Base>
 
+<script>
+  import {onReady, getMotion} from '../lib/motion'
+
+  // Línea de tiempo que se dibuja con el scroll (stroke-dashoffset + scrub).
+  onReady(() => {
+    const motion = getMotion()
+    const timeline = document.querySelector<HTMLElement>('.timeline')
+    if (!motion || !timeline) return
+    const {gsap} = motion
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.classList.add('timeline-line')
+    svg.setAttribute('aria-hidden', 'true')
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+    const height = timeline.offsetHeight - 16
+    line.setAttribute('x1', '1.5')
+    line.setAttribute('x2', '1.5')
+    line.setAttribute('y1', '0')
+    line.setAttribute('y2', String(height))
+    line.setAttribute('stroke', 'var(--accent)')
+    line.setAttribute('stroke-width', '3')
+    line.setAttribute('stroke-linecap', 'round')
+    line.style.strokeDasharray = String(height)
+    line.style.strokeDashoffset = String(height)
+    svg.appendChild(line)
+    timeline.appendChild(svg)
+
+    gsap.to(line, {
+      strokeDashoffset: 0,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: timeline,
+        start: 'top 75%',
+        end: 'bottom 60%',
+        scrub: 0.4,
+      },
+    })
+  })
+</script>
+
 <style>
   .experience-page {
     padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
@@ -113,6 +153,8 @@ const description =
     gap: clamp(2.5rem, 7vh, 4rem);
     position: relative;
   }
+  /* Carril estático (fallback sin JS / reduced-motion); la línea viva
+     que se dibuja con el scroll la pinta el script encima. */
   .timeline::before {
     content: '';
     position: absolute;
@@ -121,6 +163,15 @@ const description =
     bottom: 0.5rem;
     width: 1px;
     background: color-mix(in srgb, var(--text-muted) 25%, transparent);
+  }
+  .timeline :global(.timeline-line) {
+    position: absolute;
+    left: calc(2.5rem - 1px);
+    top: 0.5rem;
+    height: calc(100% - 1rem);
+    width: 3px;
+    overflow: visible;
+    pointer-events: none;
   }
 
   .timeline-entry {
