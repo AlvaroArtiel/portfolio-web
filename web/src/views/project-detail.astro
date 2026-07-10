@@ -41,10 +41,12 @@ const creativeWorkLd = {
     name: 'Álvaro Artiel',
   },
 }
+
+const jsonLdProject = JSON.stringify(creativeWorkLd).replace(/</g, '\\u003c')
 ---
 
 <Base title={`${title} — Álvaro Artiel`} description={summary || title} lang={lang} section="projects">
-  <script type="application/ld+json" slot="head" is:inline set:html={JSON.stringify(creativeWorkLd)} />
+  <script type="application/ld+json" slot="head" is:inline set:html={jsonLdProject} />
   <article class="project-detail">
     <!-- Nivel 1: sección superior curada — título + metadatos + 2-3 heroMedia compuestas -->
     <header class="pd-hero" data-reveal>

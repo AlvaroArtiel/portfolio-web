@@ -46,10 +46,12 @@ const personLd = {
   email: settings?.email ? `mailto:${settings.email}` : 'mailto:soy@alvaroartiel.com',
   ...(sameAs.length > 0 && {sameAs}),
 }
+
+const jsonLdHome = JSON.stringify(personLd).replace(/</g, '\\u003c')
 ---
 
 <Base title={title} description={description} lang={lang} section="home">
-  <script type="application/ld+json" slot="head" is:inline set:html={JSON.stringify(personLd)} />
+  <script type="application/ld+json" slot="head" is:inline set:html={jsonLdHome} />
   <Hero lang={lang} settings={settings} />
   <About lang={lang} settings={settings} />
   <FeaturedDeck lang={lang} projects={featured} />
