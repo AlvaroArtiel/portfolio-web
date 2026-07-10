@@ -1,0 +1,235 @@
+---
+import Base from '../layouts/Base.astro'
+import type {Lang} from '../lib/i18n'
+import {pathFor} from '../lib/routes'
+
+interface Props {
+  lang: Lang
+}
+const {lang} = Astro.props
+
+const title = lang === 'en' ? 'The house — Álvaro Artiel' : 'La casa — Álvaro Artiel'
+const description =
+  lang === 'en'
+    ? 'A little playable room. You found the easter egg.'
+    : 'Una pequeña habitación jugable. Has encontrado el easter egg.'
+const exitLabel = lang === 'en' ? '← Leave the house' : '← Salir de la casa'
+---
+
+<Base title={title} description={description} lang={lang} section="home" noindex>
+  <section class="house">
+    <div class="house-stage" id="house-stage">
+      <!-- Fallback sin WebGL: la casa como lista de puertas -->
+      <div class="house-fallback">
+        <p>
+          {
+            lang === 'en'
+              ? 'This room needs WebGL. The doors still work:'
+              : 'Esta habitación necesita WebGL. Las puertas funcionan igual:'
+          }
+        </p>
+        <ul>
+          <li><a href={pathFor('proyectos', lang)}>{lang === 'en' ? 'The desk → projects' : 'El escritorio → proyectos'}</a></li>
+          <li><a href={pathFor('experiencia', lang)}>{lang === 'en' ? 'The bookshelf → experience' : 'La estantería → experiencia'}</a></li>
+          <li><a href={pathFor('cv', lang)}>{lang === 'en' ? 'The diploma → CV' : 'El diploma → CV'}</a></li>
+          <li><a href={pathFor('personal', lang)}>{lang === 'en' ? 'The guitar → personal' : 'La guitarra → personal'}</a></li>
+          <li><a href={pathFor('contacto', lang)}>{lang === 'en' ? 'The door → contact' : 'La puerta → contacto'}</a></li>
+        </ul>
+      </div>
+
+      <div class="house-hud">
+        <a class="house-exit" href={pathFor('', lang)}>{exitLabel}</a>
+        <p class="house-help">
+          {lang === 'en' ? 'WASD / arrows to walk · E to interact' : 'WASD / flechas para andar · E para interactuar'}
+        </p>
+        <button class="house-prompt" type="button" hidden></button>
+      </div>
+    </div>
+  </section>
+
+  <dialog id="house-modal" class="house-modal">
+    <h2 data-house-title></h2>
+    <p data-house-summary></p>
+    <div class="house-modal-actions">
+      <a data-house-link href="/"></a>
+      <button type="button" data-house-close>{lang === 'en' ? 'Keep exploring' : 'Seguir explorando'}</button>
+    </div>
+  </dialog>
+</Base>
+
+<script>
+  import {mountScene} from '../lib/three-island'
+
+  const stage = document.getElementById('house-stage')
+  const modal = document.getElementById('house-modal') as HTMLDialogElement | null
+  modal?.querySelector('[data-house-close]')?.addEventListener('click', () => modal.close())
+
+  if (stage) {
+    void mountScene(stage, () => import('../scenes/house/scene').then((m) => m.default), {eager: true}).then(
+      (unmount) => {
+        if (unmount) stage.classList.add('is-3d')
+      },
+    )
+  }
+</script>
+
+<style is:global>
+  /* HUD de la casa (los elementos del joystick los crea controls.ts) */
+  .house-joystick {
+    position: absolute;
+    bottom: 2rem;
+    left: 2rem;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--text-muted) 40%, transparent);
+    display: none;
+    touch-action: none;
+    z-index: 5;
+  }
+  .house-joystick-nub {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+  @media (hover: none) and (pointer: coarse) {
+    .house-joystick {
+      display: block;
+    }
+    .house-help {
+      display: none;
+    }
+  }
+</style>
+
+<style>
+  .house {
+    height: 100vh;
+    height: 100svh;
+  }
+  .house-stage {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .house-fallback {
+    height: 100%;
+    display: grid;
+    place-content: center;
+    gap: 1rem;
+    padding: clamp(1.5rem, 6vw, 4rem);
+    font-size: var(--step-body);
+  }
+  .house-fallback ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+  .house-fallback a {
+    color: var(--accent);
+  }
+  .house-stage.is-3d .house-fallback {
+    display: none;
+  }
+
+  .house-hud {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+  }
+  .house-hud > * {
+    pointer-events: auto;
+  }
+
+  .house-exit {
+    position: absolute;
+    top: 5rem;
+    left: clamp(1rem, 4vw, 2.5rem);
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .house-exit:hover {
+    color: var(--accent);
+  }
+
+  .house-help {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .house-prompt {
+    position: absolute;
+    bottom: 4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--bg);
+    background: var(--accent);
+    border: none;
+    border-radius: 999px;
+    padding: 0.6rem 1.2rem;
+    cursor: pointer;
+  }
+
+  .house-modal {
+    background: var(--bg-elevated);
+    color: var(--text);
+    border: 1px solid color-mix(in srgb, var(--text-muted) 30%, transparent);
+    border-radius: 6px;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    max-width: 26rem;
+  }
+  .house-modal::backdrop {
+    background: rgb(0 0 0 / 0.6);
+  }
+  .house-modal h2 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+  }
+  .house-modal p {
+    color: var(--text-muted);
+    margin: 0 0 1.5rem;
+  }
+  .house-modal-actions {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+  }
+  .house-modal-actions a {
+    color: var(--bg);
+    background: var(--accent);
+    text-decoration: none;
+    padding: 0.55rem 1.1rem;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+  }
+  .house-modal-actions button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    cursor: pointer;
+  }
+  .house-modal-actions button:hover {
+    color: var(--text);
+  }
+</style>
