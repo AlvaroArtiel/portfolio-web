@@ -117,6 +117,16 @@ const exitLabel = lang === 'en' ? '← Leave the house' : '← Salir de la casa'
     overflow: hidden;
   }
 
+  /* Viñeta sutil sobre el diorama (encuadre cinematográfico, B11).
+     Solo cuando el 3D está activo; no ensombrece el fallback HTML. */
+  .house-stage.is-3d::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 50% 42%, transparent 55%, rgba(0, 0, 0, 0.42) 100%);
+  }
+
   .house-fallback {
     height: 100%;
     display: grid;
