@@ -123,6 +123,11 @@ const heroParticles: SceneModule = {
         depthWrite: false,
       })
       points = new THREE.Points(geometry, material)
+      // Encajar el texto en el ancho visible del stage (móvil estrecho)
+      const worldH = 2 * camera.position.z * Math.tan((camera.fov * Math.PI) / 360)
+      const visibleW = worldH * camera.aspect
+      const textW = 4.0 * sampled.aspect
+      if (textW > visibleW * 0.95) points.scale.setScalar((visibleW * 0.95) / textW)
       scene.add(points)
     }
     void build()

@@ -43,6 +43,7 @@ function screenToWorld(camera: import('three').PerspectiveCamera, x: number, y: 
 
 const monogram: SceneModule = {
   init({scene, camera, el}) {
+    const baseScale = window.matchMedia('(max-width: 720px)').matches ? 0.3 : 0.55
     let group: import('three').Group | null = null
     let disposed = false
     const mouse = {x: 0, y: 0}
@@ -79,7 +80,7 @@ const monogram: SceneModule = {
       a1.position.set(-0.28, 0, 0)
       a2.position.set(0.3, 0, -0.12)
       group.add(a1, a2)
-      group.scale.setScalar(0.55)
+      group.scale.setScalar(baseScale)
       scene.add(group)
 
       const key = new THREE.DirectionalLight('#ffffff', 2.2)
@@ -124,7 +125,7 @@ const monogram: SceneModule = {
         const p = dockProgress
         const x = anchors.hero.x + (anchors.dock.x - anchors.hero.x) * p
         const y = anchors.hero.y + (anchors.dock.y - anchors.hero.y) * p
-        const s = (anchors.hero.scale + (anchors.dock.scale - anchors.hero.scale) * p) * 0.55
+        const s = (anchors.hero.scale + (anchors.dock.scale - anchors.hero.scale) * p) * baseScale
         group.position.set(x, y, 0)
         group.scale.setScalar(s)
 
