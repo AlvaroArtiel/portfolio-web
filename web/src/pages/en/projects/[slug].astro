@@ -1,0 +1,15 @@
+---
+import ProjectDetail from '../../../views/project-detail.astro'
+import {getProjects, getProject} from '../../../lib/queries'
+
+export async function getStaticPaths() {
+  const projects = await getProjects()
+  return projects.map((project) => ({params: {slug: project.slug.current}}))
+}
+
+const {slug} = Astro.params
+const project = await getProject(slug!)
+if (!project) return Astro.redirect('/en/projects/')
+---
+
+<ProjectDetail lang="en" project={project} />

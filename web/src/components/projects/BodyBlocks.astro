@@ -1,0 +1,219 @@
+---
+import {PortableText} from 'astro-portabletext'
+import type {BodyBlock, SanityImageWithLayout} from '../../lib/queries'
+import {urlFor} from '../../lib/sanity'
+
+interface Props {
+  blocks: BodyBlock[]
+}
+const {blocks} = Astro.props
+
+/** Extrae el id de vídeo de una URL de YouTube (watch, youtu.be, shorts, embed). */
+function youtubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/)
+  return match ? match[1] : null
+}
+
+import type {ArbitraryTypedObject} from '@portabletext/types'
+
+type Chunk =
+  | {kind: 'text'; blocks: ArbitraryTypedObject[]}
+  | {kind: 'images'; layout: 'full' | 'double' | 'grid'; images: SanityImageWithLayout[]}
+  | {kind: 'youtube'; id: string}
+
+/**
+ * Agrupa el Portable Text en tramos renderizables: los párrafos van juntos a
+ * PortableText; las imágenes consecutivas con layout double/grid se agrupan
+ * en una sola composición. El diseño define patrones de bloque, no cantidades.
+ */
+const chunks: Chunk[] = []
+for (const block of blocks) {
+  const last = chunks[chunks.length - 1]
+  if (block._type === 'image') {
+    const layout = (block.layout ?? 'full') as 'full' | 'double' | 'grid'
+    if (last?.kind === 'images' && last.layout === layout && layout !== 'full') {
+      last.images.push(block)
+    } else {
+      chunks.push({kind: 'images', layout, images: [block]})
+    }
+  } else if (block._type === 'youtube') {
+    const id = block.url ? youtubeId(block.url) : null
+    if (id) chunks.push({kind: 'youtube', id})
+  } else {
+    if (last?.kind === 'text') last.blocks.push(block)
+    else chunks.push({kind: 'text', blocks: [block]})
+  }
+}
+
+const widths: Record<string, number> = {full: 1920, double: 960, grid: 640}
+---
+
+<div class="body-blocks">
+  {
+    chunks.map((chunk) => {
+      if (chunk.kind === 'text') {
+        return (
+          <div class="bb-text">
+            <PortableText value={chunk.blocks} />
+          </div>
+        )
+      }
+      if (chunk.kind === 'youtube') {
+        return (
+          <div class="bb-video">
+            {/* Facade: miniatura + play; el iframe solo carga al pulsar */}
+            <button class="bb-video-facade" type="button" data-youtube-id={chunk.id} aria-label="Play">
+              <img
+                src={`https://img.youtube.com/vi/${chunk.id}/hqdefault.jpg`}
+                alt=""
+                width="1280"
+                height="720"
+                loading="lazy"
+              />
+              <span class="bb-play" aria-hidden="true">
+                ▶
+              </span>
+            </button>
+          </div>
+        )
+      }
+      return (
+        <div class={`bb-images bb-${chunk.layout}`}>
+          {chunk.images.map((image) => (
+            <figure>
+              <img
+                src={urlFor(image, {w: widths[chunk.layout]}).url()}
+                alt=""
+                width={widths[chunk.layout]}
+                loading="lazy"
+              />
+            </figure>
+          ))}
+        </div>
+      )
+    })
+  }
+</div>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.bb-video-facade').forEach((facade) => {
+    facade.addEventListener('click', () => {
+      const id = facade.dataset.youtubeId
+      const iframe = document.createElement('iframe')
+      iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`
+      iframe.allow = 'autoplay; encrypted-media; picture-in-picture'
+      iframe.allowFullscreen = true
+      iframe.title = 'YouTube'
+      facade.replaceWith(iframe)
+    })
+  })
+</script>
+
+<style>
+  .body-blocks {
+    display: grid;
+    gap: clamp(2rem, 6vh, 4rem);
+  }
+
+  /* Texto: medida cómoda, centrado en la página */
+  .bb-text {
+    max-width: 68ch;
+    margin-inline: auto;
+    width: 100%;
+    font-size: var(--step-body);
+    line-height: 1.65;
+    color: var(--text);
+  }
+  .bb-text :global(p) {
+    margin: 0 0 1.25em;
+  }
+  .bb-text :global(h2),
+  .bb-text :global(h3) {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    margin: 1.5em 0 0.6em;
+  }
+  .bb-text :global(a) {
+    color: var(--accent);
+  }
+
+  .bb-images figure {
+    margin: 0;
+  }
+  .bb-images img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 3px;
+  }
+
+  .bb-full {
+    /* Full-bleed dentro del contenedor de la ficha */
+    width: 100%;
+  }
+  .bb-double {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+  }
+  .bb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  .bb-video {
+    max-width: 960px;
+    width: 100%;
+    margin-inline: auto;
+  }
+  .bb-video-facade {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: var(--bg-elevated);
+    cursor: pointer;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bb-video-facade img {
+    display: block;
+    width: 100%;
+    height: auto;
+    opacity: 0.85;
+  }
+  .bb-play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    font-size: 2rem;
+    color: var(--bg);
+  }
+  .bb-play::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    background: var(--accent);
+    z-index: -1;
+  }
+  .bb-video :global(iframe) {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    border-radius: 3px;
+  }
+
+  @media (max-width: 640px) {
+    .bb-double {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

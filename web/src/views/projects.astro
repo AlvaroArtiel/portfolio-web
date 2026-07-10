@@ -1,34 +1,54 @@
 ---
 import Base from '../layouts/Base.astro'
+import Card from '../components/projects/Card.astro'
+import Filters from '../components/projects/Filters.astro'
 import {ui} from '../lib/i18n'
 import type {Lang} from '../lib/i18n'
+import {getProjects} from '../lib/queries'
 
 interface Props {
   lang: Lang
 }
 const {lang} = Astro.props
 
+const projects = await getProjects()
 const heading = ui[lang].nav_projects
 const description =
-  lang === 'en' ? 'Selected projects — full content coming in Phase 2.' : 'Proyectos seleccionados — contenido completo en la Fase 2.'
+  lang === 'en'
+    ? 'Selected projects by Álvaro Artiel: own products, client work, training and personal experiments.'
+    : 'Proyectos de Álvaro Artiel: producto propio, trabajo de cliente, formación y experimentos personales.'
 ---
 
 <Base title={`${heading} — Álvaro Artiel`} description={description} lang={lang} section="projects">
-  <section class="stub">
-    <h1>{heading}</h1>
+  <section class="projects-page">
+    <header class="projects-header" data-reveal>
+      <h1>{heading}</h1>
+      <Filters lang={lang} />
+    </header>
+
+    <!-- Deck estático: F3 lo apila con scroll -->
+    <div class="projects-list" data-deck>
+      {projects.map((project, index) => <Card lang={lang} project={project} index={index} />)}
+    </div>
   </section>
 </Base>
 
 <style>
-  .stub {
-    min-height: 60vh;
-    display: grid;
-    place-content: center;
-    padding: clamp(1.5rem, 6vw, 4rem);
+  .projects-page {
+    padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
   }
-  .stub h1 {
+
+  .projects-header h1 {
     font-family: var(--font-display);
+    font-weight: 580;
     font-size: var(--step-h1);
     letter-spacing: -0.03em;
+    margin: 0 0 clamp(1.5rem, 4vh, 2.5rem);
+  }
+
+  .projects-list {
+    display: grid;
+    gap: clamp(2rem, 6vh, 4rem);
+    max-width: 72rem;
   }
 </style>

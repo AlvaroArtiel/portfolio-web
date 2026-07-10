@@ -1,0 +1,95 @@
+---
+import type {Lang} from '../../lib/i18n'
+import {t, ui} from '../../lib/i18n'
+import type {Project} from '../../lib/queries'
+import {urlFor} from '../../lib/sanity'
+
+interface Props {
+  lang: Lang
+  next: NonNullable<Project['nextProject']>
+}
+const {lang, next} = Astro.props
+const dict = ui[lang]
+
+const href = next.slug?.current
+  ? lang === 'en'
+    ? `/en/projects/${next.slug.current}/`
+    : `/proyectos/${next.slug.current}/`
+  : null
+---
+
+{
+  href && (
+    <a class="next-project" href={href}>
+      {next.cover && (
+        <img
+          class="np-bg"
+          src={urlFor(next.cover, {w: 1920, h: 700}).url()}
+          alt=""
+          width="1920"
+          height="700"
+          loading="lazy"
+        />
+      )}
+      <span class="np-kicker">{dict.next_project}</span>
+      <span class="np-title">{t(next.title, lang)} →</span>
+    </a>
+  )
+}
+
+<style>
+  .next-project {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.75rem;
+    min-height: clamp(16rem, 40vh, 24rem);
+    padding: clamp(2rem, 6vw, 4rem);
+    text-decoration: none;
+    overflow: hidden;
+    background: var(--bg-elevated);
+  }
+
+  .np-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.25;
+    transition: opacity var(--transition-base), transform var(--transition-base);
+  }
+  .next-project:hover .np-bg {
+    opacity: 0.4;
+    transform: scale(1.02);
+  }
+
+  .np-kicker {
+    position: relative;
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--accent);
+  }
+
+  .np-title {
+    position: relative;
+    font-family: var(--font-display);
+    font-weight: 560;
+    font-size: clamp(2rem, 6vw, 5rem);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--text);
+    transition: color var(--transition-fast);
+  }
+  .next-project:hover .np-title {
+    color: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .next-project:hover .np-bg {
+      transform: none;
+    }
+  }
+</style>

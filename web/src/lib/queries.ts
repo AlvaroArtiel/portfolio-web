@@ -95,7 +95,8 @@ export interface Project {
   cover?: SanityImageRef
   body?: {es?: BodyBlock[]; en?: BodyBlock[]}
   externalUrl?: string
-  nextProject?: {_ref: string; _type: 'reference'} | null
+  /** Reference in list queries; dereferenced by the detail query. */
+  nextProject?: {_ref?: string; _id?: string; title?: LocaleField; slug?: SanitySlug; cover?: SanityImageRef} | null
   visible?: boolean
   order?: number
 }
@@ -155,7 +156,7 @@ const projectsQuery = /* groq */ `
 const projectBySlugQuery = /* groq */ `
   *[_type == 'project' && slug.current == $slug][0]{
     ...,
-    nextProject->{_id, title, "slug": slug}
+    nextProject->{_id, title, "slug": slug, cover}
   }
 `
 

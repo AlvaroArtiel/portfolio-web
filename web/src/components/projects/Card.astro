@@ -1,0 +1,122 @@
+---
+import type {Lang} from '../../lib/i18n'
+import {t} from '../../lib/i18n'
+import type {Project} from '../../lib/queries'
+import {urlFor} from '../../lib/sanity'
+
+interface Props {
+  lang: Lang
+  project: Project
+  index: number
+}
+const {lang, project, index} = Astro.props
+
+const href = lang === 'en' ? `/en/projects/${project.slug.current}/` : `/proyectos/${project.slug.current}/`
+
+const categoryLabels: Record<string, {es: string; en: string}> = {
+  propio: {es: 'Producto propio', en: 'Own product'},
+  cliente: {es: 'Cliente', en: 'Client'},
+  formacion: {es: 'Formación', en: 'Training'},
+  personal: {es: 'Personal', en: 'Personal'},
+}
+const category = project.category ? categoryLabels[project.category]?.[lang] : undefined
+---
+
+<!-- Tarjeta grande vertical: base visual del deck apilado de F3 -->
+<article class="project-card" data-category={project.category}>
+  <a href={href}>
+    <div class="pc-media">
+      {
+        project.cover && (
+          <img
+            src={urlFor(project.cover, {w: 1600, h: 900}).url()}
+            alt=""
+            width="1600"
+            height="900"
+            loading={index < 2 ? 'eager' : 'lazy'}
+          />
+        )
+      }
+    </div>
+    <div class="pc-body">
+      <div class="pc-heading">
+        <h2 class="pc-title">{t(project.title, lang)}</h2>
+        <p class="pc-meta">
+          <span>{project.year}</span>
+          {category && <span>{category}</span>}
+          {project.stack && <span class="pc-stack">{project.stack.slice(0, 4).join(' · ')}</span>}
+        </p>
+      </div>
+      <p class="pc-summary">{t(project.summary, lang)}</p>
+    </div>
+  </a>
+</article>
+
+<style>
+  .project-card a {
+    display: block;
+    text-decoration: none;
+    color: var(--text);
+    background: var(--bg-elevated);
+    border-radius: 4px;
+    overflow: hidden;
+    outline: 1px solid transparent;
+    transition: outline-color var(--transition-fast);
+  }
+  .project-card a:hover {
+    outline-color: var(--accent);
+  }
+
+  .pc-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .pc-body {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 1.5rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    align-items: start;
+  }
+
+  .pc-title {
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: clamp(1.75rem, 4.5vw, 3.25rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+  }
+  .project-card a:hover .pc-title {
+    color: var(--accent);
+  }
+
+  .pc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .pc-summary {
+    font-size: var(--step-body);
+    line-height: 1.5;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 44ch;
+  }
+
+  @media (max-width: 720px) {
+    .pc-body {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+  }
+</style>

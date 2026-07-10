@@ -1,0 +1,85 @@
+---
+import type {Lang} from '../../lib/i18n'
+import {ui} from '../../lib/i18n'
+
+interface Props {
+  lang: Lang
+}
+const {lang} = Astro.props
+const dict = ui[lang]
+
+const filters: {value: string; es: string; en: string}[] = [
+  {value: 'propio', es: 'Producto propio', en: 'Own product'},
+  {value: 'cliente', es: 'Cliente', en: 'Client'},
+  {value: 'formacion', es: 'Formación', en: 'Training'},
+  {value: 'personal', es: 'Personal', en: 'Personal'},
+]
+---
+
+<!-- Filtros como enlaces: sin JS navegan con ?cat=; el script filtra en el cliente -->
+<nav class="filters" aria-label={lang === 'en' ? 'Filter projects' : 'Filtrar proyectos'} data-filters>
+  <a href="?" data-cat="" aria-current="true">{dict.all_categories}</a>
+  {
+    filters.map((filter) => (
+      <a href={`?cat=${filter.value}`} data-cat={filter.value}>
+        {filter[lang]}
+      </a>
+    ))
+  }
+</nav>
+
+<script>
+  // Filtrado progresivo: lee ?cat=, oculta tarjetas no coincidentes y evita recargas.
+  function applyFilter(cat: string): void {
+    document.querySelectorAll<HTMLElement>('[data-category]').forEach((card) => {
+      card.hidden = cat !== '' && card.dataset.category !== cat
+    })
+    document.querySelectorAll<HTMLAnchorElement>('[data-filters] a').forEach((link) => {
+      if ((link.dataset.cat ?? '') === cat) link.setAttribute('aria-current', 'true')
+      else link.removeAttribute('aria-current')
+    })
+  }
+
+  function currentCat(): string {
+    return new URLSearchParams(location.search).get('cat') ?? ''
+  }
+
+  document.querySelectorAll<HTMLAnchorElement>('[data-filters] a').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault()
+      const cat = link.dataset.cat ?? ''
+      const url = cat ? `?cat=${cat}` : location.pathname
+      history.replaceState(null, '', url)
+      applyFilter(cat)
+    })
+  })
+
+  applyFilter(currentCat())
+</script>
+
+<style>
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: clamp(2rem, 5vh, 3.5rem);
+  }
+  .filters a {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text-muted);
+    text-decoration: none;
+    padding-bottom: 0.2em;
+    border-bottom: 1px solid transparent;
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+  }
+  .filters a:hover {
+    color: var(--text);
+  }
+  .filters a[aria-current='true'] {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+</style>
