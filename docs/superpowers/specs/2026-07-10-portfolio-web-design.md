@@ -113,7 +113,10 @@ Patrón: **home-escaparate + páginas-mundo**. Rutas ES en raíz, EN bajo `/en/`
 ### 4.2 /proyectos (azul)
 - **Deck apilado** (pxpush): cada proyecto una tarjeta grande que se apila al hacer scroll.
 - **Filtros:** `Producto propio · Cliente · Formación · Personal`. Al filtrar, las cartas se **rebarajan físicamente** (salen volando las excluidas, se reapilan las visibles).
-- **Ficha de proyecto:** hero de proyecto (título enorme + metadatos mono), narrativa con imágenes de scroll con efecto "lona" (curvatura al subir, vibra k95), galería, stack/rol/año, link externo si existe, navegación "siguiente proyecto" a pantalla completa.
+- **Ficha de proyecto — dos niveles de media, sin límite:**
+  1. **Sección superior (curada):** título enorme + metadatos mono + **2-3 imágenes obligatorias** integradas composicionalmente con el texto y los elementos del diseño (no una galería: cada slot tiene su posición y tamaño en el layout, con efecto "lona" k95 al hacer scroll).
+  2. **Cuerpo flexible:** narrativa Portable Text donde se intercalan bloques de media ilimitados (imagen full-bleed, imagen doble, vídeo/YouTube, grid). El layout se adapta igual de bien a un proyecto con 3 medias que con 30 — el diseño define *patrones de bloque*, no una cantidad.
+  3. Stack/rol/año, link externo si existe, navegación "siguiente proyecto" a pantalla completa.
 
 ### 4.3 /experiencia (violeta)
 Timeline vertical con scroll narrativo: cada posición se despliega al entrar en viewport (empresa, rol, fechas, bullets). Línea de tiempo que se dibuja con el scroll. Los proyectos vinculados a cada etapa enlazan a sus fichas.
@@ -182,7 +185,7 @@ Todos los campos de texto visibles son **objetos localizados** `{es, en}` (i18n 
 | `siteSettings` | titular hero, subtítulo, textos "quién soy", email, redes[] (nombre, url, visible), PDF de CV opcional, textos SEO por defecto |
 | `experience` | empresa, rol, tipo (fulltime/freelance/founder), fechas (inicio, fin opcional), ubicación, modalidad, resumen, bullets[], logo, proyectos relacionados[], orden, visible |
 | `education` | centro, título, fechas, nota/premio, descripción, orden, visible |
-| `project` | título, slug, categoría (`propio/cliente/formacion/personal`), `featured` (bool, deck home), año, rol, stack[], resumen, cuerpo (Portable Text con bloques de imagen full-bleed), imagen principal, galería[], url externa, proyecto siguiente (ref opcional; si vacío, orden), visible |
+| `project` | título, slug, categoría (`propio/cliente/formacion/personal`), `featured` (bool, deck home), año, rol, stack[], resumen, **heroMedia[] (2-3 imágenes obligatorias, sección superior curada)**, cuerpo (Portable Text con bloques de media ilimitados: imagen full-bleed, imagen doble, grid, vídeo/YouTube), imagen de portada (deck), url externa, proyecto siguiente (ref opcional; si vacío, orden), visible |
 | `personalChapter` | título, emoji, descripción corta, orden (Cocina, Teatro, Guitarra, Fotografía) |
 | `personalItem` | tipo (foto/video), capítulo (ref), imagen o youtubeUrl, anotación manuscrita, fecha aproximada, visible |
 | `blogPost` | título, slug, fecha, tags[], extracto, cuerpo (Portable Text), imagen, idiomas disponibles, publicado |
@@ -237,6 +240,12 @@ Cada fase termina con la web funcionando y desplegable. El "wow" se construye en
 - **F5 — Mesa revuelta:** física Matter.js, lightbox, adaptación móvil + giroscopio.
 - **F6 — Easter eggs:** post-footer + casa jugable (habitación, personaje con foto-cabeza, 5 objetos).
 - **F7 — Pulido:** SEO/OG, reduced-motion y fallbacks, Lighthouse, QA cross-device, traducción EN completa, deploy a producción (alvaroartiel.com).
+
+### 11.1 Protocolo de ejecución autónoma
+
+- **Reflexión por fase:** al cerrar cada fase, el agente ejecutor revisa lo construido contra este spec y las referencias. Si detecta una **mejora real** (no un capricho: mejor rendimiento, mejor jerarquía visual, solución más simple con igual resultado), puede variar la decisión **documentándola** en `docs/superpowers/decisions.md` (qué cambia, por qué, qué decía el spec).
+- **Enrutado de modelos:** toda decisión creativa o de dirección (variar el spec, diseño visual de componentes clave, copy, composición de las fichas, efectos) pasa por **Fable**. Las tareas de ejecución mecánica (scaffolding, schemas, configuración, seed de datos, tests, deploy, traducción inicial EN) se derivan a **modelos más baratos** (Sonnet/Haiku) vía subagentes.
+- **Verificación continua:** cada fase termina con build verde + revisión visual con navegador (screenshots) antes de pasar a la siguiente.
 
 **Fuera de alcance v1:** teléfono en /gracias, analítica, más habitaciones de la casa, comentarios en blog, dark/light toggle (la web es oscura por diseño), volcado de imágenes reales de proyectos y fotos personales (se hace desde el Studio en iteraciones).
 
