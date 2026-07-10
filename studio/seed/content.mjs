@@ -477,12 +477,12 @@ export const PROJECTS = [
       [
         'Watcheers llegó a mí a través de mi trabajo como consultor independiente, con una necesidad clara: convertir una idea social en torno al consumo audiovisual en una interfaz coherente y usable.',
         'Trabajé la arquitectura de la información desde cero, priorizando los flujos con más fricción para la persona usuaria.',
-        'El resultado fue un sistema de componentes reutilizable que el equipo de desarrollo pudo implementar sin ambigüedades, acelerando la entrega.',
+        'El resultado fue un sistema de componentes reutilizable, documentado para que el equipo de desarrollo pudiera implementarlo sin ambigüedades.',
       ],
       [
         'Watcheers came to me through my work as an independent consultant, with a clear need: turn a social idea around watching content together into a coherent, usable interface.',
         'I worked the information architecture from scratch, prioritizing the flows with the most friction for the user.',
-        'The result was a reusable component system that the development team could implement without ambiguity, speeding up delivery.',
+        'The result was a reusable component system, documented so the development team could implement it without ambiguity.',
       ],
     ),
   },
