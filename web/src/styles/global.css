@@ -126,6 +126,14 @@ ol[role='list'] {
   outline-offset: 2px;
 }
 
+/* El monograma 3D (capa fija de la home) cede SIEMPRE ante el menú overlay:
+   con el menú abierto no puede haber pieza flotante sobre los items ni dos
+   marcas a la vez. visibility (no display) para no desmontar el bucle ni
+   pelear con el display inline que gestiona scenes/monogram.ts. */
+html[data-menu-open] #monogram-layer {
+  visibility: hidden;
+}
+
 /* ---------------------------------------------------------------------- */
 /* Motion preference                                                      */
 /* ---------------------------------------------------------------------- */
