@@ -65,7 +65,7 @@ const chapterData = chapters
 
     {
       chapterData.map(({chapter, items}) => (
-        <section class="chapter" data-chapter-section data-cap={chapter._id}>
+        <section class="chapter" data-chapter-section data-cap={chapter._id} data-reveal>
           <h2>
             {chapter.emoji} {t(chapter.title, lang)}
           </h2>
