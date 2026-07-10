@@ -32,7 +32,21 @@ export interface SceneModule {
 export interface MountSceneOptions {
   /** Mount immediately instead of waiting for the element to be near-viewport. */
   eager?: boolean
+  /**
+   * Abort the mount. If the scene hasn't mounted yet (still waiting for
+   * visibility), the pending observer is disconnected and `mountScene`
+   * resolves to `null`. If the scene has already mounted, the same cleanup
+   * `unmount()` would perform runs automatically.
+   */
+  signal?: AbortSignal
 }
+
+/**
+ * Elements currently mounted or waiting to mount. Guards against a second
+ * concurrent `mountScene` call for the same element, which would otherwise
+ * leak observers/canvases from the first call.
+ */
+const pendingOrMountedElements = new WeakSet<HTMLElement>()
 
 /**
  * Capability gate: WebGL2 + (unreported or >=4GB) deviceMemory +
@@ -66,8 +80,16 @@ export function canRunWebGL(): boolean {
  * `eager` is set), then dynamically imports `three` and the scene module,
  * creates a transparent absolutely-positioned canvas, and starts a rAF loop
  * that pauses whenever the element scrolls off-screen or the document is
- * hidden. Resolves to an unmount function, or `null` if capability check
- * failed.
+ * hidden. Resolves to an unmount function, or `null` if the capability
+ * check failed, the mount was aborted via `options.signal` before it
+ * finished, or `el` was already mounted/waiting via a prior call.
+ *
+ * Pass `options.signal` to cancel the mount: aborting before visibility is
+ * reached disconnects the pending `IntersectionObserver` and resolves to
+ * `null`; aborting after mounting runs the same cleanup `unmount()` would.
+ * Calling `mountScene` again for an element that is already mounted or
+ * waiting logs a warning and returns `null` instead of mounting a second
+ * time.
  */
 export async function mountScene(
   el: HTMLElement,
@@ -76,12 +98,25 @@ export async function mountScene(
 ): Promise<(() => void) | null> {
   if (!canRunWebGL()) return null
 
-  await waitUntilVisible(el, options.eager ?? false)
+  if (pendingOrMountedElements.has(el)) {
+    console.warn('mountScene: element is already mounted or waiting to mount; ignoring duplicate call.')
+    return null
+  }
+  pendingOrMountedElements.add(el)
+
+  const {signal} = options
+
+  const becameVisible = await waitUntilVisible(el, options.eager ?? false, signal)
+  if (!becameVisible) {
+    pendingOrMountedElements.delete(el)
+    return null
+  }
 
   const THREE = await import('three')
   const sceneModule = await loader()
 
   const computedStyle = window.getComputedStyle(el)
+  const originalPosition = el.style.position
   if (computedStyle.position === 'static') {
     el.style.position = 'relative'
   }
@@ -172,35 +207,66 @@ export async function mountScene(
 
   syncRunState()
 
-  return function unmount(): void {
+  const unmount = (): void => {
+    if (disposed) return
     disposed = true
+    pendingOrMountedElements.delete(el)
     stop()
     resizeObserver.disconnect()
     visibilityObserver.disconnect()
     document.removeEventListener('visibilitychange', onDocumentVisibilityChange)
+    signal?.removeEventListener('abort', onAbort)
     dispose?.()
     renderer.dispose()
     canvas.remove()
+    el.style.position = originalPosition
   }
+
+  const onAbort = (): void => unmount()
+
+  if (signal) {
+    if (signal.aborted) {
+      unmount()
+      return null
+    }
+    signal.addEventListener('abort', onAbort)
+  }
+
+  return unmount
 }
 
 /**
- * Resolve once `el` is within 200px of the viewport (mirrors `client:visible`
- * semantics), or immediately if `eager` is true.
+ * Resolve `true` once `el` is within 200px of the viewport (mirrors
+ * `client:visible` semantics), or immediately if `eager` is true. Resolves
+ * `false` without ever creating (or after disconnecting) the observer if
+ * `signal` is already aborted or fires an `abort` event first.
  */
-function waitUntilVisible(el: HTMLElement, eager: boolean): Promise<void> {
-  if (eager) return Promise.resolve()
+function waitUntilVisible(el: HTMLElement, eager: boolean, signal?: AbortSignal): Promise<boolean> {
+  if (signal?.aborted) return Promise.resolve(false)
+  if (eager) return Promise.resolve(true)
 
   return new Promise((resolve) => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          observer.disconnect()
-          resolve()
+          cleanup()
+          resolve(true)
         }
       },
       {rootMargin: '200px'},
     )
+
+    const onAbort = (): void => {
+      cleanup()
+      resolve(false)
+    }
+
+    const cleanup = (): void => {
+      observer.disconnect()
+      signal?.removeEventListener('abort', onAbort)
+    }
+
+    signal?.addEventListener('abort', onAbort)
     observer.observe(el)
   })
 }
