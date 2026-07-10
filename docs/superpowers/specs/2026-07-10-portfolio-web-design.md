@@ -26,7 +26,7 @@ Web personal de Álvaro Artiel — Product Lead & Digital Product Consultant (e-
 | Capa | Tecnología | Justificación |
 |---|---|---|
 | Framework | **Astro 5** (output estático) | Cero JS por defecto, islas para lo interactivo, compatible con hosting estático de Hostinger (sin Node) |
-| CMS | **Sanity** (plan gratuito) | Backoffice profesional sin construirlo; CDN de imágenes con recortes/optimización |
+| CMS | **Sanity** (plan gratuito — **prohibido usar features de trial/pago**: nada de scheduled publishing, AI Assist, comments ni roles extra; el i18n es por schema `{es,en}`, no la feature de pago) | Backoffice profesional sin construirlo; CDN de imágenes con recortes/optimización |
 | Backoffice | **Sanity Studio** desplegado en `alvaroartiel.sanity.studio` (via `sanity deploy`) | Sin coste ni servidor propio |
 | 3D/WebGL | **Three.js** | Partículas hero, logo 3D, casa easter egg |
 | Animación | **GSAP + ScrollTrigger** | Scroll narrativo, reveals, deck apilado |
@@ -232,7 +232,7 @@ Se carga vía script de import a Sanity (NDJSON) durante la implementación:
 
 Cada fase termina con la web funcionando y desplegable. El "wow" se construye en capas sobre una base sólida — si la noche se acaba a mitad, lo construido es usable.
 
-- **F0 — Cimientos:** monorepo, Astro + Sanity Studio configurados, schemas, seed de contenido, GitHub Actions deploy a Hostinger (staging primero), PHP contact endpoint.
+- **F0 — Cimientos:** monorepo, Astro + Sanity Studio configurados, schemas, seed de contenido, deploy a staging `dev.alvaroartiel.com` (vía MCP de Hostinger; el site raíz alvaroartiel.com se crea solo tras validación del usuario), PHP contact endpoint.
 - **F1 — Sistema:** tokens de color camaleón, tipografías, layout base, header/menú/footer, i18n routing ES/EN.
 - **F2 — Páginas completas sin motion:** las 8 rutas con contenido real de Sanity, semántica y responsive perfectos, print CSS del CV. *(Web ya publicable, sobria.)*
 - **F3 — Capa de movimiento:** Lenis, reveals GSAP, deck apilado + rebarajado, índice/hovers, timeline dibujada, menú overlay con snake-trail, transiciones de acento.
