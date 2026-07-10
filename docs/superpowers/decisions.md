@@ -20,6 +20,14 @@
 - **Qué decía el plan:** "OG images: plantilla generativa por página con título".
 - **Qué se hace:** una imagen OG generativa por sección (7 PNGs con el acento correspondiente); las fichas de proyecto heredan la de proyectos.
 - **Por qué:** con arte placeholder, generar 20+ OG con títulos aporta poco; cuando el usuario suba media real conviene regenerarlas con arte definitivo. `web/scripts/generate-og.mjs` queda listo para ampliarse por página.
+## 2026-07-10 Remediación (sesión 2) — Fuente de verdad del Sprint 1: solo spec §9 + correcciones
+- **Qué decía el spec de remediación:** usar el material fuente del spec original §9 "y su detalle completo (el volcado de LinkedIn está en la sección Contenido inicial + el histórico del spec)".
+- **Qué se hace:** el volcado completo de LinkedIn NO está en el repositorio (vivía en la conversación de la sesión 1, no disponible). La única fuente verificable es el §9 del spec original más las correcciones explícitas del spec de remediación (Esperando el Render). Se aplica la regla dura del propio spec: toda afirmación no respaldada por esas fuentes → frase neutral u omisión.
+- **Por qué:** preferible un seed más sobrio y 100% veraz que conservar redacciones ricas imposibles de verificar.
+## 2026-07-10 Remediación (sesión 2) — B4 (placeholders sin título) se pliega en el Sprint 1
+- **Qué decía el spec de remediación:** B4 aparece en el Sprint 2 (§4.4).
+- **Qué se hace:** regenerar los placeholders sin título dentro de la tarea del seed (Sprint 1).
+- **Por qué:** ambos cambios requieren re-seed de Sanity + redeploy; hacerlo junto evita un ciclo completo de seed/deploy extra sin alterar ningún resultado.
 ## 2026-07-10 Cierre — contact.php: sanitización añadida sobre el código literal del plan
 - **Qué decía el plan:** crear `api/contact.php` "con este contenido exacto".
 - **Qué se hace:** se añade `str_replace(["\r","\n"], ' ', $name)` (el nombre entra en la cabecera Subject: vector de inyección de cabeceras / spam relay detectado por la revisión final) y el redirect del honeypot respeta `lang`.
