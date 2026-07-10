@@ -16,3 +16,7 @@
 - **Qué pasaba:** `cdn.sanity.io` devolvía 403 a peticiones con cabecera `Origin` (las texturas de las lonas k95 no cargaban).
 - **Qué se hace:** añadidos orígenes CORS al proyecto Sanity vía API de gestión: `http://localhost:4321`, `https://dev.alvaroartiel.com`, `https://alvaroartiel.com`; las `<img>` de heroMedia llevan `crossorigin="anonymous"`.
 - **Por qué:** requisito del efecto lona (TextureLoader necesita CORS); sin ello el fallback (imágenes normales) seguía funcionando.
+## 2026-07-10 F7 — OG images por sección, no por página
+- **Qué decía el plan:** "OG images: plantilla generativa por página con título".
+- **Qué se hace:** una imagen OG generativa por sección (7 PNGs con el acento correspondiente); las fichas de proyecto heredan la de proyectos.
+- **Por qué:** con arte placeholder, generar 20+ OG con títulos aporta poco; cuando el usuario suba media real conviene regenerarlas con arte definitivo. `web/scripts/generate-og.mjs` queda listo para ampliarse por página.
