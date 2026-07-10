@@ -1,0 +1,148 @@
+---
+import type {Lang} from '../lib/i18n'
+import {ui} from '../lib/i18n'
+import {pathFor} from '../lib/routes'
+import {getSiteSettings} from '../lib/queries'
+import LangSwitch from './LangSwitch.astro'
+
+interface Props {
+  lang: Lang
+}
+const {lang} = Astro.props
+const dict = ui[lang]
+const settings = await getSiteSettings()
+const email = settings?.email ?? 'soy@alvaroartiel.com'
+const socials = (settings?.socials ?? []).filter((s) => s.visible !== false)
+
+const navItems: {key: string; label: string}[] = [
+  {key: 'proyectos', label: dict.nav_projects},
+  {key: 'experiencia', label: dict.nav_experience},
+  {key: 'personal', label: dict.nav_personal},
+  {key: 'blog', label: dict.nav_blog},
+  {key: 'cv', label: dict.nav_cv},
+  {key: 'contacto', label: dict.nav_contact},
+]
+
+const year = new Date().getFullYear()
+---
+
+<footer class="site-footer">
+  <div class="footer-cta">
+    <p class="footer-kicker">{lang === 'en' ? 'Got something in mind?' : '¿Tienes algo en mente?'}</p>
+    <a class="footer-email" href={`mailto:${email}`}>{email}</a>
+  </div>
+
+  <div class="footer-grid">
+    <nav id="footer-nav" class="footer-nav" aria-label={lang === 'en' ? 'Footer navigation' : 'Navegación del pie'}>
+      <ul>
+        {
+          navItems.map((item) => (
+            <li>
+              <a href={pathFor(item.key, lang)}>{item.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    {
+      socials.length > 0 && (
+        <ul class="footer-socials">
+          {socials.map((social) => (
+            <li>
+              <a href={social.url} rel="noopener noreferrer" target="_blank">
+                {social.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <div class="footer-meta">
+      <LangSwitch lang={lang} />
+      <p class="footer-colophon">
+        © {year} Álvaro Artiel ·{' '}
+        {lang === 'en' ? 'made with Astro + Sanity + cariño' : 'hecho con Astro + Sanity + cariño'}
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding: clamp(3rem, 8vh, 6rem) clamp(1.5rem, 6vw, 4rem) clamp(1.5rem, 4vh, 2.5rem);
+    border-top: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
+    display: grid;
+    gap: clamp(2rem, 6vh, 4rem);
+  }
+
+  .footer-kicker {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0 0 0.5rem;
+  }
+  .footer-email {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.5rem, 4.5vw, 3.5rem);
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  .footer-email:hover {
+    color: var(--accent);
+  }
+
+  .footer-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .footer-nav ul,
+  .footer-socials {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.25rem;
+  }
+  .footer-nav a,
+  .footer-socials a {
+    font-size: var(--step-small);
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  .footer-nav a:hover,
+  .footer-socials a:hover {
+    color: var(--accent);
+  }
+
+  .footer-meta {
+    display: grid;
+    gap: 0.5rem;
+    justify-items: end;
+  }
+  .footer-colophon {
+    margin: 0;
+    font-size: var(--step-small);
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 640px) {
+    .footer-grid {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .footer-meta {
+      justify-items: start;
+    }
+  }
+</style>

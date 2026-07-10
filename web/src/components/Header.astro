@@ -1,0 +1,95 @@
+---
+import type {Lang} from '../lib/i18n'
+import {pathFor} from '../lib/routes'
+
+interface Props {
+  lang: Lang
+}
+const {lang} = Astro.props
+const homeHref = pathFor('', lang)
+---
+
+<header class="site-header">
+  <a class="monogram" href={homeHref} aria-label={lang === 'en' ? 'Home — Álvaro Artiel' : 'Inicio — Álvaro Artiel'}>
+    <!-- Placeholder tipográfico: en F4 este hueco lo ocupa el monograma 3D -->
+    <span id="monogram-slot" aria-hidden="true">A<span class="monogram-alt">A</span></span>
+  </a>
+
+  <!-- Sin JS este botón es un ancla al nav del footer; el script lo promociona a toggle del overlay -->
+  <a
+    id="menu-toggle"
+    class="menu-toggle"
+    href="#footer-nav"
+    role="button"
+    aria-expanded="false"
+    aria-controls="menu-overlay"
+    aria-label={lang === 'en' ? 'Menu' : 'Menú'}
+  >
+    <span class="menu-toggle-line" aria-hidden="true"></span>
+    <span class="menu-toggle-line" aria-hidden="true"></span>
+  </a>
+</header>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem clamp(1rem, 4vw, 2.5rem);
+    /* El header vive sobre el contenido sin fondo: cada pieza lleva el suyo */
+    pointer-events: none;
+  }
+  .site-header > * {
+    pointer-events: auto;
+  }
+
+  .monogram {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: -0.08em;
+    color: var(--text);
+    text-decoration: none;
+    line-height: 1;
+  }
+  .monogram-alt {
+    color: var(--accent);
+    margin-left: -0.18em;
+  }
+
+  .menu-toggle {
+    display: grid;
+    place-content: center;
+    gap: 6px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    transition: background var(--transition-fast);
+  }
+  .menu-toggle-line {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--text);
+    transition:
+      transform var(--transition-base),
+      background var(--transition-fast);
+  }
+  .menu-toggle:hover {
+    background: var(--accent);
+  }
+  .menu-toggle:hover .menu-toggle-line {
+    background: var(--bg);
+  }
+  /* Estado abierto (lo aplica el script en <html data-menu-open>) */
+  :global(html[data-menu-open]) .menu-toggle-line:first-child {
+    transform: translateY(4px) rotate(45deg);
+  }
+  :global(html[data-menu-open]) .menu-toggle-line:last-child {
+    transform: translateY(-4px) rotate(-45deg);
+  }
+</style>

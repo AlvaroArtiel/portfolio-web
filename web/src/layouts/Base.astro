@@ -1,0 +1,78 @@
+---
+import '../styles/global.css'
+import Header from '../components/Header.astro'
+import Footer from '../components/Footer.astro'
+import MenuOverlay from '../components/MenuOverlay.astro'
+import {altPath} from '../lib/routes'
+import type {Lang} from '../lib/i18n'
+
+export type Section = 'home' | 'projects' | 'experience' | 'personal' | 'blog' | 'cv'
+
+interface Props {
+  title: string
+  description: string
+  lang: Lang
+  section: Section
+  /** Optional accent override; by default the section decides via CSS. */
+  accent?: string
+  /** Set to true on pages that must not be indexed (e.g. /casa). */
+  noindex?: boolean
+}
+
+const {title, description, lang, section, accent, noindex = false} = Astro.props
+
+const pathname = Astro.url.pathname
+const esUrl = altPath(pathname, 'es')
+const enUrl = altPath(pathname, 'en')
+const canonical = new URL(pathname, Astro.site ?? 'https://dev.alvaroartiel.com')
+---
+
+<!doctype html>
+<html lang={lang} data-section={section} style={accent ? `--accent: ${accent}` : undefined}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="es" href={new URL(esUrl, canonical)} />
+    <link rel="alternate" hreflang="en" href={new URL(enUrl, canonical)} />
+    <link rel="alternate" hreflang="x-default" href={new URL(esUrl, canonical)} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" href="/fonts/ClashDisplay-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/InstrumentSans-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{lang === 'en' ? 'Skip to content' : 'Saltar al contenido'}</a>
+    <Header lang={lang} />
+    <MenuOverlay lang={lang} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 200;
+    padding: 0.5rem 1rem;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    text-decoration: none;
+    transform: translateY(-300%);
+  }
+  .skip-link:focus-visible {
+    transform: none;
+  }
+</style>
