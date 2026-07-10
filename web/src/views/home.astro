@@ -5,6 +5,7 @@ import About from '../components/home/About.astro'
 import FeaturedDeck from '../components/home/FeaturedDeck.astro'
 import CtaBand from '../components/home/CtaBand.astro'
 import PersonalTeaser from '../components/home/PersonalTeaser.astro'
+import PostFooter from '../components/PostFooter.astro'
 import type {Lang} from '../lib/i18n'
 import {t} from '../lib/i18n'
 import {getSiteSettings, getProjects, getChaptersWithItems} from '../lib/queries'
@@ -35,4 +36,5 @@ const description = t(settings?.seoDescription, lang) ||
   <FeaturedDeck lang={lang} projects={featured} />
   <CtaBand lang={lang} />
   <PersonalTeaser lang={lang} items={teaserItems} />
+  <PostFooter slot="post-footer" lang={lang} />
 </Base>

@@ -12,7 +12,7 @@ import type {SceneModule} from '../lib/three-island'
 import {onReady, getMotion} from '../lib/motion'
 
 /** Silueta de A: triángulo con hueco triangular (contraforma). */
-function makeA(THREE: typeof import('three')) {
+export function makeA(THREE: typeof import('three')) {
   const shape = new THREE.Shape()
   shape.moveTo(-0.5, -0.5)
   shape.lineTo(0, 0.5)

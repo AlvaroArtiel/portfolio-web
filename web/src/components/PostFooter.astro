@@ -1,0 +1,80 @@
+---
+import type {Lang} from '../lib/i18n'
+
+interface Props {
+  lang: Lang
+}
+const {lang} = Astro.props
+
+const line1 = lang === 'en' ? 'You have come too far…' : 'Has llegado demasiado lejos…'
+const door = lang === 'en' ? 'coming in?' : '¿pasas?'
+const href = lang === 'en' ? '/en/house/' : '/casa/'
+---
+
+<!-- Overscroll intencional tras el footer: quien baja a conciencia, encuentra -->
+<section class="post-footer" aria-label={lang === 'en' ? 'Secret' : 'Secreto'}>
+  <div class="pf-stage" id="post-footer-stage">
+    <div class="pf-content">
+      <p class="pf-line">{line1}</p>
+      <a class="pf-door" href={href}>{door}</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  import {mountScene} from '../lib/three-island'
+
+  const stage = document.getElementById('post-footer-stage')
+  if (stage) {
+    void mountScene(stage, () => import('../scenes/post-footer').then((m) => m.default))
+  }
+</script>
+
+<style>
+  .post-footer {
+    height: 150vh;
+    position: relative;
+  }
+
+  .pf-stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: grid;
+    place-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  /* La pieza 3D queda detrás del texto */
+  .pf-stage :global(canvas) {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .pf-content {
+    position: relative;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .pf-line {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .pf-door {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: clamp(2.5rem, 7vw, 6rem);
+    letter-spacing: -0.03em;
+    color: var(--text);
+    text-decoration: none;
+    transition: color var(--transition-base), letter-spacing var(--transition-base);
+  }
+  .pf-door:hover {
+    color: var(--accent);
+    letter-spacing: 0;
+  }
+</style>

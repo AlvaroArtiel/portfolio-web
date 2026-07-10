@@ -55,6 +55,7 @@ const canonical = new URL(pathname, Astro.site ?? 'https://dev.alvaroartiel.com'
       <slot />
     </main>
     <Footer lang={lang} />
+    <slot name="post-footer" />
     <script>
       import '../lib/motion'
     </script>
