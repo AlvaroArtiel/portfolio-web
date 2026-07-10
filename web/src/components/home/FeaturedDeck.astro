@@ -168,11 +168,29 @@ const projectHref = (slug: string) =>
     order: 2;
   }
 
+  .card-media {
+    overflow: hidden;
+  }
+
   .card-media img {
     display: block;
     width: 100%;
     height: auto;
     border-radius: 2px;
+    transition: transform var(--dur-element) var(--ease-out-token);
+  }
+
+  .card a:hover .card-media img {
+    transform: scale(1.03);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card-media img {
+      transition: none;
+    }
+    .card a:hover .card-media img {
+      transform: none;
+    }
   }
 
   .card-summary {

@@ -12,7 +12,13 @@
  */
 
 const DESKTOP = '(min-width: 721px) and (hover: hover) and (pointer: fine)'
-const TABLE_HEIGHT_VH = 120
+// La capa de física necesita recorrido vertical generoso para que la caída se
+// sienta bien; el CRECIMIENTO VISIBLE de la mesa (el "viewport" recortado) se
+// ajusta después, al montón ya asentado, para no dejar aire de sobra.
+const PHYSICS_HEIGHT_VH = 120
+const SETTLED_MARGIN = 1.25 // área visible ≈ montón asentado + 25%
+const SETTLED_MAX_VH = 0.7 // nunca más del 70% del alto de viewport
+const SETTLED_MIN_PX = 240 // suelo razonable para no recortar en seco
 const DRAG_CLICK_THRESHOLD = 6
 
 export function initMessyTable(): void {
@@ -34,11 +40,19 @@ async function initPhysics(): Promise<void> {
   // antes de llegar aquí: en modo física todo es visible (el filtro atenúa).
   sections.forEach((section) => (section.hidden = false))
 
-  // La mesa sustituye a las secciones de capítulo (que quedan como fallback oculto)
+  // La mesa sustituye a las secciones de capítulo (que quedan como fallback oculto).
+  // `viewport` es lo que ocupa espacio en la página (se recorta al montón
+  // asentado); `table` es la capa de física, con recorrido vertical generoso
+  // para que la caída se sienta bien, anclada al fondo del viewport y
+  // recortada por su overflow:hidden mientras cae.
+  const viewport = document.createElement('div')
+  viewport.className = 'messy-table'
+  viewport.style.cssText = `position:relative;height:${PHYSICS_HEIGHT_VH}vh;overflow:hidden;border-block:1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);transition:height var(--dur-element) var(--ease-out-token);`
+  sections[0].before(viewport)
+
   const table = document.createElement('div')
-  table.className = 'messy-table'
-  table.style.cssText = `position:relative;height:${TABLE_HEIGHT_VH}vh;overflow:hidden;border-block:1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);`
-  sections[0].before(table)
+  table.style.cssText = `position:absolute;left:0;bottom:0;width:100%;height:${PHYSICS_HEIGHT_VH}vh;`
+  viewport.appendChild(table)
 
   const items = polaroids.map((el) => {
     const rect = el.getBoundingClientRect()
@@ -79,6 +93,7 @@ async function initPhysics(): Promise<void> {
       Body.setPosition(walls[1], {x: -60, y: H / 2})
       Body.setPosition(walls[2], {x: W + 60, y: H / 2})
       Body.setPosition(walls[3], {x: W / 2, y: -H - 60})
+      if (settled) settleTable()
     }, 250)
   })
 
@@ -101,6 +116,13 @@ async function initPhysics(): Promise<void> {
   table.removeEventListener('wheel', (mouse as unknown as {mousewheel: EventListener}).mousewheel)
   const mouseConstraint = MouseConstraint.create(engine, {mouse, constraint: {stiffness: 0.12, damping: 0.12}})
   Composite.add(engine.world, mouseConstraint)
+
+  // Un lanzamiento puede apilar una polaroid más alto que el recorte actual:
+  // vuelve al alto generoso mientras se agarra/lanza y hasta que se re-asiente.
+  Events.on(mouseConstraint, 'startdrag', () => {
+    settled = false
+    viewport.style.height = `${PHYSICS_HEIGHT_VH}vh`
+  })
 
   // Clic sin arrastre = abrir el lightbox de esa polaroid
   let downPoint: {x: number; y: number} | null = null
@@ -138,8 +160,30 @@ async function initPhysics(): Promise<void> {
           })
         }
       })
+      // El impulso puede levantar el montón por encima del recorte actual:
+      // vuelve al alto generoso mientras se re-asienta.
+      settled = false
+      viewport.style.height = `${PHYSICS_HEIGHT_VH}vh`
     })
   })
+
+  // Recorta el viewport visible a la altura real del montón asentado + ~25%
+  // de margen de juego, sin superar nunca el 70% del alto de ventana. La capa
+  // de física (table) no cambia: solo se ajusta cuánto de ella se ve.
+  let settled = false
+  const settleTable = () => {
+    let minTop = Infinity
+    let maxBottom = -Infinity
+    for (let i = 0; i < items.length; i++) {
+      const {h} = items[i]
+      const {y} = bodies[i].position
+      if (y - h / 2 < minTop) minTop = y - h / 2
+      if (y + h / 2 > maxBottom) maxBottom = y + h / 2
+    }
+    const pileHeight = maxBottom - minTop
+    const target = Math.min(pileHeight * SETTLED_MARGIN, window.innerHeight * SETTLED_MAX_VH)
+    viewport.style.height = `${Math.max(target, SETTLED_MIN_PX)}px`
+  }
 
   // Sincronizar DOM ↔ física
   Events.on(engine, 'afterUpdate', () => {
@@ -147,6 +191,10 @@ async function initPhysics(): Promise<void> {
       const {el, w, h} = items[i]
       const body = bodies[i]
       el.style.transform = `translate(${body.position.x - w / 2}px, ${body.position.y - h / 2}px) rotate(${body.angle}rad)`
+    }
+    if (!settled && bodies.every((b) => b.isSleeping)) {
+      settled = true
+      settleTable()
     }
   })
 
@@ -168,7 +216,7 @@ async function initPhysics(): Promise<void> {
     },
     {rootMargin: '100px'},
   )
-  observer.observe(table)
+  observer.observe(viewport)
 }
 
 /** Parallax sutil por giroscopio en móvil; permiso tras gesto en iOS. */

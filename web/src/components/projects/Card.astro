@@ -110,12 +110,30 @@ const category = project.category ? categoryLabels[project.category]?.[lang] : u
     margin: 0;
   }
 
+  .pc-media {
+    overflow: hidden;
+  }
+
   .pc-media img {
     display: block;
     width: 100%;
     height: auto;
     aspect-ratio: 21 / 9;
     object-fit: cover;
+    transition: transform var(--dur-element) var(--ease-out-token);
+  }
+
+  .project-card a:hover .pc-media img {
+    transform: scale(1.03);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pc-media img {
+      transition: none;
+    }
+    .project-card a:hover .pc-media img {
+      transform: none;
+    }
   }
 
   .pc-body {
