@@ -13,6 +13,13 @@ const {lang} = Astro.props
 
 const projects = await getProjects()
 const heading = ui[lang].nav_projects
+
+// Segunda voz tipográfica (sesión 3): recuento real derivado de los datos.
+const categoryCount = new Set(projects.map((p) => p.category).filter(Boolean)).size
+const countLine =
+  lang === 'en'
+    ? `${projects.length} projects · ${categoryCount} categories`
+    : `${projects.length} proyectos · ${categoryCount} categorías`
 const description =
   lang === 'en'
     ? 'Selected projects by Álvaro Artiel: own products, client work, training and personal experiments.'
@@ -23,6 +30,7 @@ const description =
   <section class="projects-page">
     <header class="projects-header" data-reveal>
       <h1>{heading}</h1>
+      <p class="page-count">{countLine}</p>
       <Filters lang={lang} />
     </header>
 
@@ -51,6 +59,14 @@ const description =
     font-weight: 580;
     font-size: var(--step-h1);
     letter-spacing: -0.03em;
+    margin: 0 0 0.5rem;
+  }
+
+  /* Segunda voz: recuento mono muted bajo el titular */
+  .page-count {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
     margin: 0 0 clamp(1.5rem, 4vh, 2.5rem);
   }
 

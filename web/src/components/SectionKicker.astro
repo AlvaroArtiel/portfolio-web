@@ -1,0 +1,48 @@
+---
+/**
+ * Kicker de sección con índice — la "segunda voz" tipográfica (sesión 3):
+ * el índice en muted da estructura de sistema; el rótulo conserva el acento.
+ * Única fuente del patrón para todas las secciones de la home.
+ */
+interface Props {
+  index: string
+  label: string
+  /** Aplica el reveal genérico (data-reveal) al kicker. */
+  reveal?: boolean
+  /** Centrado (CTA) o alineado al ancho de las cartas (deck). */
+  align?: 'start' | 'center' | 'deck'
+}
+const {index, label, reveal = false, align = 'start'} = Astro.props
+---
+
+<p class:list={['section-kicker', `is-${align}`]} {...reveal ? {'data-reveal': true} : {}}>
+  <span class="kicker-index" aria-hidden="true">{index}</span>
+  <span class="kicker-label">{label}</span>
+</p>
+
+<style>
+  .section-kicker {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    margin: 0 0 2.5rem;
+  }
+  .kicker-index {
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+  }
+  .kicker-index::after {
+    content: ' ·';
+  }
+  .kicker-label {
+    color: var(--accent);
+  }
+
+  .is-center {
+    text-align: center;
+  }
+  /* El kicker acompaña a las cartas del deck, no al borde de la página */
+  .is-deck {
+    width: min(88%, 74rem);
+    margin-inline: auto;
+  }
+</style>

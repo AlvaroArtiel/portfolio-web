@@ -19,6 +19,18 @@ const [experiences, projects] = await Promise.all([getExperiences(), getProjects
 const projectById = new Map(projects.map((p) => [p._id, {slug: p.slug.current, title: t(p.title, lang)}]))
 
 const heading = ui[lang].nav_experience
+
+// Segunda voz tipográfica (sesión 3): recuento real derivado de los datos.
+const years = experiences
+  .map((exp) => exp.startDate?.match(/\d{4}/)?.[0])
+  .filter((y): y is string => Boolean(y))
+  .map(Number)
+const firstYear = years.length > 0 ? Math.min(...years) : null
+const countLine =
+  lang === 'en'
+    ? `${experiences.length} chapters${firstYear ? ` · since ${firstYear}` : ''}`
+    : `${experiences.length} etapas${firstYear ? ` · desde ${firstYear}` : ''}`
+
 const description =
   lang === 'en'
     ? 'Professional experience of Álvaro Artiel: roles, companies and related projects.'
@@ -29,6 +41,7 @@ const description =
   <section class="experience-page">
     <header class="experience-header" data-reveal>
       <h1>{heading}</h1>
+      <p class="page-count">{countLine}</p>
     </header>
 
     <ol class="timeline">
@@ -148,6 +161,14 @@ const description =
     font-weight: 580;
     font-size: var(--step-h1);
     letter-spacing: -0.03em;
+    margin: 0 0 0.5rem;
+  }
+
+  /* Segunda voz: recuento mono muted bajo el titular */
+  .page-count {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
     margin: 0 0 clamp(3rem, 8vh, 5rem);
   }
 

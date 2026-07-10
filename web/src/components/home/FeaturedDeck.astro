@@ -4,6 +4,7 @@ import {t, ui} from '../../lib/i18n'
 import type {Project} from '../../lib/queries'
 import {urlFor} from '../../lib/sanity'
 import {pathFor} from '../../lib/routes'
+import SectionKicker from '../SectionKicker.astro'
 
 interface Props {
   lang: Lang
@@ -21,7 +22,7 @@ const projectHref = (slug: string) =>
      queda visible su franja de identidad (patrón pxpush real; con 4 cartas
      las pestañas caben de sobra en el viewport). -->
 <section class="featured" data-reveal>
-  <p class="section-kicker">{dict.featured_projects}</p>
+  <SectionKicker index="02" label={dict.featured_projects} align="deck" />
 
   <ol class="deck" data-deck>
     {
@@ -66,16 +67,6 @@ const projectHref = (slug: string) =>
 <style>
   .featured {
     padding: var(--space-s) clamp(1.5rem, 6vw, 4rem);
-  }
-
-  .section-kicker {
-    font-family: var(--font-mono);
-    font-size: var(--step-mono-label);
-    color: var(--accent);
-    margin: 0 0 2.5rem;
-    /* El kicker acompaña a las cartas, no al borde de la página */
-    width: min(88%, 74rem);
-    margin-inline: auto;
   }
 
   /* Cartas a ~88% de ancho centradas (remediación B6) */

@@ -26,6 +26,13 @@ function formatDate(date?: string): string {
 }
 
 const heading = ui[lang].nav_blog
+
+// Segunda voz tipográfica (sesión 3): recuento real derivado de los datos.
+const countLine =
+  lang === 'en'
+    ? `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}`
+    : `${posts.length} ${posts.length === 1 ? 'entrada' : 'entradas'}`
+
 const description =
   lang === 'en' ? 'Writing by Álvaro Artiel: notes on design, code and product.' : 'Textos de Álvaro Artiel: notas sobre diseño, código y producto.'
 ---
@@ -34,6 +41,7 @@ const description =
   <section class="blog-page">
     <header class="blog-header" data-reveal>
       <h1>{heading}</h1>
+      <p class="page-count">{countLine}</p>
     </header>
 
     <ol class="blog-list">
@@ -70,6 +78,14 @@ const description =
     font-weight: 580;
     font-size: var(--step-h1);
     letter-spacing: -0.03em;
+    margin: 0 0 0.5rem;
+  }
+
+  /* Segunda voz: recuento mono muted bajo el titular */
+  .page-count {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
     margin: 0 0 clamp(3rem, 8vh, 5rem);
   }
 

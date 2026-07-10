@@ -2,6 +2,7 @@
 import type {Lang} from '../../lib/i18n'
 import {t, ui} from '../../lib/i18n'
 import type {SiteSettings} from '../../lib/queries'
+import SectionKicker from '../SectionKicker.astro'
 
 interface Props {
   lang: Lang
@@ -47,7 +48,7 @@ const meta =
 {
   about && (
     <section class="about">
-      <p class="section-kicker" data-reveal>{dict.who_am_i}</p>
+      <SectionKicker index="01" label={dict.who_am_i} reveal />
       <div class="about-body">
         <p class="about-text" set:html={aboutHtml} />
         <aside class="about-meta" data-reveal>
@@ -73,13 +74,6 @@ const meta =
     /* Techo alto (la franja vacía tras el hero es la pista de aterrizaje del
        monograma), salida más corta hacia el deck. */
     padding: var(--space-m) clamp(1.5rem, 6vw, 4rem) var(--space-s);
-  }
-
-  .section-kicker {
-    font-family: var(--font-mono);
-    font-size: var(--step-mono-label);
-    color: var(--accent);
-    margin: 0 0 2.5rem;
   }
 
   /* Texto a ancho de lectura generoso centrado-izquierda; a la derecha,

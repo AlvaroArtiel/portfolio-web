@@ -4,6 +4,7 @@ import {ui} from '../../lib/i18n'
 import type {PersonalItem} from '../../lib/queries'
 import {pathFor} from '../../lib/routes'
 import PolaroidCard from '../personal/PolaroidCard.astro'
+import SectionKicker from '../SectionKicker.astro'
 
 interface Props {
   lang: Lang
@@ -23,7 +24,7 @@ const claim =
 {
   photos.length > 0 && (
     <section class="personal-teaser" data-reveal>
-      <p class="section-kicker">{dict.personal_teaser_kicker}</p>
+      <SectionKicker index="03" label={dict.personal_teaser_kicker} />
       <!-- Composición asimétrica intencional (remediación A2): claim grande a
            la izquierda + masa diagonal de polaroids a la derecha. -->
       <div class="teaser-composition">
@@ -49,13 +50,6 @@ const claim =
 <style>
   .personal-teaser {
     padding: var(--space-s) clamp(1.5rem, 6vw, 4rem) var(--space-m);
-  }
-
-  .section-kicker {
-    font-family: var(--font-mono);
-    font-size: var(--step-mono-label);
-    color: var(--accent);
-    margin: 0 0 2.5rem;
   }
 
   .teaser-composition {

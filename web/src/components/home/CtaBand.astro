@@ -2,6 +2,7 @@
 import type {Lang} from '../../lib/i18n'
 import {ui} from '../../lib/i18n'
 import {pathFor} from '../../lib/routes'
+import SectionKicker from '../SectionKicker.astro'
 
 interface Props {
   lang: Lang
@@ -11,6 +12,7 @@ const dict = ui[lang]
 ---
 
 <section class="cta-band" data-reveal id="cta-band">
+  <SectionKicker index="04" label={lang === 'en' ? 'Shall we talk?' : '¿Hablamos?'} align="center" />
   <!-- Tipografía líquida WebGL encima; el link real queda siempre debajo y recibe el clic -->
   <a class="cta-link" href={pathFor('contacto', lang)} id="cta-liquid-target">
     {dict.work_together}

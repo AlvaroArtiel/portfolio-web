@@ -38,12 +38,20 @@ const chapterData = chapters
     return {chapter, items: withIndex}
   })
   .filter(({items}) => items.length > 0)
+
+// Segunda voz tipográfica (sesión 3): recuento real derivado de los datos.
+const totalItems = chapterData.reduce((n, {items}) => n + items.length, 0)
+const countLine =
+  lang === 'en'
+    ? `${chapterData.length} chapters · ${totalItems} memories`
+    : `${chapterData.length} capítulos · ${totalItems} recuerdos`
 ---
 
 <Base title={`${heading} — Álvaro Artiel`} description={description} lang={lang} section="personal">
   <section class="personal-page">
     <header class="personal-header" data-reveal>
       <h1>{heading}</h1>
+      <p class="page-count">{countLine}</p>
       <p class="lede">{description}</p>
       <nav
         class="chapter-filters"
@@ -182,6 +190,14 @@ const chapterData = chapters
     font-weight: 580;
     font-size: var(--step-h1);
     letter-spacing: -0.03em;
+    margin: 0 0 0.5rem;
+  }
+
+  /* Segunda voz: recuento mono muted bajo el titular */
+  .page-count {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
     margin: 0 0 1rem;
   }
 
