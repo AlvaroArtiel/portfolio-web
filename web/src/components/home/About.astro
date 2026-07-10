@@ -122,16 +122,21 @@ const meta =
     color: var(--text-muted);
   }
 
-  @media (max-width: 720px) {
-    .about {
-      padding-block: var(--space-s);
-    }
+  /* La columna lateral de metadatos necesita aire real: por debajo de
+     1000px (tablets incluidos) pasa a fila de 3 bajo el texto. */
+  @media (max-width: 1000px) {
     .about-body {
       grid-template-columns: 1fr;
     }
     .about-meta {
       grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .about {
+      padding-block: var(--space-s);
     }
   }
 </style>

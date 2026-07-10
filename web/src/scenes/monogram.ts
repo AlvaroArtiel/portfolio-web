@@ -110,9 +110,21 @@ function easeInOut(p: number): number {
   return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2
 }
 
+/**
+ * ¿Coreografía compacta (match-cut) o vuelo completo? No depende solo del
+ * ancho: un tablet en vertical (<1000px y más alto que ancho) tampoco tiene
+ * carril para el vuelo. Se evalúa por frame/evento: sobrevive a resizes y
+ * rotaciones.
+ */
+function isCompact(): boolean {
+  return (
+    window.matchMedia('(max-width: 720px)').matches ||
+    (window.innerWidth < 1000 && window.innerHeight > window.innerWidth)
+  )
+}
+
 const monogram: SceneModule = {
   init({scene, camera, el}) {
-    const isMobile = window.matchMedia('(max-width: 720px)').matches
     let disposed = false
     const mouse = {x: 0, y: 0}
     let dockProgress = 0 // 0 = flotando en el hero, 1 = acoplado (y muerto)
@@ -167,10 +179,11 @@ const monogram: SceneModule = {
               // Móvil: acople por match-cut (la pieza se funde en su esquina
               // y el SVG toma el relevo) — a 390px cualquier vuelo literal
               // cruzaría subtítulo o botón de menú. Desktop: vuelo completo.
-              if (isMobile) {
+              if (isCompact()) {
                 el.style.opacity = String(Math.max(0, 1 - Math.max(0, (dockProgress - 0.35) / 0.15)))
                 setDead(dockProgress >= 0.5)
               } else {
+                el.style.opacity = '1'
                 setDead(dockProgress >= 0.999)
               }
             },
@@ -196,16 +209,28 @@ const monogram: SceneModule = {
         const p = Math.min(1, Math.max(0, dockProgress))
         if (dead) return
 
-        // Ancla hero (en px de página, sube con el contenido) — arriba-dcha,
-        // diagonal compositiva con el titular; en móvil, esquina despejada
-        // que nunca toca el texto.
-        const heroPx = isMobile
-          ? {x: window.innerWidth * 0.68, y: window.innerHeight * 0.17}
-          : {x: window.innerWidth * 0.83, y: window.innerHeight * 0.2}
+        const compact = isCompact()
+
+        // Escala del hero: en vuelo completo NO depende solo de vh (un
+        // viewport alto y estrecho la haría desbordar): se acota también
+        // por el ancho. En compacto, proporcional a vh como hasta ahora.
+        const heroBasePx = compact
+          ? 0.12 * window.innerHeight
+          : 0.22 * Math.min(window.innerHeight, window.innerWidth * 0.62)
+
+        // Ancla hero — arriba-dcha, diagonal compositiva con el titular; la
+        // X se acota para que la pieza (≈heroBasePx·0.92 de semiancho) nunca
+        // recorte por el borde. En compacto, esquina despejada del texto.
+        const heroPx = compact
+          ? {x: window.innerWidth * 0.68, y: window.innerHeight * 0.19}
+          : {
+              x: Math.min(window.innerWidth * 0.83, window.innerWidth * 0.97 - heroBasePx * 0.92),
+              y: window.innerHeight * 0.2,
+            }
         // Desktop: parallax suave (la pieza "se despega" para iniciar el vuelo).
-        // Móvil: 1:1 con el contenido — sale por arriba como parte de la página
-        // y nunca puede chocar con el titular que sube.
-        const heroScreenY = heroPx.y - window.scrollY * (isMobile ? 1 : 0.25)
+        // Compacto: 1:1 con el contenido — sale por arriba como parte de la
+        // página y nunca puede chocar con el titular que sube.
+        const heroScreenY = heroPx.y - window.scrollY * (compact ? 1 : 0.25)
 
         // Ancla dock: rect real del hueco del header, cada frame.
         const slotRect = slot?.getBoundingClientRect()
@@ -227,21 +252,21 @@ const monogram: SceneModule = {
         const pRise = easeInOut(Math.min(1, p / RISE_END))
         const pSweep = easeInOut(p < RISE_END ? 0 : (p - RISE_END) / (1 - RISE_END))
         const edgeX = window.innerWidth * 0.9
-        // Móvil (match-cut): la pieza se queda en su esquina, sube con un
+        // Compacto (match-cut): la pieza se queda en su esquina, sube con un
         // parallax suave y encoge mientras se funde (opacidad en onUpdate).
-        const flightX = isMobile ? heroPx.x : heroPx.x + (edgeX - heroPx.x) * pRise + (dockPx.x - (heroPx.x + (edgeX - heroPx.x) * pRise)) * pSweep
-        const flightY = isMobile ? heroScreenY : heroScreenY + (dockPx.y - heroScreenY) * pRise
+        const flightX = compact ? heroPx.x : heroPx.x + (edgeX - heroPx.x) * pRise + (dockPx.x - (heroPx.x + (edgeX - heroPx.x) * pRise)) * pSweep
+        const flightY = compact ? heroScreenY : heroScreenY + (dockPx.y - heroScreenY) * pRise
         const hero = screenToWorld(camera, flightX, flightY)
 
-        // Escalas en unidades de mundo: hero ~34vh de alto; dock = alto del slot.
+        // Escalas en unidades de mundo: hero = heroBasePx de alto; dock = alto del slot.
         const modelH = 1.05 // alto del glifo a escala 1
         const worldPerPx = hero.worldH / window.innerHeight
-        const heroScale = ((isMobile ? 0.12 : 0.22) * window.innerHeight * worldPerPx) / modelH
+        const heroScale = (heroBasePx * worldPerPx) / modelH
         const dockScale = ((slotRect?.height ?? 28) * worldPerPx) / modelH
 
         const x = hero.x
         const y = hero.y
-        const s = isMobile ? heroScale * (1 - 0.4 * pRise) : heroScale + (dockScale - heroScale) * pRise
+        const s = compact ? heroScale * (1 - 0.4 * pRise) : heroScale + (dockScale - heroScale) * pRise
         monogramGroup.group.position.set(x, y, 0)
         monogramGroup.group.scale.setScalar(s)
 

@@ -105,9 +105,9 @@
      Escala fija de separación entre secciones (≈96/160/240px): todos los
      paddings verticales de sección salen de aquí. Se acabaron los vacíos
      arbitrarios de 400-600px. */
-  --space-s: 6rem;
-  --space-m: 10rem;
-  --space-l: 15rem;
+  --space-s: clamp(4.5rem, 5vw + 2rem, 6rem);
+  --space-m: clamp(6.5rem, 8vw + 3rem, 10rem);
+  --space-l: clamp(9rem, 12vw + 4.3rem, 15rem);
 
   /* -- Motion (remediación A4) ---------------------------------------------
      Fuente única del lenguaje de movimiento: dos curvas (entrada/trayecto)
