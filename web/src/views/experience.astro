@@ -5,6 +5,7 @@ import type {Lang} from '../lib/i18n'
 import {getExperiences, getProjects} from '../lib/queries'
 import {urlFor} from '../lib/sanity'
 import {pathFor} from '../lib/routes'
+import {dateRange} from '../lib/dates'
 
 interface Props {
   lang: Lang
@@ -16,24 +17,6 @@ const [experiences, projects] = await Promise.all([getExperiences(), getProjects
 
 /** Map project _id -> {slug, title} to dereference relatedProjects refs. */
 const projectById = new Map(projects.map((p) => [p._id, {slug: p.slug.current, title: t(p.title, lang)}]))
-
-const monthFormatter = new Intl.DateTimeFormat(lang === 'en' ? 'en-GB' : 'es-ES', {
-  month: '2-digit',
-  year: 'numeric',
-})
-
-function formatDate(date?: string): string {
-  if (!date) return ''
-  const parsed = new Date(date)
-  if (Number.isNaN(parsed.getTime())) return date
-  return monthFormatter.format(parsed)
-}
-
-function dateRange(start?: string, end?: string): string {
-  const startLabel = formatDate(start)
-  const endLabel = end ? formatDate(end) : dict.present
-  return [startLabel, endLabel].filter(Boolean).join(' — ')
-}
 
 const heading = ui[lang].nav_experience
 const description =
@@ -74,7 +57,7 @@ const description =
                 />
               )}
               <div class="entry-body">
-                <p class="entry-dates">{dateRange(exp.startDate, exp.endDate)}</p>
+                <p class="entry-dates">{dateRange(exp.startDate, exp.endDate, lang, dict.present)}</p>
                 <h2 class="entry-role">{role}</h2>
                 <p class="entry-company">{company}</p>
                 {(location || modality) && (

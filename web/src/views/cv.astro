@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro'
 import {t, ui} from '../lib/i18n'
 import type {Lang} from '../lib/i18n'
 import {getEducation, getExperiences, getSiteSettings} from '../lib/queries'
+import {dateRange} from '../lib/dates'
 import printCssUrl from '../styles/print.css?url'
 
 interface Props {
@@ -12,24 +13,6 @@ const {lang} = Astro.props
 const dict = ui[lang]
 
 const [experiences, education, settings] = await Promise.all([getExperiences(), getEducation(), getSiteSettings()])
-
-const monthFormatter = new Intl.DateTimeFormat(lang === 'en' ? 'en-GB' : 'es-ES', {
-  month: '2-digit',
-  year: 'numeric',
-})
-
-function formatDate(date?: string): string {
-  if (!date) return ''
-  const parsed = new Date(date)
-  if (Number.isNaN(parsed.getTime())) return date
-  return monthFormatter.format(parsed)
-}
-
-function dateRange(start?: string, end?: string): string {
-  const startLabel = formatDate(start)
-  const endLabel = end ? formatDate(end) : dict.present
-  return [startLabel, endLabel].filter(Boolean).join(' — ')
-}
 
 /** Distinct stack values seen across the seed content; sensible fallback per the brief. */
 const skills = ['Figma', 'React', 'Astro', 'Node.js', 'TypeScript', 'Sanity', 'UX/UI', 'SEO']
@@ -83,7 +66,7 @@ const description = lang === 'en' ? 'Curriculum vitae of Álvaro Artiel.' : 'Cur
             const bullets = (exp.bullets ?? []).map((b) => t(b, lang)).filter(Boolean)
             return (
               <li class="cv-entry">
-                <p class="cv-entry-dates">{dateRange(exp.startDate, exp.endDate)}</p>
+                <p class="cv-entry-dates">{dateRange(exp.startDate, exp.endDate, lang, dict.present)}</p>
                 <h3 class="cv-entry-title">
                   {role} <span class="cv-entry-at">— {company}</span>
                 </h3>
@@ -113,7 +96,7 @@ const description = lang === 'en' ? 'Curriculum vitae of Álvaro Artiel.' : 'Cur
             const desc = t(edu.description, lang)
             return (
               <li class="cv-entry">
-                <p class="cv-entry-dates">{dateRange(edu.startDate, edu.endDate)}</p>
+                <p class="cv-entry-dates">{dateRange(edu.startDate, edu.endDate, lang, dict.present)}</p>
                 <h3 class="cv-entry-title">
                   {degree} <span class="cv-entry-at">— {school}</span>
                 </h3>
