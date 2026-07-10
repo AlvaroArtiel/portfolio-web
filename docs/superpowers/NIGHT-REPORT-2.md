@@ -53,6 +53,21 @@ Los **19 defectos de la auditoría (A1–A6, B1–B13) están resueltos** y desp
 4. Minor detectado en QA: la mesa física de /personal en desktop deja aire de sobra sobre el montón asentado (el área de física es alta); no viola la vara pero es mejorable.
 5. El match-cut del monograma en móvil es una interpretación del "mismo acople" del spec — si se prefiere el vuelo literal, hay que rediseñar el hero móvil para dejar un carril libre.
 
+## Sesión 3 — Pulido responsive y detalle (mismo día)
+
+Tras una revisión crítica post-remediación (que detectó dos huecos no cubiertos por la vara original), se ejecutó el plan `2026-07-10-pulido-responsive-detalle.md`:
+
+1. **Bug corregido:** el monograma 3D quedaba SOBRE el menú overlay (estado menú-abierto en la home). Ahora cede siempre (verificado a 1440 y 768).
+2. **Banda tablet 721–1100 con dirección:** el monograma decide vuelo/match-cut por aspect-ratio (no solo ancho) y su escala se acota por ancho (sin recortes en 768/1024); el grid del "quién soy" quiebra a 1000px; la escala de espaciado es fluida (`clamp`) sin alterar los valores a 1440.
+3. **Mesa de /personal compacta:** el área visible se recorta al montón asentado + ~25% (630px vs ~1080 antes) y se re-expande durante drag/lanzamiento.
+4. **Reveal por líneas** en el "quién soy" (split palabras→líneas sin SplitText, stagger entre líneas con los tokens, destacados intactos, sin CLS, no-op bajo reduced-motion).
+5. **Hover craft del deck:** zoom sutil (1.03) de la imagen con tokens, contenido por overflow.
+6. **Segunda voz tipográfica:** kickers de la home con índice (`01 · Quién soy` … `04 · ¿Hablamos?`, parcial único `SectionKicker.astro`) y recuentos reales bajo los h1 de /proyectos, /experiencia, /personal y /blog (derivados de los datos: veraces por construcción).
+
+**Métricas post-pulido (staging):** LCP 146 ms · CLS 0. QA ampliado en `docs/superpowers/qa/pulido/` (home a 1440/1024/768/390 + menú abierto a 1440/768 + mesa).
+
+**La vara queda ampliada de facto:** los recorridos de aceptación incluyen ahora 1024/768 y el estado menú-abierto.
+
 ## Cómo validar (5 minutos)
 
 - [ ] Home desktop: bajar despacio de arriba a abajo — monograma sube por la derecha y muere en el header; el acento muta lima→azul→naranja→lima; pestañas del deck; CTA legible que solo se deforma junto al cursor; secreto compuesto.
