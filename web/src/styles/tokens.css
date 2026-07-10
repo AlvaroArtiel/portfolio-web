@@ -1,0 +1,115 @@
+/**
+ * Design tokens for alvaroartiel.com
+ * Source of truth: docs/superpowers/specs/2026-07-10-portfolio-web-design.md (§3.1, §3.2)
+ *
+ * Font-face declarations live here (rather than global.css) because they are
+ * themselves tokens: `--font-display`, `--font-text` and `--font-mono` below
+ * reference the families defined by these @font-face rules. Keeping both in
+ * the same file means the CSS custom properties and the faces they name
+ * never drift apart.
+ *
+ * All font files are self-hosted from /fonts (web/public/fonts) — no CDN or
+ * third-party network requests at runtime.
+ */
+
+/* ---------------------------------------------------------------------- */
+/* Fonts                                                                   */
+/* ---------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/ClashDisplay-Variable.woff2') format('woff2-variations'),
+    url('/fonts/ClashDisplay-Variable.woff2') format('woff2');
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/InstrumentSans-Variable.woff2') format('woff2-variations'),
+    url('/fonts/InstrumentSans-Variable.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* -- Color: base ------------------------------------------------------ */
+  --bg: #0c0c0e;
+  --bg-elevated: #16161a;
+  --text: #f4f4f0;
+  --text-muted: #8a8a93;
+
+  /* -- Color: default accent (home) -------------------------------------
+     Overridden per-section by [data-section="..."] below. Kept at :root
+     so any component rendered before a section wrapper mounts still has
+     a sane accent to inherit. */
+  --accent: #d4ff3f;
+
+  /* -- Typography: families ---------------------------------------------- */
+  --font-display: 'Clash Display', 'Instrument Sans', system-ui, sans-serif;
+  --font-text: 'Instrument Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* -- Typography: fluid scale --------------------------------------------
+     clamp(min, preferred-vw, max). Hero sits in the 8-14vw band requested
+     by the spec; the rest of the scale steps down from it proportionally. */
+  --step-hero: clamp(3.5rem, 10vw, 9rem);
+  --step-h1: clamp(2.25rem, 5vw, 4rem);
+  --step-h2: clamp(1.75rem, 3vw, 2.5rem);
+  --step-h3: clamp(1.25rem, 1.6vw, 1.75rem);
+  --step-body: clamp(1rem, 0.5vw + 0.9rem, 1.125rem);
+  --step-small: clamp(0.8125rem, 0.3vw + 0.75rem, 0.875rem);
+  --step-mono-label: clamp(0.75rem, 0.2vw + 0.7rem, 0.8125rem);
+
+  /* -- Motion -------------------------------------------------------------
+     Single source for the "snappy but not jumpy" feel; reduced-motion
+     override lives in global.css. */
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 150ms;
+  --transition-base: 250ms;
+}
+
+/* -- Color: per-section accent -------------------------------------------
+   Set on a page/section wrapper via data-section; shared chrome (header,
+   footer, links, selection, scrollbar, focus ring) inherits --accent. */
+[data-section='home'] {
+  --accent: #d4ff3f;
+}
+
+[data-section='projects'] {
+  --accent: #5b8cff;
+}
+
+[data-section='experience'] {
+  --accent: #b06cff;
+}
+
+[data-section='personal'] {
+  --accent: #ff7847;
+}
+
+[data-section='blog'] {
+  --accent: #4fd1c5;
+}
+
+[data-section='cv'] {
+  --accent: #f4f4f0;
+}
