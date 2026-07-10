@@ -3,3 +3,6 @@ node_modules/
 dist/
 .env*
 .env
+web/.env
+.astro/
+studio/dist/
