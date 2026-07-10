@@ -1,49 +1,38 @@
 ---
 import Base from '../layouts/Base.astro'
+import Hero from '../components/home/Hero.astro'
+import About from '../components/home/About.astro'
+import FeaturedDeck from '../components/home/FeaturedDeck.astro'
+import CtaBand from '../components/home/CtaBand.astro'
+import PersonalTeaser from '../components/home/PersonalTeaser.astro'
 import type {Lang} from '../lib/i18n'
+import {t} from '../lib/i18n'
+import {getSiteSettings, getProjects, getChaptersWithItems} from '../lib/queries'
 
 interface Props {
   lang: Lang
 }
 const {lang} = Astro.props
 
-const title =
-  lang === 'en'
+const settings = await getSiteSettings()
+const featured = (await getProjects()).filter((p) => p.featured).slice(0, 4)
+const chapters = await getChaptersWithItems()
+const teaserItems = chapters.flatMap((chapter) => chapter.items.slice(0, 1))
+
+const title = t(settings?.seoTitle, lang) ||
+  (lang === 'en'
     ? 'Álvaro Artiel — Digital product design & development'
-    : 'Álvaro Artiel — Diseño y desarrollo de productos digitales'
-const description =
-  lang === 'en'
+    : 'Álvaro Artiel — Diseño y desarrollo de productos digitales')
+const description = t(settings?.seoDescription, lang) ||
+  (lang === 'en'
     ? "Álvaro Artiel's portfolio: end-to-end digital product design and development."
-    : 'Portfolio de Álvaro Artiel: diseño y desarrollo de productos digitales de punta a punta.'
-const heading = lang === 'en' ? 'End-to-end digital product design' : 'Diseño productos digitales de punta a punta'
-const subheading = lang === 'en' ? 'Site under construction — Phase 1' : 'Web en construcción — Fase 1'
+    : 'Portfolio de Álvaro Artiel: diseño y desarrollo de productos digitales de punta a punta.')
 ---
 
 <Base title={title} description={description} lang={lang} section="home">
-  <!-- Placeholder: la home real llega en la Fase 2 -->
-  <section class="placeholder-hero">
-    <h1>{heading}</h1>
-    <p>{subheading}</p>
-  </section>
+  <Hero lang={lang} settings={settings} />
+  <About lang={lang} settings={settings} />
+  <FeaturedDeck lang={lang} projects={featured} />
+  <CtaBand lang={lang} />
+  <PersonalTeaser lang={lang} items={teaserItems} />
 </Base>
-
-<style>
-  .placeholder-hero {
-    min-height: 100vh;
-    display: grid;
-    place-content: center;
-    gap: 1rem;
-    padding: clamp(1.5rem, 6vw, 4rem);
-  }
-  .placeholder-hero h1 {
-    font-family: var(--font-display);
-    font-size: var(--step-h1);
-    letter-spacing: -0.03em;
-    max-width: 14ch;
-  }
-  .placeholder-hero p {
-    font-family: var(--font-mono);
-    font-size: var(--step-mono-label);
-    color: var(--text-muted);
-  }
-</style>

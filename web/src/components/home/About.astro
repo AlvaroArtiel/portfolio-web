@@ -1,0 +1,52 @@
+---
+import type {Lang} from '../../lib/i18n'
+import {t, ui} from '../../lib/i18n'
+import type {SiteSettings} from '../../lib/queries'
+
+interface Props {
+  lang: Lang
+  settings: SiteSettings | null
+}
+const {lang, settings} = Astro.props
+const dict = ui[lang]
+const about = t(settings?.about, lang)
+---
+
+{
+  about && (
+    <section class="about" data-reveal>
+      <p class="section-kicker">{dict.who_am_i}</p>
+      <p class="about-text">{about}</p>
+    </section>
+  )
+}
+
+<style>
+  .about {
+    padding: clamp(4rem, 12vh, 8rem) clamp(1.5rem, 6vw, 4rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr);
+    gap: 2rem;
+  }
+
+  .section-kicker {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--accent);
+    margin: 0;
+  }
+
+  .about-text {
+    font-size: clamp(1.25rem, 2.4vw, 1.9rem);
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    max-width: 38ch;
+    margin: 0;
+  }
+
+  @media (max-width: 720px) {
+    .about {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

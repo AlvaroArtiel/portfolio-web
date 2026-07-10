@@ -1,0 +1,40 @@
+---
+import type {Lang} from '../../lib/i18n'
+import {ui} from '../../lib/i18n'
+import {pathFor} from '../../lib/routes'
+
+interface Props {
+  lang: Lang
+}
+const {lang} = Astro.props
+const dict = ui[lang]
+---
+
+<section class="cta-band" data-reveal>
+  <!-- En F4 este texto se convierte en tipografía líquida WebGL; el link real queda siempre debajo -->
+  <a class="cta-link" href={pathFor('contacto', lang)} id="cta-liquid-target">
+    {dict.work_together}
+  </a>
+</section>
+
+<style>
+  .cta-band {
+    padding: clamp(5rem, 16vh, 10rem) clamp(1.5rem, 6vw, 4rem);
+    border-block: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
+    text-align: center;
+  }
+
+  .cta-link {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: clamp(2.5rem, 7.5vw, 7rem);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--text);
+    text-decoration: none;
+    transition: color var(--transition-base);
+  }
+  .cta-link:hover {
+    color: var(--accent);
+  }
+</style>

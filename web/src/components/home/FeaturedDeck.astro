@@ -1,0 +1,160 @@
+---
+import type {Lang} from '../../lib/i18n'
+import {t, ui} from '../../lib/i18n'
+import type {Project} from '../../lib/queries'
+import {urlFor} from '../../lib/sanity'
+import {pathFor} from '../../lib/routes'
+
+interface Props {
+  lang: Lang
+  projects: Project[]
+}
+const {lang, projects} = Astro.props
+const dict = ui[lang]
+
+const projectHref = (slug: string) =>
+  lang === 'en' ? `/en/projects/${slug}/` : `/proyectos/${slug}/`
+---
+
+<section class="featured" data-reveal>
+  <p class="section-kicker">{dict.featured_projects}</p>
+
+  <!-- Base estática del futuro deck (F3 añade pin/apilado con scroll) -->
+  <ol class="deck">
+    {
+      projects.map((project, index) => (
+        <li class="card" style={`--card-index: ${index}`}>
+          <a href={projectHref(project.slug.current)}>
+            <div class="card-media">
+              {project.cover && (
+                <img
+                  src={urlFor(project.cover, {w: 1280, h: 800}).url()}
+                  alt=""
+                  width="1280"
+                  height="800"
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                />
+              )}
+            </div>
+            <div class="card-body">
+              <h3 class="card-title">{t(project.title, lang)}</h3>
+              <p class="card-meta">
+                <span>{project.year}</span>
+                {project.stack && <span class="card-stack">{project.stack.slice(0, 4).join(' · ')}</span>}
+              </p>
+              <p class="card-summary">{t(project.summary, lang)}</p>
+            </div>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+
+  <a class="featured-cta" href={pathFor('proyectos', lang)}>{dict.view_all_projects} →</a>
+</section>
+
+<style>
+  .featured {
+    padding: clamp(4rem, 12vh, 8rem) clamp(1.5rem, 6vw, 4rem);
+  }
+
+  .section-kicker {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--accent);
+    margin: 0 0 2.5rem;
+  }
+
+  .deck {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(2rem, 6vh, 4rem);
+  }
+
+  .card a {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: end;
+    text-decoration: none;
+    color: var(--text);
+    background: var(--bg-elevated);
+    padding: clamp(1rem, 2.5vw, 2rem);
+    border-radius: 4px;
+    transition: outline-color var(--transition-fast);
+    outline: 1px solid transparent;
+  }
+  .card a:hover {
+    outline-color: var(--accent);
+  }
+  /* Alternancia editorial: las pares invierten la composición */
+  .card:nth-child(even) a {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+  .card:nth-child(even) .card-media {
+    order: 2;
+  }
+
+  .card-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 2px;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: clamp(1.75rem, 4vw, 3rem);
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+    margin: 0 0 0.75rem;
+  }
+  .card a:hover .card-title {
+    color: var(--accent);
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+  }
+
+  .card-summary {
+    font-size: var(--step-body);
+    color: var(--text-muted);
+    line-height: 1.5;
+    max-width: 48ch;
+    margin: 0;
+  }
+
+  .featured-cta {
+    display: inline-block;
+    margin-top: clamp(2rem, 5vh, 3.5rem);
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 0.2em;
+    transition: color var(--transition-fast);
+  }
+  .featured-cta:hover {
+    color: var(--accent);
+  }
+
+  @media (max-width: 720px) {
+    .card a,
+    .card:nth-child(even) a {
+      grid-template-columns: 1fr;
+    }
+    .card:nth-child(even) .card-media {
+      order: 0;
+    }
+  }
+</style>

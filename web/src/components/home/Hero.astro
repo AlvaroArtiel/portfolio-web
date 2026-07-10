@@ -1,0 +1,74 @@
+---
+import type {Lang} from '../../lib/i18n'
+import {t, ui} from '../../lib/i18n'
+import type {SiteSettings} from '../../lib/queries'
+
+interface Props {
+  lang: Lang
+  settings: SiteSettings | null
+}
+const {lang, settings} = Astro.props
+const dict = ui[lang]
+
+const title =
+  t(settings?.heroTitle, lang) || (lang === 'en' ? 'I design digital products end to end' : 'Diseño productos digitales de punta a punta')
+const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · producto'
+---
+
+<section class="hero" data-reveal>
+  <p class="hero-eyebrow">Álvaro Artiel</p>
+  <!-- El h1 real siempre existe: en F4 las partículas lo cubren visualmente -->
+  <h1 class="hero-title" id="hero-title">{title}<span class="hero-dot" aria-hidden="true">.</span></h1>
+  <p class="hero-subtitle">{subtitle}</p>
+  <p class="hero-scroll-hint" aria-hidden="true">{dict.scroll_hint} ↓</p>
+</section>
+
+<style>
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(5rem, 12vh, 8rem) clamp(1.5rem, 6vw, 4rem) clamp(2rem, 6vh, 4rem);
+    position: relative;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--accent);
+    margin: 0 0 1.5rem;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: var(--step-hero);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    max-width: 12ch;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .hero-dot {
+    color: var(--accent);
+  }
+
+  .hero-subtitle {
+    font-family: var(--font-mono);
+    font-size: clamp(0.8rem, 1.4vw, 1rem);
+    color: var(--text-muted);
+    margin: 2rem 0 0;
+    letter-spacing: 0.04em;
+  }
+
+  .hero-scroll-hint {
+    position: absolute;
+    bottom: clamp(1rem, 4vh, 2.5rem);
+    right: clamp(1.5rem, 6vw, 4rem);
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0;
+  }
+</style>
