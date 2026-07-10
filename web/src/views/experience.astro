@@ -132,6 +132,7 @@ const description =
   }
 
   .entry-logo {
+    grid-column: 1;
     width: 5rem;
     height: 5rem;
     object-fit: contain;
@@ -140,6 +141,11 @@ const description =
     padding: 0.5rem;
     position: relative;
     z-index: 1;
+  }
+
+  /* Siempre en la columna de contenido, con o sin logo */
+  .entry-body {
+    grid-column: 2;
   }
 
   .entry-dates {
