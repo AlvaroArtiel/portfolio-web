@@ -10,12 +10,24 @@ const {lang} = Astro.props
 const dict = ui[lang]
 ---
 
-<section class="cta-band" data-reveal>
-  <!-- En F4 este texto se convierte en tipografía líquida WebGL; el link real queda siempre debajo -->
+<section class="cta-band" data-reveal id="cta-band">
+  <!-- Tipografía líquida WebGL encima; el link real queda siempre debajo y recibe el clic -->
   <a class="cta-link" href={pathFor('contacto', lang)} id="cta-liquid-target">
     {dict.work_together}
   </a>
 </section>
+
+<script>
+  import {mountScene} from '../../lib/three-island'
+
+  const band = document.getElementById('cta-band')
+  const link = document.getElementById('cta-liquid-target')
+  if (band && link) {
+    void mountScene(band, () => import('../../scenes/liquid-text').then((m) => m.default)).then((unmount) => {
+      if (unmount) link.classList.add('is-covered')
+    })
+  }
+</script>
 
 <style>
   .cta-band {
@@ -36,5 +48,16 @@ const dict = ui[lang]
   }
   .cta-link:hover {
     color: var(--accent);
+  }
+
+  /* El canvas del efecto no roba el clic del link */
+  .cta-band :global(canvas) {
+    pointer-events: none;
+  }
+  .cta-link.is-covered {
+    color: transparent;
+  }
+  .cta-link.is-covered:focus-visible {
+    color: var(--text);
   }
 </style>

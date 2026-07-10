@@ -13,29 +13,38 @@ const [first, second, third] = media
   Composición editorial asimétrica de las 2-3 heroMedia: cada slot tiene
   posición y tamaño propios (no es una galería). En F4 se convierten en lonas.
 -->
-<div class={`hero-media count-${media.length}`} data-curtain-media>
+<div class={`hero-media count-${media.length}`} data-curtain-media id="hero-media">
   {
     first && (
       <figure class="hm-slot hm-a">
-        <img src={urlFor(first, {w: 1600}).url()} alt="" width="1600" height="1000" loading="eager" />
+        <img crossorigin="anonymous" src={urlFor(first, {w: 1600}).url()} alt="" width="1600" height="1000" loading="eager" />
       </figure>
     )
   }
   {
     second && (
       <figure class="hm-slot hm-b">
-        <img src={urlFor(second, {w: 900}).url()} alt="" width="900" height="563" loading="lazy" />
+        <img crossorigin="anonymous" src={urlFor(second, {w: 900}).url()} alt="" width="900" height="563" loading="lazy" />
       </figure>
     )
   }
   {
     third && (
       <figure class="hm-slot hm-c">
-        <img src={urlFor(third, {w: 720}).url()} alt="" width="720" height="450" loading="lazy" />
+        <img crossorigin="anonymous" src={urlFor(third, {w: 720}).url()} alt="" width="720" height="450" loading="lazy" />
       </figure>
     )
   }
 </div>
+
+<script>
+  import {mountScene} from '../../lib/three-island'
+
+  const container = document.querySelector<HTMLElement>('[data-curtain-media]')
+  if (container) {
+    void mountScene(container, () => import('../../scenes/curtain-media').then((m) => m.default))
+  }
+</script>
 
 <style>
   .hero-media {

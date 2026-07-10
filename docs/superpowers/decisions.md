@@ -12,3 +12,7 @@
 - **Qué decía el plan:** "View Transitions API de Astro con crossfade del --accent (fallback: cambio directo)".
 - **Qué se hace:** `@view-transition { navigation: auto }` en CSS (cross-document view transitions, MPA). Mismo efecto de crossfade del acento entre páginas.
 - **Por qué:** el ClientRouter de Astro convierte la navegación en SPA y los scripts por página (deck, filtros, lightbox, overlay) dejarían de reinicializarse sin refactorizar todos a `astro:page-load`. La variante cross-document es CSS puro, cero riesgo, y el fallback (cambio directo) es exactamente el que pide el plan para navegadores sin soporte.
+## 2026-07-10 F4 — CORS del CDN de Sanity para texturas WebGL
+- **Qué pasaba:** `cdn.sanity.io` devolvía 403 a peticiones con cabecera `Origin` (las texturas de las lonas k95 no cargaban).
+- **Qué se hace:** añadidos orígenes CORS al proyecto Sanity vía API de gestión: `http://localhost:4321`, `https://dev.alvaroartiel.com`, `https://alvaroartiel.com`; las `<img>` de heroMedia llevan `crossorigin="anonymous"`.
+- **Por qué:** requisito del efecto lona (TextureLoader necesita CORS); sin ello el fallback (imágenes normales) seguía funcionando.

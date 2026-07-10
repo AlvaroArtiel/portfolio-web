@@ -48,6 +48,17 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
         })
       },
     )
+
+    // Capa fija para el monograma 3D que viaja del hero al header
+    const layer = document.createElement('div')
+    layer.id = 'monogram-layer'
+    layer.style.cssText = 'position:fixed;inset:0;z-index:101;pointer-events:none;'
+    document.body.appendChild(layer)
+    void mountScene(layer, () => import('../../scenes/monogram').then((m) => m.default), {eager: true}).then(
+      (unmount) => {
+        if (!unmount) layer.remove()
+      },
+    )
   }
 </script>
 
