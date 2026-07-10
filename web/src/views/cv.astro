@@ -1,33 +1,255 @@
 ---
 import Base from '../layouts/Base.astro'
-import {ui} from '../lib/i18n'
+import {t, ui} from '../lib/i18n'
 import type {Lang} from '../lib/i18n'
+import {getEducation, getExperiences, getSiteSettings} from '../lib/queries'
+import printCssUrl from '../styles/print.css?url'
 
 interface Props {
   lang: Lang
 }
 const {lang} = Astro.props
+const dict = ui[lang]
+
+const [experiences, education, settings] = await Promise.all([getExperiences(), getEducation(), getSiteSettings()])
+
+const monthFormatter = new Intl.DateTimeFormat(lang === 'en' ? 'en-GB' : 'es-ES', {
+  month: '2-digit',
+  year: 'numeric',
+})
+
+function formatDate(date?: string): string {
+  if (!date) return ''
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) return date
+  return monthFormatter.format(parsed)
+}
+
+function dateRange(start?: string, end?: string): string {
+  const startLabel = formatDate(start)
+  const endLabel = end ? formatDate(end) : dict.present
+  return [startLabel, endLabel].filter(Boolean).join(' — ')
+}
+
+/** Distinct stack values seen across the seed content; sensible fallback per the brief. */
+const skills = ['Figma', 'React', 'Astro', 'Node.js', 'TypeScript', 'Sanity', 'UX/UI', 'SEO']
+
+const email = settings?.email ?? 'soy@alvaroartiel.com'
+const cvPdfUrl = settings?.cvPdfUrl
 
 const heading = ui[lang].nav_cv
-const description = lang === 'en' ? 'Curriculum vitae — full content coming in Phase 2.' : 'Currículum — contenido completo en la Fase 2.'
+const description = lang === 'en' ? 'Curriculum vitae of Álvaro Artiel.' : 'Currículum de Álvaro Artiel.'
 ---
 
 <Base title={`${heading} — Álvaro Artiel`} description={description} lang={lang} section="cv">
-  <section class="stub">
-    <h1>{heading}</h1>
+  <link rel="stylesheet" href={printCssUrl} media="print" />
+
+  <section class="cv-page">
+    <header class="cv-header" data-reveal>
+      <div>
+        <h1>Álvaro Artiel</h1>
+        <p class="cv-role">{ui[lang].nav_cv}</p>
+      </div>
+      <div class="cv-actions no-print">
+        {
+          cvPdfUrl ? (
+            <a class="cv-download" href={cvPdfUrl} target="_blank" rel="noopener noreferrer">
+              {dict.download_pdf}
+            </a>
+          ) : (
+            <button class="cv-download" type="button" data-print-trigger>
+              {dict.download_pdf}
+            </button>
+          )
+        }
+      </div>
+    </header>
+
+    <section class="cv-section" data-reveal>
+      <h2 class="cv-section-title">{dict.cv_personal_data}</h2>
+      <p class="cv-personal-data">
+        <a href={`mailto:${email}`}>{email}</a>
+      </p>
+    </section>
+
+    <section class="cv-section" data-reveal>
+      <h2 class="cv-section-title">{dict.cv_experience}</h2>
+      <ul class="cv-list">
+        {
+          experiences.map((exp) => {
+            const company = t(exp.company, lang)
+            const role = t(exp.role, lang)
+            const summary = t(exp.summary, lang)
+            const bullets = (exp.bullets ?? []).map((b) => t(b, lang)).filter(Boolean)
+            return (
+              <li class="cv-entry">
+                <p class="cv-entry-dates">{dateRange(exp.startDate, exp.endDate)}</p>
+                <h3 class="cv-entry-title">
+                  {role} <span class="cv-entry-at">— {company}</span>
+                </h3>
+                {summary && <p class="cv-entry-summary">{summary}</p>}
+                {bullets.length > 0 && (
+                  <ul class="cv-entry-bullets">
+                    {bullets.map((bullet) => (
+                      <li>{bullet}</li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            )
+          })
+        }
+      </ul>
+    </section>
+
+    <section class="cv-section" data-reveal>
+      <h2 class="cv-section-title">{dict.cv_education}</h2>
+      <ul class="cv-list">
+        {
+          education.map((edu) => {
+            const school = t(edu.school, lang)
+            const degree = t(edu.degree, lang)
+            const award = t(edu.award, lang)
+            const desc = t(edu.description, lang)
+            return (
+              <li class="cv-entry">
+                <p class="cv-entry-dates">{dateRange(edu.startDate, edu.endDate)}</p>
+                <h3 class="cv-entry-title">
+                  {degree} <span class="cv-entry-at">— {school}</span>
+                </h3>
+                {award && <p class="cv-entry-summary">{award}</p>}
+                {desc && <p class="cv-entry-summary">{desc}</p>}
+              </li>
+            )
+          })
+        }
+      </ul>
+    </section>
+
+    <section class="cv-section" data-reveal>
+      <h2 class="cv-section-title">{dict.cv_skills}</h2>
+      <p class="cv-skills">{skills.join(' · ')}</p>
+    </section>
   </section>
 </Base>
 
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-print-trigger]').forEach((button) => {
+    button.addEventListener('click', () => window.print())
+  })
+</script>
+
 <style>
-  .stub {
-    min-height: 60vh;
-    display: grid;
-    place-content: center;
-    padding: clamp(1.5rem, 6vw, 4rem);
+  .cv-page {
+    padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
+    max-width: 44rem;
+    margin-inline: auto;
   }
-  .stub h1 {
+
+  .cv-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: clamp(3rem, 8vh, 5rem);
+  }
+  .cv-header h1 {
     font-family: var(--font-display);
+    font-weight: 580;
     font-size: var(--step-h1);
     letter-spacing: -0.03em;
+    margin: 0 0 0.35rem;
+  }
+  .cv-role {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--accent);
+    margin: 0;
+  }
+
+  .cv-download {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--bg);
+    background: var(--accent);
+    border: 0;
+    padding: 0.6rem 1.25rem;
+    border-radius: 999px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: opacity var(--transition-fast);
+  }
+  .cv-download:hover {
+    opacity: 0.85;
+  }
+
+  .cv-section {
+    margin-bottom: clamp(2.5rem, 6vh, 4rem);
+  }
+  .cv-section-title {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 0 0 1.25rem;
+  }
+
+  .cv-personal-data {
+    margin: 0;
+  }
+  .cv-personal-data a {
+    color: var(--text);
+  }
+
+  .cv-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.75rem;
+  }
+
+  .cv-entry-dates {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text-muted);
+    margin: 0 0 0.3rem;
+  }
+  .cv-entry-title {
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+    letter-spacing: -0.01em;
+    margin: 0 0 0.4rem;
+  }
+  .cv-entry-at {
+    font-family: var(--font-text);
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.85em;
+  }
+  .cv-entry-summary {
+    font-size: var(--step-small);
+    line-height: 1.55;
+    color: var(--text-muted);
+    margin: 0 0 0.4rem;
+  }
+  .cv-entry-bullets {
+    margin: 0.4rem 0 0;
+    padding-left: 1.15rem;
+    display: grid;
+    gap: 0.3rem;
+    font-size: var(--step-small);
+    color: var(--text-muted);
+  }
+
+  .cv-skills {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    margin: 0;
+    max-width: 60ch;
   }
 </style>

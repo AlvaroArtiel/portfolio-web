@@ -1,0 +1,15 @@
+---
+import BlogPost from '../../../views/blog-post.astro'
+import {getPosts, getPost} from '../../../lib/queries'
+
+export async function getStaticPaths() {
+  const posts = await getPosts()
+  return posts.map((post) => ({params: {slug: post.slug.current}}))
+}
+
+const {slug} = Astro.params
+const post = await getPost(slug!)
+if (!post) return Astro.redirect('/en/blog/')
+---
+
+<BlogPost lang="en" post={post} />

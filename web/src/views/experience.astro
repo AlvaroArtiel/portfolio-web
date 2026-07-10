@@ -1,34 +1,246 @@
 ---
 import Base from '../layouts/Base.astro'
-import {ui} from '../lib/i18n'
+import {t, ui} from '../lib/i18n'
 import type {Lang} from '../lib/i18n'
+import {getExperiences, getProjects} from '../lib/queries'
+import {urlFor} from '../lib/sanity'
+import {pathFor} from '../lib/routes'
 
 interface Props {
   lang: Lang
 }
 const {lang} = Astro.props
+const dict = ui[lang]
+
+const [experiences, projects] = await Promise.all([getExperiences(), getProjects()])
+
+/** Map project _id -> {slug, title} to dereference relatedProjects refs. */
+const projectById = new Map(projects.map((p) => [p._id, {slug: p.slug.current, title: t(p.title, lang)}]))
+
+const monthFormatter = new Intl.DateTimeFormat(lang === 'en' ? 'en-GB' : 'es-ES', {
+  month: '2-digit',
+  year: 'numeric',
+})
+
+function formatDate(date?: string): string {
+  if (!date) return ''
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) return date
+  return monthFormatter.format(parsed)
+}
+
+function dateRange(start?: string, end?: string): string {
+  const startLabel = formatDate(start)
+  const endLabel = end ? formatDate(end) : dict.present
+  return [startLabel, endLabel].filter(Boolean).join(' — ')
+}
 
 const heading = ui[lang].nav_experience
 const description =
-  lang === 'en' ? 'Professional experience — full content coming in Phase 2.' : 'Experiencia profesional — contenido completo en la Fase 2.'
+  lang === 'en'
+    ? 'Professional experience of Álvaro Artiel: roles, companies and related projects.'
+    : 'Experiencia profesional de Álvaro Artiel: roles, empresas y proyectos relacionados.'
 ---
 
 <Base title={`${heading} — Álvaro Artiel`} description={description} lang={lang} section="experience">
-  <section class="stub">
-    <h1>{heading}</h1>
+  <section class="experience-page">
+    <header class="experience-header" data-reveal>
+      <h1>{heading}</h1>
+    </header>
+
+    <ol class="timeline">
+      {
+        experiences.map((exp) => {
+          const company = t(exp.company, lang)
+          const role = t(exp.role, lang)
+          const location = t(exp.location, lang)
+          const modality = t(exp.modality, lang)
+          const summary = t(exp.summary, lang)
+          const bullets = (exp.bullets ?? []).map((b) => t(b, lang)).filter(Boolean)
+          const related = (exp.relatedProjects ?? [])
+            .map((ref) => projectById.get(ref._ref))
+            .filter((p): p is {slug: string; title: string} => Boolean(p))
+
+          return (
+            <li class="timeline-entry" data-reveal>
+              {exp.logo && (
+                <img
+                  class="entry-logo"
+                  src={urlFor(exp.logo, {w: 160, h: 160}).url()}
+                  alt=""
+                  width="80"
+                  height="80"
+                  loading="lazy"
+                />
+              )}
+              <div class="entry-body">
+                <p class="entry-dates">{dateRange(exp.startDate, exp.endDate)}</p>
+                <h2 class="entry-role">{role}</h2>
+                <p class="entry-company">{company}</p>
+                {(location || modality) && (
+                  <p class="entry-meta">{[location, modality].filter(Boolean).join(' · ')}</p>
+                )}
+                {summary && <p class="entry-summary">{summary}</p>}
+                {bullets.length > 0 && (
+                  <ul class="entry-bullets">
+                    {bullets.map((bullet) => (
+                      <li>{bullet}</li>
+                    ))}
+                  </ul>
+                )}
+                {related.length > 0 && (
+                  <p class="entry-related">
+                    <span class="entry-related-label">{dict.related_projects}</span>
+                    <span class="entry-related-list">
+                      {related.map((p) => (
+                        <a href={`${pathFor('proyectos', lang)}${p.slug}/`}>{p.title}</a>
+                      ))}
+                    </span>
+                  </p>
+                )}
+              </div>
+            </li>
+          )
+        })
+      }
+    </ol>
   </section>
 </Base>
 
 <style>
-  .stub {
-    min-height: 60vh;
-    display: grid;
-    place-content: center;
-    padding: clamp(1.5rem, 6vw, 4rem);
+  .experience-page {
+    padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
+    max-width: 60rem;
+    margin-inline: auto;
   }
-  .stub h1 {
+
+  .experience-header h1 {
     font-family: var(--font-display);
+    font-weight: 580;
     font-size: var(--step-h1);
     letter-spacing: -0.03em;
+    margin: 0 0 clamp(3rem, 8vh, 5rem);
+  }
+
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(2.5rem, 7vh, 4rem);
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 2.5rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 1px;
+    background: color-mix(in srgb, var(--text-muted) 25%, transparent);
+  }
+
+  .timeline-entry {
+    display: grid;
+    grid-template-columns: 5rem minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+    position: relative;
+  }
+
+  .entry-logo {
+    width: 5rem;
+    height: 5rem;
+    object-fit: contain;
+    border-radius: 4px;
+    background: var(--bg-elevated);
+    padding: 0.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .entry-dates {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--accent);
+    margin: 0 0 0.4rem;
+  }
+
+  .entry-role {
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: clamp(1.4rem, 2.6vw, 2rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.25rem;
+  }
+
+  .entry-company {
+    font-size: var(--step-body);
+    color: var(--text-muted);
+    margin: 0 0 0.5rem;
+  }
+
+  .entry-meta {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text-muted);
+    margin: 0 0 0.75rem;
+  }
+
+  .entry-summary {
+    font-size: var(--step-body);
+    line-height: 1.55;
+    max-width: 60ch;
+    margin: 0 0 0.75rem;
+  }
+
+  .entry-bullets {
+    margin: 0 0 0.75rem;
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 0.35rem;
+    color: var(--text-muted);
+    font-size: var(--step-small);
+  }
+
+  .entry-related {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    margin: 0;
+  }
+  .entry-related-label {
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.7rem;
+    margin-right: 0.75rem;
+  }
+  .entry-related-list a {
+    color: var(--text);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    text-underline-offset: 0.2em;
+  }
+  .entry-related-list a:hover {
+    color: var(--accent);
+  }
+  .entry-related-list a:not(:last-child)::after {
+    content: ' · ';
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+
+  @media (max-width: 560px) {
+    .timeline::before {
+      left: 1.75rem;
+    }
+    .timeline-entry {
+      grid-template-columns: 3.5rem minmax(0, 1fr);
+      gap: 1rem;
+    }
+    .entry-logo {
+      width: 3.5rem;
+      height: 3.5rem;
+    }
   }
 </style>

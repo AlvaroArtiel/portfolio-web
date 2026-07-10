@@ -1,33 +1,123 @@
 ---
 import Base from '../layouts/Base.astro'
-import {ui} from '../lib/i18n'
+import {t, ui} from '../lib/i18n'
 import type {Lang} from '../lib/i18n'
+import {getPosts} from '../lib/queries'
+import {pathFor} from '../lib/routes'
 
 interface Props {
   lang: Lang
 }
 const {lang} = Astro.props
 
+const posts = await getPosts()
+
+const dateFormatter = new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'es-ES', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+})
+
+function formatDate(date?: string): string {
+  if (!date) return ''
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) return date
+  return dateFormatter.format(parsed)
+}
+
 const heading = ui[lang].nav_blog
-const description = lang === 'en' ? 'Blog — full content coming in Phase 2.' : 'Blog — contenido completo en la Fase 2.'
+const description =
+  lang === 'en' ? 'Writing by Álvaro Artiel: notes on design, code and product.' : 'Textos de Álvaro Artiel: notas sobre diseño, código y producto.'
 ---
 
 <Base title={`${heading} — Álvaro Artiel`} description={description} lang={lang} section="blog">
-  <section class="stub">
-    <h1>{heading}</h1>
+  <section class="blog-page">
+    <header class="blog-header" data-reveal>
+      <h1>{heading}</h1>
+    </header>
+
+    <ol class="blog-list">
+      {
+        posts.map((post) => {
+          const title = t(post.title, lang)
+          const href = `${pathFor('blog', lang)}${post.slug.current}/`
+          return (
+            <li class="blog-item" data-reveal>
+              <a href={href}>
+                <p class="blog-date">{formatDate(post.date)}</p>
+                <h2 class="blog-title">{title}</h2>
+                {post.tags && post.tags.length > 0 && (
+                  <p class="blog-tags">{post.tags.join(' · ')}</p>
+                )}
+              </a>
+            </li>
+          )
+        })
+      }
+    </ol>
   </section>
 </Base>
 
 <style>
-  .stub {
-    min-height: 60vh;
-    display: grid;
-    place-content: center;
-    padding: clamp(1.5rem, 6vw, 4rem);
+  .blog-page {
+    padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
+    max-width: 60rem;
+    margin-inline: auto;
   }
-  .stub h1 {
+
+  .blog-header h1 {
     font-family: var(--font-display);
+    font-weight: 580;
     font-size: var(--step-h1);
     letter-spacing: -0.03em;
+    margin: 0 0 clamp(3rem, 8vh, 5rem);
+  }
+
+  .blog-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+  }
+
+  .blog-item {
+    border-top: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
+  }
+  .blog-item:last-child {
+    border-bottom: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
+  }
+
+  .blog-item a {
+    display: block;
+    text-decoration: none;
+    color: var(--text);
+    padding: clamp(1.5rem, 4vh, 2.5rem) 0;
+    transition: color var(--transition-fast);
+  }
+  .blog-item a:hover {
+    color: var(--accent);
+  }
+
+  .blog-date {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0 0 0.5rem;
+  }
+
+  .blog-title {
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin: 0 0 0.5rem;
+  }
+
+  .blog-tags {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text-muted);
+    margin: 0;
   }
 </style>

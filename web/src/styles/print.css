@@ -1,0 +1,59 @@
+/**
+ * Print stylesheet for the CV page only.
+ *
+ * Loaded via a <link rel="stylesheet" media="print"> in web/src/views/cv.astro
+ * (imported with the `?url` Vite suffix so it emits as its own asset and is
+ * fetched only when the user prints — it is never bundled into the regular
+ * page CSS or applied on screen).
+ *
+ * Goals: A4 page, black ink on white, no chrome (header/footer/nav/menu
+ * overlay/buttons), sensible margins, entries that don't split across pages.
+ */
+
+@page {
+  size: A4;
+  margin: 16mm 14mm;
+}
+
+html,
+body {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+* {
+  color: #000 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.site-header,
+.site-footer,
+.menu-overlay,
+.skip-link,
+.no-print,
+.cv-actions {
+  display: none !important;
+}
+
+.cv-page {
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+a {
+  color: #000 !important;
+  text-decoration: underline;
+}
+
+.cv-section-title {
+  color: #000 !important;
+}
+
+.cv-entry,
+.cv-section {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}

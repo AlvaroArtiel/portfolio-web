@@ -45,6 +45,8 @@ export interface SiteSettings {
   email?: string
   socials?: Social[]
   cvPdf?: SanityFileRef
+  /** Direct CDN URL of the uploaded CV file, if any (see siteSettingsQuery projection). */
+  cvPdfUrl?: string
   seoTitle?: LocaleField
   seoDescription?: LocaleField
 }
@@ -139,7 +141,12 @@ export interface BlogPost {
   published?: boolean
 }
 
-const siteSettingsQuery = /* groq */ `*[_type == 'siteSettings'][0]`
+const siteSettingsQuery = /* groq */ `
+  *[_type == 'siteSettings'][0]{
+    ...,
+    "cvPdfUrl": cvPdf.asset->url
+  }
+`
 
 const experiencesQuery = /* groq */ `
   *[_type == 'experience' && visible != false] | order(order asc)
