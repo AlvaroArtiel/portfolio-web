@@ -10,43 +10,128 @@ interface Props {
 const {lang, settings} = Astro.props
 const dict = ui[lang]
 const about = t(settings?.about, lang)
+
+// 2-3 palabras clave del párrafo destacadas en acento (remediación A2).
+// Se resaltan solo si están presentes en el texto editado en Sanity.
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+const HIGHLIGHTS = [
+  'productos propios',
+  'diseño que resuelve',
+  'primer boceto',
+  'own products',
+  'design that solves',
+  'first sketch',
+]
+let aboutHtml = esc(about ?? '')
+for (const phrase of HIGHLIGHTS) {
+  aboutHtml = aboutHtml.replace(phrase, `<em class="hl">${phrase}</em>`)
+}
+
+// Columna de metadatos mono (datos respaldados por el seed/spec §9):
+// +40 proyectos como consultor · en activo desde 2018 (8 Pecados, nov 2018)
+// · 3 productos propios en Ceustack (Ranquea, UltraCarta, Vaultz).
+const meta =
+  lang === 'en'
+    ? [
+        {num: '+40', label: 'projects as an independent consultant'},
+        {num: '2018', label: 'designing digital products since'},
+        {num: '3', label: 'in-house products at Ceustack'},
+      ]
+    : [
+        {num: '+40', label: 'proyectos como consultor independiente'},
+        {num: '2018', label: 'diseñando producto digital desde entonces'},
+        {num: '3', label: 'productos propios en Ceustack'},
+      ]
 ---
 
 {
   about && (
     <section class="about" data-reveal>
       <p class="section-kicker">{dict.who_am_i}</p>
-      <p class="about-text">{about}</p>
+      <div class="about-body">
+        <p class="about-text" set:html={aboutHtml} />
+        <aside class="about-meta">
+          {meta.map((item) => (
+            <div class="meta-item">
+              <span class="meta-num">{item.num}</span>
+              <span class="meta-label">{item.label}</span>
+            </div>
+          ))}
+        </aside>
+      </div>
     </section>
   )
 }
 
 <style>
   .about {
-    padding: clamp(4rem, 12vh, 8rem) clamp(1.5rem, 6vw, 4rem);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2.5fr);
-    gap: 2rem;
+    /* Techo alto (la franja vacía tras el hero es la pista de aterrizaje del
+       monograma), salida más corta hacia el deck. */
+    padding: var(--space-m) clamp(1.5rem, 6vw, 4rem) var(--space-s);
   }
 
   .section-kicker {
     font-family: var(--font-mono);
     font-size: var(--step-mono-label);
     color: var(--accent);
-    margin: 0;
+    margin: 0 0 2.5rem;
+  }
+
+  /* Texto a ancho de lectura generoso centrado-izquierda; a la derecha,
+     columna estrecha de metadatos mono que da ritmo (nada de mitad vacía). */
+  .about-body {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 3fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: start;
   }
 
   .about-text {
     font-size: clamp(1.25rem, 2.4vw, 1.9rem);
     line-height: 1.45;
     letter-spacing: -0.01em;
-    max-width: 38ch;
+    max-width: 36ch;
     margin: 0;
+  }
+  .about-text :global(.hl) {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .about-meta {
+    display: grid;
+    gap: 1.5rem;
+    padding-top: 0.5rem;
+  }
+  .meta-item {
+    display: grid;
+    gap: 0.35rem;
+    padding-top: 1rem;
+    border-top: var(--border-soft);
+  }
+  .meta-num {
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .meta-label {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
   }
 
   @media (max-width: 720px) {
     .about {
+      padding-block: var(--space-s);
+    }
+    .about-body {
       grid-template-columns: 1fr;
+    }
+    .about-meta {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
     }
   }
 </style>

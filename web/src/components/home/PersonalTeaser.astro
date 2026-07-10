@@ -13,25 +13,42 @@ const {lang, items} = Astro.props
 const dict = ui[lang]
 
 const photos = items.filter((item) => item.image).slice(0, 4)
+
+const claim =
+  lang === 'en'
+    ? 'Things happen outside working hours too'
+    : 'Fuera del horario laboral también pasan cosas'
 ---
 
 {
   photos.length > 0 && (
     <section class="personal-teaser" data-reveal>
       <p class="section-kicker">{dict.personal_teaser_kicker}</p>
-      <a class="teaser-stack" href={pathFor('personal', lang)}>
-        {photos.map((item) => (
-          <PolaroidCard lang={lang} item={item} interactive={false} />
-        ))}
-        <span class="teaser-cta">{dict.personal_teaser_cta} →</span>
-      </a>
+      <!-- Composición asimétrica intencional (remediación A2): claim grande a
+           la izquierda + masa diagonal de polaroids a la derecha. -->
+      <div class="teaser-composition">
+        <div class="teaser-claim">
+          <p class="claim">
+            {claim}
+            <span class="claim-dot" aria-hidden="true">.</span>
+          </p>
+          <a class="teaser-cta" href={pathFor('personal', lang)}>
+            {dict.personal_teaser_cta} →
+          </a>
+        </div>
+        <a class="teaser-stack" href={pathFor('personal', lang)} aria-label={dict.personal_teaser_cta}>
+          {photos.map((item) => (
+            <PolaroidCard lang={lang} item={item} interactive={false} />
+          ))}
+        </a>
+      </div>
     </section>
   )
 }
 
 <style>
   .personal-teaser {
-    padding: clamp(4rem, 12vh, 8rem) clamp(1.5rem, 6vw, 4rem) clamp(5rem, 14vh, 9rem);
+    padding: var(--space-s) clamp(1.5rem, 6vw, 4rem) var(--space-m);
   }
 
   .section-kicker {
@@ -41,40 +58,100 @@ const photos = items.filter((item) => item.image).slice(0, 4)
     margin: 0 0 2.5rem;
   }
 
-  .teaser-stack {
-    display: flex;
-    flex-wrap: wrap;
+  .teaser-composition {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: clamp(2rem, 5vw, 4rem);
     align-items: center;
-    gap: clamp(0.5rem, 2vw, 1rem);
-    text-decoration: none;
   }
 
-  .teaser-stack :global(.polaroid) {
-    max-width: clamp(9rem, 18vw, 14rem);
+  .claim {
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: clamp(1.9rem, 3.6vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.75rem;
+    max-width: 16ch;
+    text-wrap: balance;
   }
-  .teaser-stack:hover :global(.polaroid) {
-    transform: rotate(calc(var(--rot) * 1.6)) translateY(-4px);
-  }
-  .teaser-stack :global(.polaroid) + :global(.polaroid) {
-    margin-left: clamp(-2.5rem, -4vw, -1rem);
+  .claim-dot {
+    color: var(--accent);
   }
 
   .teaser-cta {
-    margin-left: clamp(1rem, 3vw, 2rem);
     font-family: var(--font-mono);
     font-size: var(--step-small);
     color: var(--text);
+    text-decoration: none;
     border-bottom: 1px solid var(--accent);
     padding-bottom: 0.2em;
     transition: color var(--transition-fast);
   }
-  .teaser-stack:hover .teaser-cta {
+  .teaser-cta:hover {
     color: var(--accent);
   }
 
+  /* Masa diagonal: las polaroids se apilan a lo largo de la diagonal del
+     bloque, con rotaciones alternas — desorden compuesto, no fila. */
+  .teaser-stack {
+    position: relative;
+    display: block;
+    height: clamp(19rem, 42vh, 25rem);
+    text-decoration: none;
+  }
+  .teaser-stack :global(.polaroid) {
+    position: absolute;
+    max-width: clamp(9.5rem, 16vw, 13rem);
+    transition: transform var(--transition-base) var(--ease-standard);
+  }
+  .teaser-stack :global(.polaroid:nth-child(1)) {
+    top: 4%;
+    left: 2%;
+    transform: rotate(-7deg);
+  }
+  .teaser-stack :global(.polaroid:nth-child(2)) {
+    top: 22%;
+    left: 27%;
+    transform: rotate(4deg);
+    z-index: 2;
+  }
+  .teaser-stack :global(.polaroid:nth-child(3)) {
+    top: 42%;
+    left: 52%;
+    transform: rotate(-4deg);
+  }
+  .teaser-stack :global(.polaroid:nth-child(4)) {
+    top: 58%;
+    left: 76%;
+    transform: rotate(7deg);
+    z-index: 2;
+  }
+  .teaser-stack:hover :global(.polaroid) {
+    transform: rotate(0deg) translateY(-6px);
+  }
+
+  @media (max-width: 720px) {
+    .personal-teaser {
+      padding-block: var(--space-s);
+    }
+    .teaser-composition {
+      grid-template-columns: 1fr;
+    }
+    .teaser-stack {
+      height: clamp(15rem, 36vh, 19rem);
+    }
+    .teaser-stack :global(.polaroid) {
+      max-width: clamp(8rem, 34vw, 10rem);
+    }
+    .teaser-stack :global(.polaroid:nth-child(4)) {
+      left: 64%;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .teaser-stack:hover .polaroid {
-      transform: rotate(var(--rot));
+    .teaser-stack:hover :global(.polaroid) {
+      transform: none;
     }
   }
 </style>

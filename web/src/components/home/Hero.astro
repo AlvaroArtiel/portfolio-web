@@ -15,6 +15,10 @@ const title =
 const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · producto'
 ---
 
+<!-- Composición (remediación A2/B2): el titular es la masa dominante centrada
+     (~80% de ancho, formado por las partículas); nombre y keywords enmarcan
+     el perímetro (arriba-izq / abajo-izq); el monograma 3D entra arriba-dcha
+     en diagonal compositiva con el titular (scenes/monogram.ts). -->
 <section class="hero" data-reveal>
   <p class="hero-eyebrow">Álvaro Artiel</p>
   <!-- El h1 real siempre existe: las partículas solo lo cubren visualmente -->
@@ -49,7 +53,8 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
       },
     )
 
-    // Capa fija para el monograma 3D que viaja del hero al header
+    // Capa fija para el monograma 3D (vive SOLO en el primer viewport de la
+    // home; scenes/monogram.ts la oculta al acoplarse al header)
     const layer = document.createElement('div')
     layer.id = 'monogram-layer'
     layer.style.cssText = 'position:fixed;inset:0;z-index:101;pointer-events:none;'
@@ -65,25 +70,38 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
 <style>
   .hero {
     min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: clamp(5rem, 12vh, 8rem) clamp(1.5rem, 6vw, 4rem) clamp(2rem, 6vh, 4rem);
     position: relative;
-  }
-
-  .hero-eyebrow {
-    font-family: var(--font-mono);
-    font-size: var(--step-mono-label);
-    color: var(--accent);
-    margin: 0 0 1.5rem;
-  }
-
-  .hero-stage {
-    position: relative;
-    min-height: 42vh;
     display: flex;
     align-items: center;
+    justify-content: center;
+    padding: clamp(5rem, 12vh, 8rem) clamp(1.5rem, 6vw, 4rem);
+  }
+
+  /* Masa dominante: ~80% del ancho, centrada ópticamente (ligeramente por
+     encima del centro geométrico para compensar el marco inferior). */
+  .hero-stage {
+    position: relative;
+    width: min(80vw, 70rem);
+    min-height: 52vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-3vh);
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: var(--step-hero);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    max-width: 14ch;
+    margin: 0 auto;
+    text-align: center;
+    text-wrap: balance;
+  }
+  .hero-dot {
+    color: var(--accent);
   }
 
   /* Mientras las partículas están activas, el titular real queda cubierto
@@ -92,9 +110,42 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
     visibility: hidden;
   }
 
+  /* Marco perimetral: nombre arriba-izq, keywords abajo-izq, hint abajo-dcha */
+  .hero-eyebrow {
+    position: absolute;
+    top: clamp(4.5rem, 10vh, 6rem);
+    left: clamp(1.5rem, 6vw, 4rem);
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--accent);
+    margin: 0;
+  }
+
+  .hero-subtitle {
+    position: absolute;
+    bottom: clamp(2.5rem, 7vh, 4.5rem);
+    left: clamp(1.5rem, 6vw, 4rem);
+    font-family: var(--font-mono);
+    font-size: clamp(0.8rem, 1.4vw, 1rem);
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    margin: 0;
+    max-width: 46ch;
+  }
+
+  .hero-scroll-hint {
+    position: absolute;
+    bottom: clamp(2.5rem, 7vh, 4.5rem);
+    right: clamp(1.5rem, 6vw, 4rem);
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0;
+  }
+
   .hero-skip {
     position: absolute;
-    bottom: clamp(1rem, 4vh, 2.5rem);
+    bottom: clamp(1rem, 3vh, 1.75rem);
     left: clamp(1.5rem, 6vw, 4rem);
     font-family: var(--font-mono);
     font-size: var(--step-mono-label);
@@ -110,35 +161,20 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
     border-color: var(--accent);
   }
 
-  .hero-title {
-    font-family: var(--font-display);
-    font-weight: 580;
-    font-size: var(--step-hero);
-    line-height: 0.98;
-    letter-spacing: -0.035em;
-    max-width: 12ch;
-    margin: 0;
-    text-wrap: balance;
-  }
-  .hero-dot {
-    color: var(--accent);
-  }
-
-  .hero-subtitle {
-    font-family: var(--font-mono);
-    font-size: clamp(0.8rem, 1.4vw, 1rem);
-    color: var(--text-muted);
-    margin: 2rem 0 0;
-    letter-spacing: 0.04em;
-  }
-
-  .hero-scroll-hint {
-    position: absolute;
-    bottom: clamp(1rem, 4vh, 2.5rem);
-    right: clamp(1.5rem, 6vw, 4rem);
-    font-family: var(--font-mono);
-    font-size: var(--step-mono-label);
-    color: var(--text-muted);
-    margin: 0;
+  @media (max-width: 720px) {
+    .hero-stage {
+      width: 100%;
+      min-height: 46vh;
+    }
+    .hero-subtitle {
+      right: clamp(1.5rem, 6vw, 4rem);
+      bottom: clamp(4rem, 10vh, 6rem);
+    }
+    .hero-scroll-hint {
+      bottom: clamp(1.25rem, 4vh, 2rem);
+    }
+    .hero-skip {
+      bottom: clamp(1.25rem, 4vh, 2rem);
+    }
   }
 </style>

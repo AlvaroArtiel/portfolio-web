@@ -101,6 +101,14 @@
   --step-small: clamp(0.8125rem, 0.3vw + 0.75rem, 0.875rem);
   --step-mono-label: clamp(0.75rem, 0.2vw + 0.7rem, 0.8125rem);
 
+  /* -- Espaciado vertical (remediación A6) ---------------------------------
+     Escala fija de separación entre secciones (≈96/160/240px): todos los
+     paddings verticales de sección salen de aquí. Se acabaron los vacíos
+     arbitrarios de 400-600px. */
+  --space-s: 6rem;
+  --space-m: 10rem;
+  --space-l: 15rem;
+
   /* -- Motion -------------------------------------------------------------
      Single source for the "snappy but not jumpy" feel; reduced-motion
      override lives in global.css. */
