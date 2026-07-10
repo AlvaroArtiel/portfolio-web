@@ -187,7 +187,7 @@ async function main() {
       location: e.location,
       modality: e.modality,
       summary: e.summary,
-      bullets: e.bullets.map((b) => ({...b, _key: `${e.id}-${e.bullets.indexOf(b)}`})),
+      bullets: e.bullets.map((b) => ({...b, _type: 'localeString', _key: `${e.id}-${e.bullets.indexOf(b)}`})),
       relatedProjects: (RELATED_PROJECTS[e.id] || []).map((refId, i) => ({
         _type: 'reference',
         _ref: refId,
