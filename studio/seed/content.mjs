@@ -51,16 +51,16 @@ export const EXPERIENCE = [
     },
     bullets: [
       {
-        es: 'Defino estrategia y roadmap de producto junto a dirección, priorizando por impacto en negocio y usuarios.',
-        en: 'I define product strategy and roadmap with leadership, prioritizing by business and user impact.',
+        es: 'Defino estrategia y roadmap de producto, priorizando por impacto en negocio y usuarios.',
+        en: 'I define product strategy and roadmap, prioritizing by business and user impact.',
       },
       {
         es: 'Diseño y superviso la evolución de la plataforma propia (ver ficha de proyecto).',
         en: 'I design and oversee the evolution of the in-house platform (see project sheet).',
       },
       {
-        es: 'Coordino un equipo mixto de diseño y desarrollo, de discovery a entrega.',
-        en: 'I coordinate a mixed design-and-development team, from discovery to delivery.',
+        es: 'Coordino diseño y desarrollo de la plataforma, de discovery a entrega.',
+        en: 'I coordinate design and development of the platform, from discovery to delivery.',
       },
     ],
     order: 1,
@@ -87,10 +87,6 @@ export const EXPERIENCE = [
       {
         es: 'Reparto el tiempo entre estrategia, diseño de interfaz y decisiones técnicas de alto nivel.',
         en: 'I split my time between strategy, interface design and high-level technical decisions.',
-      },
-      {
-        es: 'Valido con usuarios reales antes de escalar cada producto.',
-        en: 'I validate with real users before scaling each product.',
       },
     ],
     order: 2,
@@ -129,24 +125,28 @@ export const EXPERIENCE = [
   {
     id: 'experience-esperando-render',
     company: {es: 'Esperando el Render', en: 'Esperando el Render'},
-    role: {es: 'Fundador & creador de contenido', en: 'Founder & content creator'},
-    type: 'founder',
+    role: {es: 'Consultor web & producto e-learning', en: 'Web & e-learning product consultant'},
+    type: 'freelance',
     startDate: '2024',
     endDate: '',
     location: {es: 'Remoto', en: 'Remote'},
     modality: {es: 'Freelance', en: 'Freelance'},
     summary: {
-      es: 'Proyecto propio donde comparto proceso de diseño y desarrollo mientras el render de turno termina de cocinarse: notas, aprendizajes y detrás de cámaras para quien está empezando en producto digital.',
-      en: 'A personal project where I share design-and-development process while the current render finishes cooking: notes, learnings and behind the scenes for people starting out in digital product.',
+      es: 'Consultoría web y de producto para Esperando el Render, academia de formación online para profesionales creativos: mantenimiento de la plataforma, optimización y páginas comerciales para el lanzamiento de nuevos cursos.',
+      en: 'Web and product consulting for Esperando el Render, an online training academy for creative professionals: platform maintenance, optimization and commercial pages for new course launches.',
     },
     bullets: [
       {
-        es: 'Documento decisiones de diseño y código en formato accesible.',
-        en: 'I document design and code decisions in an accessible format.',
+        es: 'Mantengo y optimizo la plataforma web de la academia.',
+        en: 'I maintain and optimize the academy’s web platform.',
       },
       {
-        es: 'Sirve de banco de pruebas para ideas antes de llevarlas a proyectos propios o de cliente.',
-        en: 'It works as a testing ground for ideas before taking them into in-house or client projects.',
+        es: 'Diseño y desarrollo páginas comerciales para el lanzamiento de cada curso.',
+        en: 'I design and build commercial pages for each course launch.',
+      },
+      {
+        es: 'Coordino aspectos técnicos y de producto del catálogo de cursos online.',
+        en: 'I coordinate technical and product aspects of the online course catalog.',
       },
     ],
     order: 4,
@@ -175,8 +175,8 @@ export const EXPERIENCE = [
         en: 'I defined reusable interface patterns for courses, progress and certification.',
       },
       {
-        es: 'Colaboré con contenidos y desarrollo para lanzar en tiempo récord.',
-        en: 'I collaborated with content and development to launch in record time.',
+        es: 'Colaboré con los equipos de contenidos y desarrollo durante el proceso de lanzamiento.',
+        en: 'I collaborated with the content and development teams during the launch process.',
       },
     ],
     order: 5,
@@ -197,8 +197,8 @@ export const EXPERIENCE = [
     },
     bullets: [
       {
-        es: 'Rediseñé el CRM interno usado a diario por los equipos comerciales (ver ficha de proyecto).',
-        en: 'I redesigned the internal CRM used daily by the sales teams (see project sheet).',
+        es: 'Rediseñé el CRM interno (ver ficha de proyecto).',
+        en: 'I redesigned the internal CRM (see project sheet).',
       },
       {
         es: 'Construí un design system con componentes documentados para acelerar iteraciones futuras.',
@@ -359,16 +359,14 @@ export const PROJECTS = [
     externalUrl: '',
     body: bodyOf(
       [
-        'Ranquea nació de una pregunta simple: ¿por qué decidir algo en grupo —desde dónde comer hasta qué proyecto priorizar— sigue siendo tan lento? Diseñé la plataforma para que crear un ranking colaborativo lleve segundos y votarlo sea casi un juego.',
-        'El reto de producto fue doble: mantener la interfaz mínima para no asustar a quien la usa una vez al mes, y darle profundidad suficiente para equipos que la usan a diario. Resolví esto con una arquitectura de información que se revela por capas.',
-        'El sistema visual usa el mismo lenguaje monocromo con acento que esta propia web, adaptado a un tono más lúdico: los rankings ganan color según la energía de la votación.',
-        'Sigue en desarrollo activo desde Ceustack, con nuevas formas de ranking (temporales, por equipos, públicos) en el roadmap.',
+        'Ranquea es la plataforma de Ceustack para crear y compartir rankings colaborativos: crear un ranking y votarlo debería ser cuestión de segundos, no de configurar una herramienta compleja.',
+        'Como Product Lead, defino producto y diseño de interfaz, cuidando que la experiencia se mantenga simple para uso ocasional y con suficiente profundidad para equipos que la usan con frecuencia.',
+        'Sigue en desarrollo activo desde Ceustack.',
       ],
       [
-        'Ranquea started from a simple question: why is deciding something as a group — from where to eat to which project to prioritize — still so slow? I designed the platform so creating a collaborative ranking takes seconds and voting feels almost like a game.',
-        'The product challenge was twofold: keep the interface minimal enough for someone who uses it once a month, while giving it enough depth for teams that use it daily. I solved this with information architecture that reveals itself in layers.',
-        'The visual system shares the same monochrome-with-accent language as this website, tuned to a more playful tone: rankings gain color as voting energy builds.',
-        'It’s under active development at Ceustack, with new ranking formats (time-boxed, team-based, public) on the roadmap.',
+        'Ranquea is Ceustack’s platform for creating and sharing collaborative rankings: creating a ranking and voting on it should take seconds, not require configuring a complex tool.',
+        'As Product Lead, I define the product and interface design, keeping the experience simple enough for occasional use while giving it enough depth for teams that use it frequently.',
+        'It’s under active development at Ceustack.',
       ],
     ),
   },
@@ -390,16 +388,14 @@ export const PROJECTS = [
     externalUrl: '',
     body: bodyOf(
       [
-        'UltraCarta ataca un problema muy concreto de hostelería: cada cambio de precio o de plato implica reimprimir cartas. Diseñé un editor donde el dueño del restaurante edita su carta como quien edita un documento, y el resultado se publica al instante.',
-        'La parte más delicada del diseño fue el editor en sí: tenía que ser tan simple como para no requerir formación, pero flexible para adaptarse a cartas muy distintas (de menú del día a carta de vinos).',
-        'También diseñé el lado del cliente final: una carta que se lee bien en cualquier móvil, con jerarquía clara entre categorías, alérgenos y precios.',
-        'UltraCarta se mantiene como producto propio de Ceustack, con clientes reales usándolo en su día a día.',
+        'UltraCarta es la herramienta de Ceustack para diseñar cartas de restaurante digitales que se actualizan al instante, sin depender de reimprimir cada vez que cambia un plato o un precio.',
+        'Como Product Lead, diseñé el editor para el dueño del restaurante —sencillo de usar sin formación previa, y flexible para adaptarse a cartas distintas, de menú del día a carta de vinos— y el lado del cliente final, pensado para leerse bien en cualquier móvil.',
+        'UltraCarta se mantiene como producto propio de Ceustack.',
       ],
       [
-        'UltraCarta tackles a very concrete hospitality problem: every price or dish change means reprinting menus. I designed an editor where restaurant owners edit their menu like a document, publishing the result instantly.',
-        'The trickiest part of the design was the editor itself: simple enough to need no training, yet flexible enough to handle very different menus (from daily specials to wine lists).',
-        'I also designed the customer-facing side: a menu that reads well on any phone, with clear hierarchy between categories, allergens and prices.',
-        'UltraCarta remains a Ceustack in-house product, with real customers using it day to day.',
+        'UltraCarta is Ceustack’s tool for designing digital restaurant menus that update instantly, without needing to reprint every time a dish or price changes.',
+        'As Product Lead, I designed the editor for restaurant owners —simple enough to use without training, and flexible enough to handle different menus, from daily specials to wine lists— along with the customer-facing side, built to read well on any phone.',
+        'UltraCarta remains a Ceustack in-house product.',
       ],
     ),
   },
@@ -452,14 +448,12 @@ export const PROJECTS = [
       [
         'Vaultz resuelve un problema incómodo de cualquier equipo: dónde guardar credenciales, contratos y datos sensibles sin recurrir a hojas de cálculo compartidas por email.',
         'Diseñé la experiencia alrededor de la confianza: cada acción sensible (compartir, revocar, exportar) se comunica con claridad visual y confirmaciones explícitas, sin volverse tedioso.',
-        'El reto visual fue transmitir seguridad sin caer en la estética fría de "sala de servidores": Vaultz usa el mismo lenguaje cálido y directo del resto de productos de Ceustack.',
-        'Actualmente en fase de validación con los primeros equipos piloto.',
+        'El reto visual fue transmitir seguridad sin caer en la estética fría de "sala de servidores": Vaultz usa el mismo lenguaje cálido y directo del resto de productos de Ceustack. Actualmente en desarrollo en Ceustack.',
       ],
       [
         'Vaultz solves an uncomfortable problem every team has: where to keep credentials, contracts and sensitive data without falling back on spreadsheets shared over email.',
         'I designed the experience around trust: every sensitive action (share, revoke, export) is communicated with clear visual language and explicit confirmations, without becoming tedious.',
-        'The visual challenge was to convey security without the cold "server room" aesthetic: Vaultz shares the same warm, direct language as the rest of Ceustack’s products.',
-        'Currently in validation with the first pilot teams.',
+        'The visual challenge was to convey security without the cold "server room" aesthetic: Vaultz shares the same warm, direct language as the rest of Ceustack’s products. Currently in development at Ceustack.',
       ],
     ),
   },
@@ -482,12 +476,12 @@ export const PROJECTS = [
     body: bodyOf(
       [
         'Watcheers llegó a mí a través de mi trabajo como consultor independiente, con una necesidad clara: convertir una idea social en torno al consumo audiovisual en una interfaz coherente y usable.',
-        'Trabajé la arquitectura de la información desde cero, priorizando los flujos que más fricción generaban en las primeras pruebas con usuarios.',
+        'Trabajé la arquitectura de la información desde cero, priorizando los flujos con más fricción para la persona usuaria.',
         'El resultado fue un sistema de componentes reutilizable que el equipo de desarrollo pudo implementar sin ambigüedades, acelerando la entrega.',
       ],
       [
         'Watcheers came to me through my work as an independent consultant, with a clear need: turn a social idea around watching content together into a coherent, usable interface.',
-        'I worked the information architecture from scratch, prioritizing the flows that generated the most friction in early user tests.',
+        'I worked the information architecture from scratch, prioritizing the flows with the most friction for the user.',
         'The result was a reusable component system that the development team could implement without ambiguity, speeding up delivery.',
       ],
     ),
@@ -511,12 +505,12 @@ export const PROJECTS = [
     body: bodyOf(
       [
         'BeNext llegó con un problema habitual: mucho potencial, demasiadas funciones compitiendo por la pantalla principal. Mi trabajo fue de poda tanto como de diseño.',
-        'Prioricé junto al equipo qué resolver primero, y diseñé un flujo principal claro antes de expandir a funciones secundarias.',
+        'Prioricé qué resolver primero, y diseñé un flujo principal claro antes de expandir a funciones secundarias.',
         'El resultado fue una interfaz más simple que la versión inicial, y más fácil de mantener a medida que el producto creciera.',
       ],
       [
         'BeNext arrived with a familiar problem: plenty of potential, too many features competing for the main screen. My job was as much about pruning as about designing.',
-        'I prioritized with the team what to solve first, and designed a clear primary flow before expanding into secondary features.',
+        'I prioritized what to solve first, and designed a clear primary flow before expanding into secondary features.',
         'The result was a simpler interface than the initial version, and easier to maintain as the product grew.',
       ],
     ),
@@ -541,14 +535,12 @@ export const PROJECTS = [
       [
         'El campus de AuraProds necesitaba transmitir progreso y logro sin recurrir a la estética genérica de "curso online". Diseñé un sistema donde avanzar en un curso se siente como avanzar, no solo como marcar casillas.',
         'Definí patrones reutilizables para lecciones, evaluaciones y certificación, pensados para escalar a nuevos cursos sin rediseñar cada vez.',
-        'Trabajé codo con codo con el equipo de contenidos para que el diseño respondiera a cómo se produce y consume el material real, no a una maqueta abstracta.',
-        'El campus se lanzó en tiempo récord y sigue recibiendo nuevos cursos sobre la misma base de componentes.',
+        'Trabajé con el equipo de contenidos para que el diseño respondiera a cómo se produce y consume el material real, no a una maqueta abstracta. El campus quedó en producción sobre esta base de componentes.',
       ],
       [
         'The AuraProds campus needed to convey progress and achievement without falling into generic "online course" aesthetics. I designed a system where moving through a course feels like moving forward, not just checking boxes.',
         'I defined reusable patterns for lessons, assessments and certification, built to scale to new courses without redesigning each time.',
-        'I worked closely with the content team so the design responded to how the real material is produced and consumed, not to an abstract mockup.',
-        'The campus launched in record time and keeps receiving new courses on the same component base.',
+        'I worked with the content team so the design responded to how the real material is produced and consumed, not to an abstract mockup. The campus went into production on this component base.',
       ],
     ),
   },
@@ -570,14 +562,14 @@ export const PROJECTS = [
     externalUrl: '',
     body: bodyOf(
       [
-        'El CRM de iUrban había crecido a base de parches: cada equipo comercial tenía su propia manera de hacer las mismas tareas. Empecé por auditar los flujos reales antes de tocar una sola pantalla.',
-        'A partir de esa auditoría, diseñé un design system con componentes documentados que unificó la interfaz sin obligar a rehacer toda la aplicación de golpe.',
-        'La migración se hizo por módulos, priorizando las pantallas de mayor uso diario, para que el equipo notara la mejora cuanto antes.',
+        'El CRM interno de iUrban había crecido a base de parches, con pantallas dispersas y sin una interfaz unificada. Empecé por revisar los flujos existentes antes de tocar una sola pantalla.',
+        'A partir de esa revisión, diseñé un design system con componentes documentados que unificó la interfaz sin obligar a rehacer toda la aplicación de golpe.',
+        'Apliqué el nuevo sistema priorizando las pantallas de mayor uso.',
       ],
       [
-        'iUrban’s CRM had grown patch by patch: every sales team had its own way of doing the same tasks. I started by auditing the real flows before touching a single screen.',
-        'From that audit, I designed a design system with documented components that unified the interface without forcing a full rebuild at once.',
-        'The migration happened module by module, prioritizing the highest-use screens, so the team noticed the improvement as soon as possible.',
+        'iUrban’s internal CRM had grown patch by patch, with scattered screens and no unified interface. I started by reviewing the existing flows before touching a single screen.',
+        'From that review, I designed a design system with documented components that unified the interface without forcing a full rebuild at once.',
+        'I applied the new system prioritizing the highest-use screens.',
       ],
     ),
   },
@@ -630,12 +622,12 @@ export const PROJECTS = [
       [
         'ControlFacturación necesitaba convertir hojas de cálculo dispersas en un panel que cualquier persona del equipo pudiera leer en segundos, sin formación previa.',
         'Prioricé una jerarquía visual clara entre lo urgente (facturas pendientes, retrasos) y lo informativo (histórico, tendencias), evitando el efecto "pared de números".',
-        'El diseño final redujo el tiempo que el equipo pasaba interpretando datos antes de poder actuar sobre ellos.',
+        'El resultado es un panel pensado para leerse en segundos antes de actuar sobre los datos.',
       ],
       [
         'ControlFacturación needed to turn scattered spreadsheets into a dashboard anyone on the team could read in seconds, with no prior training.',
         'I prioritized a clear visual hierarchy between what’s urgent (pending invoices, delays) and what’s informative (history, trends), avoiding the "wall of numbers" effect.',
-        'The final design reduced the time the team spent interpreting data before being able to act on it.',
+        'The result is a dashboard designed to be read in seconds before acting on the data.',
       ],
     ),
   },

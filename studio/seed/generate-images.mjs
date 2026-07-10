@@ -31,27 +31,48 @@ function seededRandom(seedStr) {
   }
 }
 
-function escapeXml(s) {
-  return String(s).replace(/[<>&'"]/g, (c) => ({
-    '<': '&lt;',
-    '>': '&gt;',
-    '&': '&amp;',
-    "'": '&apos;',
-    '"': '&quot;',
-  }[c]))
+// Draws one anchor shape: a large, deliberately placed mass that dominates
+// the composition. Anchors are biased off-center so the result reads as a
+// composed piece rather than a random scatter.
+function anchorShapeSvg(rand, accent) {
+  const kind = Math.floor(rand() * 3)
+  const color = rand() > 0.35 ? accent : TEXT
+  const opacity = (0.55 + rand() * 0.35).toFixed(2)
+  // Off-center anchor point: push away from dead-center in x and y.
+  const cx = Math.floor(200 + rand() * 1200)
+  const cy = Math.floor(150 + rand() * 700)
+  if (kind === 0) {
+    const r = Math.floor(220 + rand() * 260)
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" opacity="${opacity}"/>`
+  } else if (kind === 1) {
+    const w = Math.floor(360 + rand() * 420)
+    const h = Math.floor(280 + rand() * 380)
+    const rot = Math.floor(rand() * 40 - 20)
+    return `<rect x="${cx - w / 2}" y="${cy - h / 2}" width="${w}" height="${h}" fill="${color}" opacity="${opacity}" transform="rotate(${rot} ${cx} ${cy})"/>`
+  } else {
+    const size = Math.floor(300 + rand() * 340)
+    const x1 = cx
+    const y1 = cy - size / 2
+    const x2 = cx - size / 2
+    const y2 = cy + size / 2
+    const x3 = cx + size / 2
+    const y3 = cy + size / 2
+    return `<polygon points="${x1},${y1} ${x2},${y2} ${x3},${y3}" fill="${color}" opacity="${opacity}"/>`
+  }
 }
 
-function shapesSvg(rand, accent, count) {
+// Draws the smaller, denser layer of shapes scattered around the anchors.
+function minorShapesSvg(rand, accent, count) {
   const shapes = []
   for (let i = 0; i < count; i++) {
     const kind = Math.floor(rand() * 3)
-    const opacity = (0.15 + rand() * 0.5).toFixed(2)
+    const opacity = (0.15 + rand() * 0.4).toFixed(2)
     const fillOrStroke = rand() > 0.5
     const color = rand() > 0.3 ? accent : TEXT
     if (kind === 0) {
       const cx = Math.floor(rand() * 1600)
       const cy = Math.floor(rand() * 1000)
-      const r = Math.floor(40 + rand() * 260)
+      const r = Math.floor(20 + rand() * 90)
       shapes.push(
         fillOrStroke
           ? `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" opacity="${opacity}"/>`
@@ -60,8 +81,8 @@ function shapesSvg(rand, accent, count) {
     } else if (kind === 1) {
       const x = Math.floor(rand() * 1600)
       const y = Math.floor(rand() * 1000)
-      const w = Math.floor(60 + rand() * 400)
-      const h = Math.floor(60 + rand() * 400)
+      const w = Math.floor(30 + rand() * 140)
+      const h = Math.floor(30 + rand() * 140)
       const rot = Math.floor(rand() * 45)
       shapes.push(
         `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${
@@ -86,24 +107,26 @@ function shapesSvg(rand, accent, count) {
 }
 
 /**
- * Builds an SVG composition for a placeholder image.
- * @param {string} title - overlay text (project/chapter title); can be empty.
+ * Builds an SVG composition for a placeholder image. Purely abstract —
+ * no title/label is ever rendered into the art; `title` is accepted for
+ * call-site compatibility but intentionally ignored.
+ * @param {string} _title - ignored; kept for call-site compatibility.
  * @param {string} accent - hex accent color for the section.
  * @param {string} seedKey - unique deterministic seed (e.g. slug + variant).
  */
-export function buildSvg(title, accent, seedKey) {
+export function buildSvg(_title, accent, seedKey) {
   const rand = seededRandom(seedKey)
-  const shapes = shapesSvg(rand, accent, 9 + Math.floor(rand() * 6))
-  const label = title ? escapeXml(title) : ''
-  const fontSize = label.length > 22 ? 64 : 92
+  const anchorCount = 2 + Math.floor(rand() * 2) // 2-3 dominant anchors
+  const anchors = []
+  for (let i = 0; i < anchorCount; i++) {
+    anchors.push(anchorShapeSvg(rand, accent))
+  }
+  const minorCount = 6 + Math.floor(rand() * 5) // 6-10 minor shapes
+  const minors = minorShapesSvg(rand, accent, minorCount)
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
   <rect width="1600" height="1000" fill="${BG}"/>
-  ${shapes}
-  ${
-    label
-      ? `<text x="80" y="880" font-family="Arial, sans-serif" font-weight="700" font-size="${fontSize}" fill="${TEXT}" letter-spacing="-1">${label}</text>`
-      : ''
-  }
+  ${anchors.join('\n  ')}
+  ${minors}
 </svg>`
 }
 
