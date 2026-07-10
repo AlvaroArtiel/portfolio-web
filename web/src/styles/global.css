@@ -29,6 +29,11 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Cinturón de seguridad (B13): recorta cualquier desbordamiento horizontal
+     puntual (imagen, canvas o elemento con ancho fijo) sin esconder la causa
+     raíz — verificado que hoy scrollWidth === innerWidth en todas las
+     páginas a 390px; esto solo cubre regresiones futuras. */
+  overflow-x: clip;
 }
 
 img,

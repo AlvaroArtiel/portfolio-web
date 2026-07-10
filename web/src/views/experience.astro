@@ -46,23 +46,28 @@ const description =
 
           return (
             <li class="timeline-entry" data-reveal>
-              {exp.logo && (
-                <img
-                  class="entry-logo"
-                  src={urlFor(exp.logo, {w: 160, h: 160}).url()}
-                  alt=""
-                  width="80"
-                  height="80"
-                  loading="lazy"
-                />
-              )}
-              <div class="entry-body">
+              {/* Columna izquierda: fechas + logo + ubicación, para que el carril
+                  nunca deje un hueco vacío (B9). El contenido narrativo va a la
+                  derecha de la línea, en .entry-body. */}
+              <div class="entry-aside">
                 <p class="entry-dates">{dateRange(exp.startDate, exp.endDate, lang, dict.present)}</p>
-                <h2 class="entry-role">{role}</h2>
-                <p class="entry-company">{company}</p>
+                {exp.logo && (
+                  <img
+                    class="entry-logo"
+                    src={urlFor(exp.logo, {w: 160, h: 160}).url()}
+                    alt=""
+                    width="80"
+                    height="80"
+                    loading="lazy"
+                  />
+                )}
                 {(location || modality) && (
                   <p class="entry-meta">{[location, modality].filter(Boolean).join(' · ')}</p>
                 )}
+              </div>
+              <div class="entry-body">
+                <h2 class="entry-role">{role}</h2>
+                <p class="entry-company">{company}</p>
                 {summary && <p class="entry-summary">{summary}</p>}
                 {bullets.length > 0 && (
                   <ul class="entry-bullets">
@@ -154,11 +159,13 @@ const description =
     position: relative;
   }
   /* Carril estático (fallback sin JS / reduced-motion); la línea viva
-     que se dibuja con el scroll la pinta el script encima. */
+     que se dibuja con el scroll la pinta el script encima. Vive en el
+     carril central de la rejilla de cada entrada: 11rem (fechas) + 1.5rem
+     (mitad del carril de 3rem) = centro de la columna de la línea. */
   .timeline::before {
     content: '';
     position: absolute;
-    left: 2.5rem;
+    left: calc(11rem + 1.5rem);
     top: 0.5rem;
     bottom: 0.5rem;
     width: 1px;
@@ -166,7 +173,7 @@ const description =
   }
   .timeline :global(.timeline-line) {
     position: absolute;
-    left: calc(2.5rem - 1px);
+    left: calc(11rem + 1.5rem - 1px);
     top: 0.5rem;
     height: calc(100% - 1rem);
     width: 3px;
@@ -174,36 +181,42 @@ const description =
     pointer-events: none;
   }
 
+  /* Rejilla de cada entrada: fechas/logo a la izquierda de la línea,
+     carril central vacío (ahí vive la línea, posicionada sobre .timeline),
+     contenido a la derecha (B9: la columna izquierda deja de estar vacía). */
   .timeline-entry {
     display: grid;
-    grid-template-columns: 5rem minmax(0, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: minmax(0, 11rem) 3rem minmax(0, 1fr);
     align-items: start;
     position: relative;
   }
 
-  .entry-logo {
+  .entry-aside {
     grid-column: 1;
-    width: 5rem;
-    height: 5rem;
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+  }
+
+  .entry-logo {
+    width: 3.5rem;
+    height: 3.5rem;
     object-fit: contain;
     border-radius: 4px;
     background: var(--bg-elevated);
-    padding: 0.5rem;
-    position: relative;
-    z-index: 1;
+    padding: 0.4rem;
   }
 
-  /* Siempre en la columna de contenido, con o sin logo */
+  /* Siempre en la columna de contenido, a la derecha de la línea */
   .entry-body {
-    grid-column: 2;
+    grid-column: 3;
   }
 
   .entry-dates {
     font-family: var(--font-mono);
     font-size: var(--step-mono-label);
     color: var(--accent);
-    margin: 0 0 0.4rem;
+    margin: 0;
   }
 
   .entry-role {
@@ -224,7 +237,7 @@ const description =
     font-family: var(--font-mono);
     font-size: var(--step-small);
     color: var(--text-muted);
-    margin: 0 0 0.75rem;
+    margin: 0;
   }
 
   .entry-summary {
@@ -241,6 +254,14 @@ const description =
     gap: 0.35rem;
     color: var(--text-muted);
     font-size: var(--step-small);
+  }
+
+  /* Densidad alternante: las entradas pares llevan los bullets en un
+     bloque visualmente más colapsado (letra y gap menores). El ritmo del
+     timeline viene de esta alternancia de pesos, no de la línea. */
+  .timeline-entry:nth-child(even) .entry-bullets {
+    gap: 0.2rem;
+    font-size: var(--step-mono-label);
   }
 
   .entry-related {
@@ -270,17 +291,31 @@ const description =
     text-decoration: none;
   }
 
+  /* Móvil: vuelve a una columna. La línea se queda a la izquierda (como
+     antes de B9) y las fechas quedan encima del rol, no al lado. */
   @media (max-width: 560px) {
-    .timeline::before {
+    .timeline::before,
+    .timeline :global(.timeline-line) {
       left: 1.75rem;
     }
+    .timeline :global(.timeline-line) {
+      left: calc(1.75rem - 1px);
+    }
     .timeline-entry {
-      grid-template-columns: 3.5rem minmax(0, 1fr);
-      gap: 1rem;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.75rem;
+      padding-left: 2.75rem;
+    }
+    .entry-aside {
+      grid-column: 1;
+      gap: 0.4rem;
+    }
+    .entry-body {
+      grid-column: 1;
     }
     .entry-logo {
-      width: 3.5rem;
-      height: 3.5rem;
+      width: 2.5rem;
+      height: 2.5rem;
     }
   }
 </style>

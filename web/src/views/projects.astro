@@ -40,7 +40,10 @@ const description =
 
 <style>
   .projects-page {
-    padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
+    /* Mínimo 7rem (B10): despeja la franja del header fijo (~80px) incluso
+       en pantallas móviles bajas donde el término en vh del clamp caería
+       por debajo de esa altura. */
+    padding: clamp(7rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
   }
 
   .projects-header h1 {
