@@ -7,13 +7,13 @@ const bodyOf = [
     fields: [
       {
         name: 'layout',
-        title: 'Layout',
+        title: 'Diseño',
         type: 'string',
         options: {
           list: [
-            {title: 'Full', value: 'full'},
-            {title: 'Double', value: 'double'},
-            {title: 'Grid', value: 'grid'},
+            {title: 'Completo', value: 'full'},
+            {title: 'Doble', value: 'double'},
+            {title: 'Cuadrícula', value: 'grid'},
           ],
         },
       },
