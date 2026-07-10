@@ -201,7 +201,7 @@ const monogram: SceneModule = {
         // que nunca toca el texto.
         const heroPx = isMobile
           ? {x: window.innerWidth * 0.68, y: window.innerHeight * 0.17}
-          : {x: window.innerWidth * 0.79, y: window.innerHeight * 0.27}
+          : {x: window.innerWidth * 0.83, y: window.innerHeight * 0.2}
         // Desktop: parallax suave (la pieza "se despega" para iniciar el vuelo).
         // Móvil: 1:1 con el contenido — sale por arriba como parte de la página
         // y nunca puede chocar con el titular que sube.
@@ -236,7 +236,7 @@ const monogram: SceneModule = {
         // Escalas en unidades de mundo: hero ~34vh de alto; dock = alto del slot.
         const modelH = 1.05 // alto del glifo a escala 1
         const worldPerPx = hero.worldH / window.innerHeight
-        const heroScale = ((isMobile ? 0.12 : 0.25) * window.innerHeight * worldPerPx) / modelH
+        const heroScale = ((isMobile ? 0.12 : 0.22) * window.innerHeight * worldPerPx) / modelH
         const dockScale = ((slotRect?.height ?? 28) * worldPerPx) / modelH
 
         const x = hero.x
