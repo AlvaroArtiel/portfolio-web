@@ -28,6 +28,10 @@
 - **Qué decía el spec de remediación:** B4 aparece en el Sprint 2 (§4.4).
 - **Qué se hace:** regenerar los placeholders sin título dentro de la tarea del seed (Sprint 1).
 - **Por qué:** ambos cambios requieren re-seed de Sanity + redeploy; hacerlo junto evita un ciclo completo de seed/deploy extra sin alterar ningún resultado.
+## 2026-07-10 Remediación (sesión 2) — Coreografía del monograma: barrido a ~110vh y match-cut en móvil
+- **Qué decía el spec de remediación (§4.1):** "entre scroll 0 y ~100vh interpola hasta el hueco exacto del header y ahí muere"; en móvil "posición que jamás solape el titular, mismo acople".
+- **Qué se hace:** desktop: ascenso pegado al borde derecho (siempre fuera de la masa del titular) hasta la franja del header y barrido final al hueco, completándose a ~110vh — el barrido solo arranca cuando el titular ha salido de pantalla, para no taparlo jamás (vara §2.3 prima sobre el "~100vh" literal). Móvil (≤720px): el vuelo literal es imposible sin cruzar subtítulo o botón de menú (todo el ancho es contenido); el acople es un match-cut: la pieza sube 1:1 con el contenido, se funde al salir, y el SVG del header aparece — nunca hay dos marcas estables visibles.
+- **Por qué:** la regla dura "nada tapa contenido en ningún punto del recorrido" es incompatible con un vuelo en línea recta sobre un titular centrado; esta coreografía conserva el momento pxpush en desktop y da a móvil un relevo limpio.
 ## 2026-07-10 Cierre — contact.php: sanitización añadida sobre el código literal del plan
 - **Qué decía el plan:** crear `api/contact.php` "con este contenido exacto".
 - **Qué se hace:** se añade `str_replace(["\r","\n"], ' ', $name)` (el nombre entra en la cabecera Subject: vector de inyección de cabeceras / spam relay detectado por la revisión final) y el redirect del honeypot respeta `lang`.
