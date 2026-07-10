@@ -28,9 +28,23 @@ const categoryLabels: Record<string, {es: string; en: string}> = {
   personal: {es: 'Personal', en: 'Personal'},
 }
 const category = project.category ? categoryLabels[project.category]?.[lang] : undefined
+
+// CreativeWork JSON-LD (schema.org) for the project detail page.
+const creativeWorkLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: title,
+  description: summary || title,
+  ...(project.year && {dateCreated: String(project.year)}),
+  author: {
+    '@type': 'Person',
+    name: 'Álvaro Artiel',
+  },
+}
 ---
 
 <Base title={`${title} — Álvaro Artiel`} description={summary || title} lang={lang} section="projects">
+  <script type="application/ld+json" slot="head" is:inline set:html={JSON.stringify(creativeWorkLd)} />
   <article class="project-detail">
     <!-- Nivel 1: sección superior curada — título + metadatos + 2-3 heroMedia compuestas -->
     <header class="pd-hero" data-reveal>

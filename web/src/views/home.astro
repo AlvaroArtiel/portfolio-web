@@ -28,9 +28,28 @@ const description = t(settings?.seoDescription, lang) ||
   (lang === 'en'
     ? "Álvaro Artiel's portfolio: end-to-end digital product design and development."
     : 'Portfolio de Álvaro Artiel: diseño y desarrollo de productos digitales de punta a punta.')
+
+const siteUrl = Astro.site ?? new URL('https://dev.alvaroartiel.com')
+
+// Person JSON-LD (schema.org). Real social profiles only — the seeded
+// placeholders in Sanity use '#' URLs and must not leak into sameAs.
+const sameAs = (settings?.socials ?? [])
+  .filter((s) => s.visible !== false && s.url && s.url !== '#')
+  .map((s) => s.url)
+
+const personLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Álvaro Artiel',
+  url: siteUrl.toString(),
+  jobTitle: 'Product Lead & Digital Product Designer',
+  email: settings?.email ? `mailto:${settings.email}` : 'mailto:soy@alvaroartiel.com',
+  ...(sameAs.length > 0 && {sameAs}),
+}
 ---
 
 <Base title={title} description={description} lang={lang} section="home">
+  <script type="application/ld+json" slot="head" is:inline set:html={JSON.stringify(personLd)} />
   <Hero lang={lang} settings={settings} />
   <About lang={lang} settings={settings} />
   <FeaturedDeck lang={lang} projects={featured} />

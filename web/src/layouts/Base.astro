@@ -8,6 +8,16 @@ import type {Lang} from '../lib/i18n'
 
 export type Section = 'home' | 'projects' | 'experience' | 'personal' | 'blog' | 'cv'
 
+/** Default OG image filename (under /og/) per section; matches web/scripts/generate-og.mjs. */
+const OG_IMAGE_BY_SECTION: Record<Section, string> = {
+  home: '/og/home.png',
+  projects: '/og/proyectos.png',
+  experience: '/og/experiencia.png',
+  personal: '/og/personal.png',
+  blog: '/og/blog.png',
+  cv: '/og/cv.png',
+}
+
 interface Props {
   title: string
   description: string
@@ -17,14 +27,20 @@ interface Props {
   accent?: string
   /** Set to true on pages that must not be indexed (e.g. /casa). */
   noindex?: boolean
+  /** Optional OG image path/URL override; defaults per section, falling back to /og/default.png. */
+  ogImage?: string
 }
 
-const {title, description, lang, section, accent, noindex = false} = Astro.props
+const {title, description, lang, section, accent, noindex = false, ogImage} = Astro.props
 
 const pathname = Astro.url.pathname
 const esUrl = altPath(pathname, 'es')
 const enUrl = altPath(pathname, 'en')
 const canonical = new URL(pathname, Astro.site ?? 'https://dev.alvaroartiel.com')
+const ogImageUrl = new URL(
+  ogImage ?? OG_IMAGE_BY_SECTION[section] ?? '/og/default.png',
+  Astro.site ?? 'https://dev.alvaroartiel.com',
+)
 ---
 
 <!doctype html>
@@ -46,6 +62,12 @@ const canonical = new URL(pathname, Astro.site ?? 'https://dev.alvaroartiel.com'
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <slot name="head" />
   </head>
   <body>
     <a class="skip-link" href="#main">{lang === 'en' ? 'Skip to content' : 'Saltar al contenido'}</a>
