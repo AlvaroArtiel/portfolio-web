@@ -44,6 +44,7 @@ const rotation = rotationDeg(item._id)
         <button
           type="button"
           class="polaroid-trigger"
+          data-cursor="drag"
           data-lightbox-trigger
           data-lightbox-index={photoIndex}
           data-lightbox-src={urlFor(item.image, {w: 1600}).url()}
@@ -72,6 +73,7 @@ const rotation = rotationDeg(item._id)
         <button
           type="button"
           class="polaroid-trigger polaroid-video"
+          data-cursor="drag"
           data-video-facade
           data-youtube-id={ytId}
           aria-label={lang === 'en' ? 'Play video' : 'Reproducir vídeo'}

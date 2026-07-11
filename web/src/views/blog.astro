@@ -64,7 +64,7 @@ const description =
 
     {
       featured && (
-        <a class="featured" href={`${pathFor('blog', lang)}${featured.slug.current}/`} data-reveal>
+        <a class="featured" href={`${pathFor('blog', lang)}${featured.slug.current}/`} data-reveal data-cursor="view">
           <img
             class="featured-cover"
             src={coverOf(featured, 1200, 720)}
@@ -101,6 +101,7 @@ const description =
             <li class="blog-item" data-reveal>
               <a
                 href={`${pathFor('blog', lang)}${post.slug.current}/`}
+                data-cursor="view"
                 data-preview-src={coverOf(post, 560, 372)}
                 data-preview-alt={t(post.title, lang)}
               >

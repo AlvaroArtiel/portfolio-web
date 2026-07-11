@@ -18,10 +18,10 @@ const filters: {value: string; es: string; en: string}[] = [
 
 <!-- Filtros como enlaces: sin JS navegan con ?cat=; el script filtra en el cliente -->
 <nav class="filters" aria-label={lang === 'en' ? 'Filter projects' : 'Filtrar proyectos'} data-filters>
-  <a href="?" data-cat="" aria-current="true">{dict.all_categories}</a>
+  <a href="?" data-cat="" aria-current="true" data-cursor-label={dict.all_categories}>{dict.all_categories}</a>
   {
     filters.map((filter) => (
-      <a href={`?cat=${filter.value}`} data-cat={filter.value}>
+      <a href={`?cat=${filter.value}`} data-cat={filter.value} data-cursor-label={filter[lang]}>
         {filter[lang]}
       </a>
     ))
