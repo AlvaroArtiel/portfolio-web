@@ -4,13 +4,23 @@ import {t, ui} from '../lib/i18n'
 import type {Lang} from '../lib/i18n'
 import {getPosts} from '../lib/queries'
 import {pathFor} from '../lib/routes'
+import {urlFor} from '../lib/sanity'
+import {readingTime} from '../lib/reading-time'
 
 interface Props {
   lang: Lang
 }
 const {lang} = Astro.props
+const dict = ui[lang]
 
 const posts = await getPosts()
+
+/**
+ * Revista (sesión 3 §3.4): la entrada más reciente abre como tarjeta grande;
+ * el resto, filas tipográficas con preview flotante. Diseñado para verse
+ * BIEN con 1 entrada (estado actual) y escalar.
+ */
+const [featured, ...rest] = posts
 
 const dateFormatter = new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'es-ES', {
   day: 'numeric',
@@ -25,13 +35,21 @@ function formatDate(date?: string): string {
   return dateFormatter.format(parsed)
 }
 
+const coverOf = (post: (typeof posts)[number], w: number, h: number): string =>
+  post.cover ? urlFor(post.cover, {w, h}).url() : '/og/blog.png'
+
+const minutesOf = (post: (typeof posts)[number]): number =>
+  readingTime((post.body?.[lang] ?? post.body?.es ?? []) as unknown[])
+
 const heading = ui[lang].nav_blog
 
-// Segunda voz tipográfica (sesión 3): recuento real derivado de los datos.
+// Contador con voz: la escasez se asume con gracia.
 const countLine =
-  lang === 'en'
-    ? `${posts.length} ${posts.length === 1 ? 'post' : 'posts'}`
-    : `${posts.length} ${posts.length === 1 ? 'entrada' : 'entradas'}`
+  posts.length === 1
+    ? dict.blog_count_one
+    : lang === 'en'
+      ? `${posts.length} posts`
+      : `${posts.length} entradas`
 
 const description =
   lang === 'en' ? 'Writing by Álvaro Artiel: notes on design, code and product.' : 'Textos de Álvaro Artiel: notas sobre diseño, código y producto.'
@@ -44,32 +62,80 @@ const description =
       <p class="page-count">{countLine}</p>
     </header>
 
-    <ol class="blog-list">
-      {
-        posts.map((post) => {
-          const title = t(post.title, lang)
-          const href = `${pathFor('blog', lang)}${post.slug.current}/`
-          return (
+    {
+      featured && (
+        <a class="featured" href={`${pathFor('blog', lang)}${featured.slug.current}/`} data-reveal>
+          <img
+            class="featured-cover"
+            src={coverOf(featured, 1200, 720)}
+            alt=""
+            width="1200"
+            height="720"
+            loading="eager"
+          />
+          <div class="featured-body">
+            <p class="featured-meta">
+              <span>{formatDate(featured.date)}</span>
+              <span class="meta-read">
+                {dict.blog_read} · {minutesOf(featured)} {dict.blog_min}
+              </span>
+            </p>
+            <h2 class="featured-title">{t(featured.title, lang)}</h2>
+            {t(featured.excerpt, lang) && <p class="featured-excerpt">{t(featured.excerpt, lang)}</p>}
+            {featured.tags && featured.tags.length > 0 && (
+              <p class="tag-chips">
+                {featured.tags.map((tag) => (
+                  <span class="chip">{tag}</span>
+                ))}
+              </p>
+            )}
+          </div>
+        </a>
+      )
+    }
+
+    {
+      rest.length > 0 && (
+        <ol class="blog-list">
+          {rest.map((post) => (
             <li class="blog-item" data-reveal>
-              <a href={href}>
-                <p class="blog-date">{formatDate(post.date)}</p>
-                <h2 class="blog-title">{title}</h2>
+              <a
+                href={`${pathFor('blog', lang)}${post.slug.current}/`}
+                data-preview-src={coverOf(post, 560, 372)}
+                data-preview-alt={t(post.title, lang)}
+              >
+                <p class="blog-meta">
+                  <span>{formatDate(post.date)}</span>
+                  <span class="meta-read">
+                    {dict.blog_read} · {minutesOf(post)} {dict.blog_min}
+                  </span>
+                </p>
+                <h2 class="blog-title">{t(post.title, lang)}</h2>
                 {post.tags && post.tags.length > 0 && (
-                  <p class="blog-tags">{post.tags.join(' · ')}</p>
+                  <p class="tag-chips">
+                    {post.tags.map((tag) => (
+                      <span class="chip">{tag}</span>
+                    ))}
+                  </p>
                 )}
               </a>
             </li>
-          )
-        })
-      }
-    </ol>
+          ))}
+        </ol>
+      )
+    }
   </section>
 </Base>
+
+<script>
+  import {initHoverPreview} from '../lib/hover-preview'
+  initHoverPreview()
+</script>
 
 <style>
   .blog-page {
     padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
-    max-width: 60rem;
+    max-width: 72rem;
     margin-inline: auto;
   }
 
@@ -81,7 +147,6 @@ const description =
     margin: 0 0 0.5rem;
   }
 
-  /* Segunda voz: recuento mono muted bajo el titular */
   .page-count {
     font-family: var(--font-mono);
     font-size: var(--step-mono-label);
@@ -89,51 +154,119 @@ const description =
     margin: 0 0 clamp(3rem, 8vh, 5rem);
   }
 
+  /* -------- Entrada destacada: el blog abre con contenido -------- */
+  .featured {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: center;
+    text-decoration: none;
+    color: var(--text);
+    background: var(--surface-1);
+    border: var(--border-soft);
+    border-radius: 10px;
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+    transition: background var(--dur-micro) var(--ease-out-token);
+  }
+  .featured:hover {
+    background: var(--surface-2);
+  }
+  .featured-cover {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 5 / 3;
+    object-fit: cover;
+    border-radius: 6px;
+    display: block;
+    transition: transform var(--dur-element, 500ms) var(--ease-out-token);
+  }
+  .featured:hover .featured-cover {
+    transform: scale(1.02);
+  }
+  .featured-body {
+    display: grid;
+    gap: 0.85rem;
+    align-content: center;
+  }
+  .featured-meta,
+  .blog-meta {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0;
+    display: flex;
+    gap: 1.25rem;
+  }
+  .meta-read {
+    color: var(--accent);
+  }
+  .featured-title {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: clamp(1.9rem, 3.6vw, 3rem);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin: 0;
+  }
+  .featured-excerpt {
+    font-size: var(--step-body);
+    line-height: 1.55;
+    color: var(--text-muted);
+    max-width: 44ch;
+    margin: 0;
+  }
+
+  .tag-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    border-radius: 999px;
+    padding: 0.2em 0.75em;
+  }
+
+  /* -------- Filas -------- */
   .blog-list {
     list-style: none;
-    margin: 0;
+    margin: clamp(2.5rem, 6vh, 4rem) 0 0;
     padding: 0;
     display: grid;
   }
-
   .blog-item {
     border-top: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
   }
   .blog-item:last-child {
     border-bottom: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
   }
-
   .blog-item a {
     display: block;
     text-decoration: none;
     color: var(--text);
     padding: clamp(1.5rem, 4vh, 2.5rem) 0;
-    transition: color var(--transition-fast);
+    transition: color var(--dur-micro) var(--ease-out-token);
   }
   .blog-item a:hover {
     color: var(--accent);
   }
-
-  .blog-date {
-    font-family: var(--font-mono);
-    font-size: var(--step-mono-label);
-    color: var(--text-muted);
-    margin: 0 0 0.5rem;
-  }
-
   .blog-title {
     font-family: var(--font-display);
     font-weight: 550;
     font-size: clamp(1.75rem, 4vw, 2.75rem);
     letter-spacing: -0.02em;
     line-height: 1.1;
-    margin: 0 0 0.5rem;
+    margin: 0.5rem 0;
   }
 
-  .blog-tags {
-    font-family: var(--font-mono);
-    font-size: var(--step-small);
-    color: var(--text-muted);
-    margin: 0;
+  @media (max-width: 720px) {
+    .featured {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 </style>
