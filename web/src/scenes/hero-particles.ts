@@ -89,6 +89,18 @@ const heroParticles: SceneModule = {
 
     const mouse = {x: 999, y: 999, tx: 999, ty: 999}
 
+    // Salida en partículas (sesión 3 §3.5): al iniciar scroll el titular se
+    // disuelve en sus propios puntos — cada uno con un vector de fuga hacia
+    // arriba. exitTarget sigue al scroll (scrub); exitP lo persigue suavizado.
+    let exits: Float32Array | null = null
+    let exitP = 0
+    let exitTarget = 0
+    const onScroll = () => {
+      const span = window.innerHeight * 0.8
+      exitTarget = Math.min(1, Math.max(0, window.scrollY / span))
+    }
+    window.addEventListener('scroll', onScroll, {passive: true})
+
     const build = async () => {
       const THREE = await import('three')
       try {
@@ -103,6 +115,11 @@ const heroParticles: SceneModule = {
       count = sampled.count
       positions = new Float32Array(count * 3)
       velocities = new Float32Array(count * 3)
+      exits = new Float32Array(count * 2)
+      for (let i = 0; i < count; i++) {
+        exits[i * 2] = (Math.random() - 0.5) * 3 // deriva lateral
+        exits[i * 2 + 1] = 1.8 + Math.random() * 3.2 // ascenso
+      }
 
       const colors = new Float32Array(count * 3)
       const white = new THREE.Color('#F4F4F0')
@@ -161,6 +178,13 @@ const heroParticles: SceneModule = {
         mouse.x += (mouse.tx - mouse.x) * 0.18
         mouse.y += (mouse.ty - mouse.y) * 0.18
 
+        // Scrub suavizado de la disolución + fade del material
+        exitP += (exitTarget - exitP) * 0.12
+        const p = exitP < 0.001 ? 0 : exitP
+        const material = points.material as import('three').PointsMaterial
+        material.opacity = 0.95 * (1 - p)
+        points.visible = p < 0.999
+
         for (let i = 0; i < count; i++) {
           const ix = i * 3
           const dxm = positions[ix] - mouse.x
@@ -168,13 +192,15 @@ const heroParticles: SceneModule = {
           const distSq = dxm * dxm + dym * dym
           if (distSq < REPULSE_RADIUS * REPULSE_RADIUS) {
             const dist = Math.sqrt(distSq) || 0.001
-            const force = ((REPULSE_RADIUS - dist) / REPULSE_RADIUS) * REPULSE_FORCE
+            const force = ((REPULSE_RADIUS - dist) / REPULSE_RADIUS) * REPULSE_FORCE * (1 - p)
             velocities[ix] += (dxm / dist) * force
             velocities[ix + 1] += (dym / dist) * force
           }
-          // Muelle hacia el destino + fricción
-          velocities[ix] += (targets[ix] - positions[ix]) * SPRING
-          velocities[ix + 1] += (targets[ix + 1] - positions[ix + 1]) * SPRING
+          // Muelle hacia el destino (desplazado por el vector de fuga) + fricción
+          const tx = targets[ix] + (exits ? exits[i * 2] * p : 0)
+          const ty = targets[ix + 1] + (exits ? exits[i * 2 + 1] * p : 0)
+          velocities[ix] += (tx - positions[ix]) * SPRING
+          velocities[ix + 1] += (ty - positions[ix + 1]) * SPRING
           velocities[ix + 2] += (targets[ix + 2] - positions[ix + 2]) * SPRING
           velocities[ix] *= FRICTION
           velocities[ix + 1] *= FRICTION
@@ -187,6 +213,7 @@ const heroParticles: SceneModule = {
       },
       dispose() {
         disposed = true
+        window.removeEventListener('scroll', onScroll)
         el.removeEventListener('pointermove', onPointerMove)
         el.removeEventListener('pointerleave', onPointerLeave)
         if (points) {

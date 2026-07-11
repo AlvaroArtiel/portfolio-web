@@ -20,7 +20,12 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
      el perímetro (arriba-izq / abajo-izq); el monograma 3D entra arriba-dcha
      en diagonal compositiva con el titular (scenes/monogram.ts). -->
 <section class="hero" data-reveal>
-  <p class="hero-eyebrow">Álvaro Artiel</p>
+  <p class="hero-eyebrow">
+    <span class="hero-name" tabindex="0">Álvaro Artiel</span>
+    <span class="hero-portrait" aria-hidden="true">
+      <img src="/retrato.png" alt="" width="180" height="180" loading="eager" />
+    </span>
+  </p>
   <!-- El h1 real siempre existe: las partículas solo lo cubren visualmente -->
   <div class="hero-stage" id="hero-stage">
     <h1 class="hero-title" id="hero-title">{title}<span class="hero-dot" aria-hidden="true">.</span></h1>
@@ -34,6 +39,10 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
 
 <script>
   import {mountScene} from '../../lib/three-island'
+  import {initHeroFloaters} from '../../lib/hero-floaters'
+
+  const hero = document.querySelector<HTMLElement>('.hero')
+  if (hero) initHeroFloaters(hero)
 
   const stage = document.getElementById('hero-stage')
   const titleEl = document.getElementById('hero-title')
@@ -119,6 +128,144 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
     font-size: var(--step-mono-label);
     color: var(--accent);
     margin: 0;
+    z-index: 2;
+  }
+
+  /* Retrato al hover del nombre (sesión 3 §3.5): humaniza el hero. En táctil
+     aparece sutil al cargar; con reduced-motion, sin transición. */
+  .hero-name {
+    cursor: help;
+    border-bottom: 1px dashed color-mix(in srgb, var(--accent) 50%, transparent);
+    padding-bottom: 0.15em;
+  }
+  .hero-portrait {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    left: 0;
+    width: 8.5rem;
+    height: 8.5rem;
+    clip-path: circle(0% at 30% 20%);
+    transition: clip-path var(--dur-element, 500ms) var(--ease-out-token);
+    pointer-events: none;
+  }
+  .hero-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  .hero-eyebrow:hover .hero-portrait,
+  .hero-eyebrow:focus-within .hero-portrait {
+    clip-path: circle(75%);
+  }
+  @media (pointer: coarse) {
+    .hero-portrait {
+      width: 4rem;
+      height: 4rem;
+      clip-path: circle(75%);
+      opacity: 0;
+      animation: hero-portrait-in var(--dur-section, 900ms) var(--ease-out-token) 600ms forwards;
+    }
+  }
+  @keyframes hero-portrait-in {
+    to {
+      opacity: 0.95;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-portrait {
+      transition: none;
+      animation: none;
+    }
+    @media (pointer: coarse) {
+      .hero-portrait {
+        opacity: 0.95;
+      }
+    }
+  }
+
+  /* -------- Objetos flotantes (capa del mundo de Álvaro) -------- */
+  :global(.hero-floaters) {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  :global(.hero-floater) {
+    position: absolute;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--text);
+    opacity: 0.85;
+    pointer-events: auto;
+  }
+  :global(.hero-floater svg) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  /* Idle flotante: loops ambientales lentos (no son tweens de entrada/trayecto,
+     quedan fuera de DURATION por diseño — ver motion-tokens.ts). Solo cuando
+     el módulo JS está vivo (puntero fino, sin reduced-motion). */
+  :global(.hero-floaters.is-alive .fl-cursor svg) {
+    animation: fl-bob 7s ease-in-out infinite;
+  }
+  :global(.hero-floaters.is-alive .fl-toggle svg) {
+    animation: fl-bob 9s ease-in-out -2s infinite;
+  }
+  :global(.hero-floaters.is-alive .fl-puzzle svg) {
+    animation: fl-bob-rot 8s ease-in-out -4s infinite;
+  }
+  :global(.hero-floaters.is-alive .fl-pick svg) {
+    animation: fl-bob-rot 6.5s ease-in-out -1s infinite;
+  }
+  :global(.hero-floaters.is-alive .fl-note svg) {
+    animation: fl-bob 7.5s ease-in-out -5s infinite;
+  }
+  @keyframes fl-bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-9px);
+    }
+  }
+  @keyframes fl-bob-rot {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-4deg);
+    }
+    50% {
+      transform: translateY(-7px) rotate(5deg);
+    }
+  }
+
+  /* Anclas: bandas perimetrales, jamás dentro de la caja del titular */
+  :global(.fl-cursor) {
+    top: 26%;
+    left: 9%;
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+  :global(.fl-toggle) {
+    bottom: 30%;
+    right: 5%;
+    width: 3rem;
+  }
+  :global(.fl-puzzle) {
+    bottom: 30%;
+    left: 6.5%;
+  }
+  :global(.fl-pick) {
+    top: 46%;
+    right: 7%;
+    width: 1.9rem;
+  }
+  :global(.fl-note) {
+    top: 13%;
+    left: 32%;
+    width: 1.9rem;
   }
 
   .hero-subtitle {
@@ -165,6 +312,15 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
     .hero-stage {
       width: 100%;
       min-height: 46vh;
+    }
+    /* Menos piezas y más pequeñas: material del mundo, no ruido */
+    :global(.fl-puzzle),
+    :global(.fl-note) {
+      display: none;
+    }
+    :global(.hero-floater) {
+      width: 1.6rem !important;
+      height: 1.6rem;
     }
     .hero-subtitle {
       right: clamp(1.5rem, 6vw, 4rem);
