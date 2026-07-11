@@ -145,7 +145,7 @@ const topics = [
 </Base>
 
 <script>
-  import {DURATION} from '../lib/motion-tokens'
+  import {DURATION, EASE} from '../lib/motion-tokens'
 
   const form = document.querySelector<HTMLFormElement>('[data-madlib]')
 
@@ -238,7 +238,7 @@ const topics = [
           {transform: 'translate(0,0) rotate(0deg)', opacity: 1},
           {transform: `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist - 30}px) rotate(${Math.random() * 360}deg)`, opacity: 0},
         ],
-        {duration: DURATION.element * 1600, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards'},
+        {duration: DURATION.element * 1600, easing: EASE.out, fill: 'forwards'},
       ).onfinish = () => p.remove()
     }
   })

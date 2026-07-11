@@ -66,12 +66,12 @@ a {
   text-decoration: underline;
 }
 
-.cv-section-title {
+.cv-label {
   color: #000 !important;
 }
 
 .cv-entry,
-.cv-section {
+.cv-block {
   break-inside: avoid;
   page-break-inside: avoid;
 }

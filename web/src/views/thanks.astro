@@ -33,7 +33,7 @@ const description =
 
 <script>
   import {mountScene} from '../lib/three-island'
-  import {DURATION} from '../lib/motion-tokens'
+  import {DURATION, EASE} from '../lib/motion-tokens'
 
   const stage = document.querySelector<HTMLElement>('[data-thanks-stage]')
   if (stage) {
@@ -57,7 +57,7 @@ const description =
         {
           duration: DURATION.section * 2200 + Math.random() * 1200,
           delay: Math.random() * 350,
-          easing: 'cubic-bezier(0.65, 0, 0.35, 1)',
+          easing: EASE.inOut,
           fill: 'forwards',
         },
       ).onfinish = () => p.remove()
