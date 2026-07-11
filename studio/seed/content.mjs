@@ -46,21 +46,25 @@ export const EXPERIENCE = [
     location: {es: 'Málaga, España', en: 'Málaga, Spain'},
     modality: {es: 'Híbrido', en: 'Hybrid'},
     summary: {
-      es: 'Lidero el producto digital de TenTuPlaza: defino la hoja de ruta, coordino diseño y desarrollo, y superviso la plataforma que da soporte a comercio local y experiencias de ciudad.',
-      en: 'I lead TenTuPlaza’s digital product: I set the roadmap, coordinate design and development, and oversee the platform that supports local commerce and city experiences.',
+      es: 'Lidero la estrategia digital y de producto de TenTuPlaza, academia online de oposiciones ferroviarias con más de 5.000 alumnos: nueva plataforma e-learning a medida, UX/UI, coordinación de equipos y marketing.',
+      en: 'I lead digital and product strategy at TenTuPlaza, an online academy for railway public-exam preparation with 5,000+ students: a new custom e-learning platform, UX/UI, team coordination and marketing.',
     },
     bullets: [
       {
-        es: 'Defino estrategia y roadmap de producto, priorizando por impacto en negocio y usuarios.',
-        en: 'I define product strategy and roadmap, prioritizing by business and user impact.',
+        es: 'Dirijo el diseño y desarrollo de la nueva plataforma e-learning a medida (ver ficha de proyecto).',
+        en: 'I direct the design and development of the new custom e-learning platform (see project sheet).',
       },
       {
-        es: 'Diseño y superviso la evolución de la plataforma propia (ver ficha de proyecto).',
-        en: 'I design and oversee the evolution of the in-house platform (see project sheet).',
+        es: 'Defino la estrategia digital y de producto de la academia, del UX/UI al marketing.',
+        en: 'I define the academy’s digital and product strategy, from UX/UI to marketing.',
       },
       {
-        es: 'Coordino diseño y desarrollo de la plataforma, de discovery a entrega.',
-        en: 'I coordinate design and development of the platform, from discovery to delivery.',
+        es: 'Coordino los equipos de diseño y desarrollo, de discovery a entrega.',
+        en: 'I coordinate the design and development teams, from discovery to delivery.',
+      },
+      {
+        es: 'Más de 5.000 alumnos y más de 770 reseñas de 5★ avalan la academia.',
+        en: 'Over 5,000 students and 770+ five-star reviews back the academy.',
       },
     ],
     order: 1,
@@ -408,8 +412,8 @@ export const PROJECTS = [
     role: {es: 'Product & Digital Lead', en: 'Product & Digital Lead'},
     stack: ['Figma', 'Astro', 'Node.js'],
     summary: {
-      es: 'La plataforma digital de TenTuPlaza para comercio local y experiencias de ciudad — actualmente en construcción, con nuevas piezas publicándose por fases.',
-      en: 'TenTuPlaza’s digital platform for local commerce and city experiences — currently in construction, with new pieces shipping in phases.',
+      es: 'La nueva plataforma e-learning a medida de TenTuPlaza, academia online de oposiciones ferroviarias con más de 5.000 alumnos — actualmente en construcción, con nuevas piezas publicándose por fases.',
+      en: 'TenTuPlaza’s new custom e-learning platform — the online academy for railway public-exam preparation with 5,000+ students. Currently in construction, with new pieces shipping in phases.',
     },
     heroMediaCount: 2,
     order: 3,
@@ -417,13 +421,13 @@ export const PROJECTS = [
     externalUrl: '',
     body: bodyOf(
       [
-        'Como Product & Digital Lead de TenTuPlaza, dirijo el diseño y desarrollo de la plataforma que conecta comercio local con la ciudad: desde cómo se descubre un negocio hasta cómo se organiza una experiencia colectiva.',
-        'El proyecto avanza por fases: cada entrega prioriza el módulo con más impacto inmediato para comercios y usuarios, evitando el clásico "todo a la vez" que nunca termina de lanzar.',
+        'Como Product & Digital Lead de TenTuPlaza dirijo el diseño y desarrollo de la nueva plataforma e-learning a medida: la casa digital donde más de 5.000 alumnos preparan sus oposiciones ferroviarias.',
+        'El proyecto avanza por fases: cada entrega prioriza el módulo con más impacto inmediato para alumnos y equipo docente, evitando el clásico "todo a la vez" que nunca termina de lanzar.',
         'Esta ficha se actualizará según avance la construcción — de momento documenta el enfoque de producto y las primeras piezas visibles.',
       ],
       [
-        'As TenTuPlaza’s Product & Digital Lead, I direct the design and development of the platform that connects local commerce with the city: from how a business gets discovered to how a collective experience gets organized.',
-        'The project moves forward in phases: each release prioritizes the module with the most immediate impact for businesses and users, avoiding the classic "build everything at once" trap that never quite ships.',
+        'As TenTuPlaza’s Product & Digital Lead I direct the design and development of the new custom e-learning platform: the digital home where 5,000+ students prepare for their railway public exams.',
+        'The project moves forward in phases: each release prioritizes the module with the most immediate impact for students and teaching staff, avoiding the classic "build everything at once" trap that never quite ships.',
         'This sheet will be updated as construction progresses — for now it documents the product approach and the first visible pieces.',
       ],
     ),
