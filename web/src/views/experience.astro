@@ -15,16 +15,44 @@ const dict = ui[lang]
 
 const [experiences, projects] = await Promise.all([getExperiences(), getProjects()])
 
-/** Map project _id -> {slug, title} to dereference relatedProjects refs. */
-const projectById = new Map(projects.map((p) => [p._id, {slug: p.slug.current, title: t(p.title, lang)}]))
+/** Map project _id -> datos para enlace + preview flotante. */
+const projectById = new Map(
+  projects.map((p) => [
+    p._id,
+    {
+      slug: p.slug.current,
+      title: t(p.title, lang),
+      preview: p.cover ? urlFor(p.cover, {w: 560, h: 372}).url() : '',
+    },
+  ]),
+)
+
+/**
+ * Métrica protagonista por etapa (sesión 3 §3.1). SOLO hechos respaldados por
+ * el material fuente: los números salen del spec §9/elevación §2; donde no hay
+ * número respaldado, el protagonista es el entregable/rasgo del propio seed.
+ */
+const METRIC: Record<string, {es: string; en: string}> = {
+  'experience-tentuplaza': {es: '+5.000 alumnos', en: '5,000+ students'},
+  'experience-ceustack': {es: '3 productos propios', en: '3 products of our own'},
+  'experience-consultor-independiente': {es: '+40 proyectos', en: '40+ projects'},
+  'experience-esperando-render': {es: 'Consultoría e-learning', en: 'E-learning consulting'},
+  'experience-auraprods': {es: 'Campus e-learning', en: 'E-learning campus'},
+  'experience-iurban': {es: 'CRM + design system', en: 'CRM + design system'},
+  'experience-8pecados': {es: 'Cliente real, plazo real', en: 'Real client, real deadline'},
+}
+
+// Viaje temporal: orden cronológico ascendente (2018 → hoy). El seed ordena
+// "actualidad primero" (order asc); el viaje lo recorre al revés. El CV
+// mantiene el orden inverso clásico — divorcio deliberado (decisions.md).
+const stages = [...experiences].sort((a, b) => (b.order ?? 0) - (a.order ?? 0))
+
+const yearOf = (startDate?: string): string => startDate?.match(/\d{4}/)?.[0] ?? ''
+const CODA_YEAR = String(new Date().getFullYear())
 
 const heading = ui[lang].nav_experience
 
-// Segunda voz tipográfica (sesión 3): recuento real derivado de los datos.
-const years = experiences
-  .map((exp) => exp.startDate?.match(/\d{4}/)?.[0])
-  .filter((y): y is string => Boolean(y))
-  .map(Number)
+const years = stages.map((exp) => yearOf(exp.startDate)).filter(Boolean).map(Number)
 const firstYear = years.length > 0 ? Math.min(...years) : null
 const countLine =
   lang === 'en'
@@ -38,125 +66,130 @@ const description =
 ---
 
 <Base title={`${heading} — Álvaro Artiel`} description={description} lang={lang} section="experience">
-  <section class="experience-page">
-    <header class="experience-header" data-reveal>
+  <section class="journey-page">
+    <header class="journey-header" data-reveal>
       <h1>{heading}</h1>
       <p class="page-count">{countLine}</p>
     </header>
 
-    <ol class="timeline">
-      {
-        experiences.map((exp) => {
-          const company = t(exp.company, lang)
-          const role = t(exp.role, lang)
-          const location = t(exp.location, lang)
-          const modality = t(exp.modality, lang)
-          const summary = t(exp.summary, lang)
-          const bullets = (exp.bullets ?? []).map((b) => t(b, lang)).filter(Boolean)
-          const related = (exp.relatedProjects ?? [])
-            .map((ref) => projectById.get(ref._ref))
-            .filter((p): p is {slug: string; title: string} => Boolean(p))
+    <div class="journey" data-journey>
+      {/* Carril del año gigante: decorativo (los años viven en cada etapa),
+          sticky al lateral, detrás del contenido. Solo existe visualmente
+          cuando el odómetro JS manda (.is-live); su fallback son los
+          .stage-year en flujo. */}
+      <div class="journey-rail" aria-hidden="true">
+        <span class="rail-year" data-journey-year>{yearOf(stages[0]?.startDate) || CODA_YEAR}</span>
+      </div>
 
-          return (
-            <li class="timeline-entry" data-reveal>
-              {/* Columna izquierda: fechas + logo + ubicación, para que el carril
-                  nunca deje un hueco vacío (B9). El contenido narrativo va a la
-                  derecha de la línea, en .entry-body. */}
-              <div class="entry-aside">
-                <p class="entry-dates">{dateRange(exp.startDate, exp.endDate, lang, dict.present)}</p>
-                {exp.logo && (
+      <ol class="stages">
+        {
+          stages.map((exp, i) => {
+            const company = t(exp.company, lang)
+            const role = t(exp.role, lang)
+            const location = t(exp.location, lang)
+            const modality = t(exp.modality, lang)
+            const summary = t(exp.summary, lang)
+            const bullets = (exp.bullets ?? []).map((b) => t(b, lang)).filter(Boolean)
+            const metric = METRIC[exp._id]?.[lang]
+            const year = yearOf(exp.startDate)
+            const prevYear = i > 0 ? yearOf(stages[i - 1].startDate) : ''
+            const showYear = year !== prevYear
+            const related = (exp.relatedProjects ?? [])
+              .map((ref) => projectById.get(ref._ref))
+              .filter((p): p is {slug: string; title: string; preview: string} => Boolean(p))
+
+            return (
+              <li class="stage" data-year={year} data-reveal>
+                {showYear && (
+                  <p class="stage-year" aria-hidden="true">
+                    {year}
+                  </p>
+                )}
+                <p class="stage-kicker">
+                  {dateRange(exp.startDate, exp.endDate, lang, dict.present)}
+                  {(location || modality) && ` · ${[location, modality].filter(Boolean).join(' · ')}`}
+                </p>
+                {exp.logo ? (
                   <img
-                    class="entry-logo"
-                    src={urlFor(exp.logo, {w: 160, h: 160}).url()}
-                    alt=""
-                    width="80"
-                    height="80"
+                    class="stage-logo"
+                    src={urlFor(exp.logo, {w: 240, h: 240}).url()}
+                    alt={company}
+                    width="120"
+                    height="120"
                     loading="lazy"
                   />
+                ) : (
+                  <p class="stage-brand">{company}</p>
                 )}
-                {(location || modality) && (
-                  <p class="entry-meta">{[location, modality].filter(Boolean).join(' · ')}</p>
-                )}
-              </div>
-              <div class="entry-body">
-                <h2 class="entry-role">{role}</h2>
-                <p class="entry-company">{company}</p>
-                {summary && <p class="entry-summary">{summary}</p>}
+                <h2 class="stage-role">{role}</h2>
+                {metric && <p class="stage-metric">{metric}</p>}
+                {summary && <p class="stage-summary">{summary}</p>}
                 {bullets.length > 0 && (
-                  <ul class="entry-bullets">
-                    {bullets.map((bullet) => (
-                      <li>{bullet}</li>
-                    ))}
-                  </ul>
+                  <details class="stage-details">
+                    <summary>{dict.see_detail}</summary>
+                    <ul class="stage-bullets">
+                      {bullets.map((bullet) => (
+                        <li>{bullet}</li>
+                      ))}
+                    </ul>
+                  </details>
                 )}
                 {related.length > 0 && (
-                  <p class="entry-related">
-                    <span class="entry-related-label">{dict.related_projects}</span>
-                    <span class="entry-related-list">
+                  <p class="stage-related">
+                    <span class="stage-related-label">{dict.related_projects}</span>
+                    <span class="stage-related-list">
                       {related.map((p) => (
-                        <a href={`${pathFor('proyectos', lang)}${p.slug}/`}>{p.title}</a>
+                        <a
+                          href={`${pathFor('proyectos', lang)}${p.slug}/`}
+                          data-preview-src={p.preview || undefined}
+                          data-preview-alt={p.title}
+                        >
+                          {p.title}
+                        </a>
                       ))}
                     </span>
                   </p>
                 )}
-              </div>
-            </li>
-          )
-        })
-      }
-    </ol>
+              </li>
+            )
+          })
+        }
+
+        {/* Coda: el viaje termina hoy, mirando adelante. */}
+        <li class="stage stage-coda" data-year={CODA_YEAR}>
+          <p class="stage-year" aria-hidden="true">{CODA_YEAR}</p>
+          <p class="coda-line">{dict.journey_coda}</p>
+          <a class="coda-link" href={pathFor('contacto', lang)}>{dict.journey_coda_cta}</a>
+        </li>
+      </ol>
+    </div>
   </section>
 </Base>
 
 <script>
-  import {onReady, getMotion} from '../lib/motion'
-  import {SCRUB} from '../lib/motion-tokens'
+  import {initJourneyYear} from '../lib/journey-year'
+  import {initHoverPreview} from '../lib/hover-preview'
 
-  // Línea de tiempo que se dibuja con el scroll (stroke-dashoffset + scrub).
-  onReady(() => {
-    const motion = getMotion()
-    const timeline = document.querySelector<HTMLElement>('.timeline')
-    if (!motion || !timeline) return
-    const {gsap} = motion
-
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    svg.classList.add('timeline-line')
-    svg.setAttribute('aria-hidden', 'true')
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-    const height = timeline.offsetHeight - 16
-    line.setAttribute('x1', '1.5')
-    line.setAttribute('x2', '1.5')
-    line.setAttribute('y1', '0')
-    line.setAttribute('y2', String(height))
-    line.setAttribute('stroke', 'var(--accent)')
-    line.setAttribute('stroke-width', '3')
-    line.setAttribute('stroke-linecap', 'round')
-    line.style.strokeDasharray = String(height)
-    line.style.strokeDashoffset = String(height)
-    svg.appendChild(line)
-    timeline.appendChild(svg)
-
-    gsap.to(line, {
-      strokeDashoffset: 0,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: timeline,
-        start: 'top 75%',
-        end: 'bottom 60%',
-        scrub: SCRUB,
-      },
+  const journey = document.querySelector<HTMLElement>('[data-journey]')
+  const display = document.querySelector<HTMLElement>('[data-journey-year]')
+  if (journey && display) {
+    initJourneyYear({
+      journey,
+      display,
+      stages: Array.from(journey.querySelectorAll<HTMLElement>('.stage')),
     })
-  })
+  }
+  initHoverPreview()
 </script>
 
 <style>
-  .experience-page {
+  .journey-page {
     padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
-    max-width: 60rem;
+    max-width: 78rem;
     margin-inline: auto;
   }
 
-  .experience-header h1 {
+  .journey-header h1 {
     font-family: var(--font-display);
     font-weight: 580;
     font-size: var(--step-h1);
@@ -164,7 +197,6 @@ const description =
     margin: 0 0 0.5rem;
   }
 
-  /* Segunda voz: recuento mono muted bajo el titular */
   .page-count {
     font-family: var(--font-mono);
     font-size: var(--step-mono-label);
@@ -172,105 +204,171 @@ const description =
     margin: 0 0 clamp(3rem, 8vh, 5rem);
   }
 
-  .timeline {
+  /* ------------------------------------------------------------------ */
+  /* El viaje: carril sticky del año + columna de etapas                 */
+  /* ------------------------------------------------------------------ */
+  .journey {
+    display: grid;
+    grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
+    column-gap: clamp(1.5rem, 4vw, 4rem);
+  }
+
+  .journey-rail {
+    align-self: start;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: none; /* solo cuando el odómetro manda (.is-live) */
+    align-items: center;
+    pointer-events: none;
+  }
+  .journey.is-live .journey-rail {
+    display: flex;
+  }
+
+  .rail-year {
+    font-family: var(--font-display);
+    font-weight: 620;
+    font-size: clamp(9rem, 12.5vw, 13rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: color-mix(in srgb, var(--accent) 26%, transparent);
+    display: flex;
+  }
+  /* Odómetro (lo construye journey-year.ts) */
+  .rail-year :global(.jy-col) {
+    display: block;
+    height: 1em;
+    width: 0.58em; /* columnas iguales: odómetro estable aunque los dígitos no sean tabulares */
+    overflow: hidden;
+    text-align: center;
+  }
+  .rail-year :global(.jy-reel) {
+    display: flex;
+    flex-direction: column;
+  }
+  .rail-year :global(.jy-reel span) {
+    display: block;
+    height: 1em;
+  }
+
+  .stages {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    gap: clamp(2.5rem, 7vh, 4rem);
     position: relative;
-  }
-  /* Carril estático (fallback sin JS / reduced-motion); la línea viva
-     que se dibuja con el scroll la pinta el script encima. Vive en el
-     carril central de la rejilla de cada entrada: 11rem (fechas) + 1.5rem
-     (mitad del carril de 3rem) = centro de la columna de la línea. */
-  .timeline::before {
-    content: '';
-    position: absolute;
-    left: calc(11rem + 1.5rem);
-    top: 0.5rem;
-    bottom: 0.5rem;
-    width: 1px;
-    background: color-mix(in srgb, var(--text-muted) 25%, transparent);
-  }
-  .timeline :global(.timeline-line) {
-    position: absolute;
-    left: calc(11rem + 1.5rem - 1px);
-    top: 0.5rem;
-    height: calc(100% - 1rem);
-    width: 3px;
-    overflow: visible;
-    pointer-events: none;
+    z-index: 1;
   }
 
-  /* Rejilla de cada entrada: fechas/logo a la izquierda de la línea,
-     carril central vacío (ahí vive la línea, posicionada sobre .timeline),
-     contenido a la derecha (B9: la columna izquierda deja de estar vacía). */
-  .timeline-entry {
-    display: grid;
-    grid-template-columns: minmax(0, 11rem) 3rem minmax(0, 1fr);
-    align-items: start;
-    position: relative;
+  /* Cada etapa es una mini-escena: respira como una escena, no como una fila. */
+  .stage {
+    min-height: 62vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: clamp(2rem, 6vh, 4rem);
   }
 
-  .entry-aside {
-    grid-column: 1;
-    display: grid;
-    gap: 0.5rem;
-    align-content: start;
+  /* Año en flujo: cabecera de etapa en móvil y fallback sin odómetro
+     (sin JS o reduced-motion). Cuando el carril está vivo, desaparece. */
+  .stage-year {
+    font-family: var(--font-display);
+    font-weight: 620;
+    font-size: clamp(4.5rem, 18vw, 8rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: color-mix(in srgb, var(--accent) 26%, transparent);
+    margin: 0 0 1.5rem;
+  }
+  .journey.is-live .stage-year {
+    display: none;
   }
 
-  .entry-logo {
-    width: 3.5rem;
-    height: 3.5rem;
-    object-fit: contain;
-    border-radius: 4px;
-    background: var(--bg-elevated);
-    padding: 0.4rem;
-  }
-
-  /* Siempre en la columna de contenido, a la derecha de la línea */
-  .entry-body {
-    grid-column: 3;
-  }
-
-  .entry-dates {
+  .stage-kicker {
     font-family: var(--font-mono);
     font-size: var(--step-mono-label);
     color: var(--accent);
-    margin: 0;
+    margin: 0 0 1.25rem;
   }
 
-  .entry-role {
-    font-family: var(--font-display);
-    font-weight: 550;
-    font-size: clamp(1.4rem, 2.6vw, 2rem);
-    letter-spacing: -0.02em;
-    margin: 0 0 0.25rem;
+  .stage-logo {
+    width: 4.5rem;
+    height: 4.5rem;
+    object-fit: contain;
+    border-radius: 6px;
+    background: var(--surface-1);
+    padding: 0.5rem;
+    margin: 0 0 0.75rem;
   }
-
-  .entry-company {
-    font-size: var(--step-body);
+  /* Wordmark: la marca presente sin logo — sello tipográfico, no un h2 más. */
+  .stage-brand {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
     color: var(--text-muted);
+    margin: 0 0 0.75rem;
+  }
+
+  .stage-role {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+    letter-spacing: -0.02em;
     margin: 0 0 0.5rem;
   }
 
-  .entry-meta {
+  /* La métrica es la protagonista tipográfica de la escena. */
+  .stage-metric {
+    font-family: var(--font-display);
+    font-weight: 620;
+    font-size: clamp(2.6rem, 5.4vw, 4.4rem);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    color: var(--accent);
+    margin: 0 0 1.25rem;
+  }
+
+  .stage-summary {
+    font-size: var(--step-body);
+    line-height: 1.55;
+    max-width: 56ch;
+    margin: 0 0 1rem;
+  }
+
+  .stage-details {
+    margin: 0 0 1rem;
+    max-width: 56ch;
+  }
+  .stage-details summary {
     font-family: var(--font-mono);
     font-size: var(--step-small);
     color: var(--text-muted);
-    margin: 0;
+    cursor: pointer;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    transition: color var(--dur-micro) var(--ease-out-token);
   }
-
-  .entry-summary {
-    font-size: var(--step-body);
-    line-height: 1.55;
-    max-width: 60ch;
-    margin: 0 0 0.75rem;
+  .stage-details summary::-webkit-details-marker {
+    display: none;
   }
-
-  .entry-bullets {
-    margin: 0 0 0.75rem;
+  .stage-details summary::before {
+    content: '+';
+    font-family: var(--font-mono);
+    color: var(--accent);
+    transition: transform var(--dur-micro) var(--ease-out-token);
+  }
+  .stage-details[open] summary::before {
+    transform: rotate(45deg);
+  }
+  .stage-details summary:hover {
+    color: var(--text);
+  }
+  .stage-bullets {
+    margin: 0.75rem 0 0;
     padding-left: 1.25rem;
     display: grid;
     gap: 0.35rem;
@@ -278,66 +376,72 @@ const description =
     font-size: var(--step-small);
   }
 
-  /* Densidad alternante: las entradas pares llevan los bullets en un
-     bloque visualmente más colapsado (letra y gap menores). El ritmo del
-     timeline viene de esta alternancia de pesos, no de la línea. */
-  .timeline-entry:nth-child(even) .entry-bullets {
-    gap: 0.2rem;
-    font-size: var(--step-mono-label);
-  }
-
-  .entry-related {
+  .stage-related {
     font-family: var(--font-mono);
     font-size: var(--step-small);
     margin: 0;
   }
-  .entry-related-label {
+  .stage-related-label {
     color: var(--accent);
     text-transform: uppercase;
     letter-spacing: 0.06em;
     font-size: 0.7rem;
     margin-right: 0.75rem;
   }
-  .entry-related-list a {
+  .stage-related-list a {
     color: var(--text);
     text-decoration: underline;
     text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent);
     text-underline-offset: 0.2em;
   }
-  .entry-related-list a:hover {
+  .stage-related-list a:hover {
     color: var(--accent);
   }
-  .entry-related-list a:not(:last-child)::after {
+  .stage-related-list a:not(:last-child)::after {
     content: ' · ';
     color: var(--text-muted);
     text-decoration: none;
   }
 
-  /* Móvil: vuelve a una columna. La línea se queda a la izquierda (como
-     antes de B9) y las fechas quedan encima del rol, no al lado. */
-  @media (max-width: 560px) {
-    .timeline::before,
-    .timeline :global(.timeline-line) {
-      left: 1.75rem;
-    }
-    .timeline :global(.timeline-line) {
-      left: calc(1.75rem - 1px);
-    }
-    .timeline-entry {
+  /* Coda: cierre corto, mirando adelante. */
+  .stage-coda {
+    min-height: 50vh;
+  }
+  .coda-line {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+  }
+  .coda-link {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    width: fit-content;
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Móvil: una columna; el año gigante pasa a cabecera de etapa         */
+  /* ------------------------------------------------------------------ */
+  @media (max-width: 720px) {
+    .journey {
       grid-template-columns: minmax(0, 1fr);
-      gap: 0.75rem;
-      padding-left: 2.75rem;
     }
-    .entry-aside {
-      grid-column: 1;
-      gap: 0.4rem;
+    .journey-rail,
+    .journey.is-live .journey-rail {
+      display: none;
     }
-    .entry-body {
-      grid-column: 1;
+    /* En móvil el año en flujo manda siempre, odómetro o no. */
+    .journey.is-live .stage-year {
+      display: block;
     }
-    .entry-logo {
-      width: 2.5rem;
-      height: 2.5rem;
+    .stage {
+      min-height: 0;
+      padding-block: clamp(2.5rem, 8vh, 4rem);
+      justify-content: flex-start;
     }
   }
 </style>
