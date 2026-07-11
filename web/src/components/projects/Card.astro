@@ -8,8 +8,11 @@ interface Props {
   lang: Lang
   project: Project
   index: number
+  /** Total de cartas del listado, para el índice "01/04" de la pestaña. */
+  total?: number
 }
-const {lang, project, index} = Astro.props
+const {lang, project, index, total} = Astro.props
+const indexLabel = total ? `${String(index + 1).padStart(2, '0')}/${String(total).padStart(2, '0')}` : null
 
 const href = lang === 'en' ? `/en/projects/${project.slug.current}/` : `/proyectos/${project.slug.current}/`
 
@@ -30,6 +33,7 @@ const category = project.category ? categoryLabels[project.category]?.[lang] : u
     <div class="pc-tab">
       <h2 class="pc-title">{t(project.title, lang)}</h2>
       <p class="pc-meta">
+        {indexLabel && <span class="pc-index">{indexLabel}</span>}
         <span>{project.year}</span>
         {category && <span>{category}</span>}
       </p>
@@ -53,6 +57,35 @@ const category = project.category ? categoryLabels[project.category]?.[lang] : u
     </div>
   </a>
 </article>
+
+<script>
+  // Tilt sutil al hover (sesión 3 §3.7-11a): rotateX/Y ≤3.5° siguiendo al
+  // cursor. Solo puntero fino y sin reduced-motion; el resto de estados de
+  // hover (zoom, elevación) son CSS y no dependen de esto.
+  if (
+    window.matchMedia('(pointer: fine)').matches &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    document.querySelectorAll<HTMLAnchorElement>('[data-deck-card] > a').forEach((card) => {
+      card.style.transformStyle = 'preserve-3d'
+      card.addEventListener(
+        'pointermove',
+        (e) => {
+          const rect = card.getBoundingClientRect()
+          const rx = ((e.clientY - rect.top) / rect.height - 0.5) * -7
+          const ry = ((e.clientX - rect.left) / rect.width - 0.5) * 7
+          card.style.transform = `perspective(1100px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`
+        },
+        {passive: true},
+      )
+      card.addEventListener('pointerleave', () => {
+        card.style.transition = 'transform var(--dur-element) var(--ease-out-token)'
+        card.style.transform = 'perspective(1100px) rotateX(0deg) rotateY(0deg)'
+        window.setTimeout(() => (card.style.transition = ''), 520)
+      })
+    })
+  }
+</script>
 
 <style>
   .project-card a {
@@ -97,6 +130,10 @@ const category = project.category ? categoryLabels[project.category]?.[lang] : u
     text-overflow: ellipsis;
   }
   .project-card a:hover .pc-title {
+    color: var(--accent);
+  }
+
+  .pc-index {
     color: var(--accent);
   }
 

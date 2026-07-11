@@ -36,7 +36,7 @@ const description =
 
     <!-- Deck estático: F3 lo apila con scroll -->
     <div class="projects-list" data-deck>
-      {projects.map((project, index) => <Card lang={lang} project={project} index={index} />)}
+      {projects.map((project, index) => <Card lang={lang} project={project} index={index} total={projects.length} />)}
     </div>
   </section>
 </Base>

@@ -39,6 +39,15 @@ const chapterData = chapters
   })
   .filter(({items}) => items.length > 0)
 
+// Cinta manuscrita por capítulo (sesión 3 §3.7-11d): frase ambiental al
+// filtrar — voz, no biografía (el material es placeholder declarado).
+const RIBBONS: Record<string, {es: string; en: string}> = {
+  'personalChapter-cocina': {es: 'aquí se quema algo de vez en cuando', en: 'something burns here every now and then'},
+  'personalChapter-teatro': {es: 'los nervios de antes de salir a escena', en: 'pre-curtain jitters'},
+  'personalChapter-guitarra': {es: 'seis cuerdas y poca vergüenza', en: 'six strings, zero shame'},
+  'personalChapter-fotografia': {es: 'la luz buena dura diez minutos', en: 'the good light lasts ten minutes'},
+}
+
 // Segunda voz tipográfica (sesión 3): recuento real derivado de los datos.
 const totalItems = chapterData.reduce((n, {items}) => n + items.length, 0)
 const countLine =
@@ -69,11 +78,18 @@ const countLine =
           ))
         }
       </nav>
+      <p class="chapter-ribbon" data-chapter-ribbon aria-live="polite" hidden></p>
     </header>
 
     {
       chapterData.map(({chapter, items}) => (
-        <section class="chapter" data-chapter-section data-cap={chapter._id} data-reveal>
+        <section
+          class="chapter"
+          data-chapter-section
+          data-cap={chapter._id}
+          data-ribbon={RIBBONS[chapter._id]?.[lang]}
+          data-reveal
+        >
           <h2>
             {chapter.emoji} {t(chapter.title, lang)}
           </h2>
@@ -131,9 +147,16 @@ const countLine =
   // components/projects/Filters.astro but toggling whole chapter sections
   // (which carry their own intro) instead of individual cards.
   function applyFilter(cap: string): void {
+    let ribbonText = ''
     document.querySelectorAll<HTMLElement>('[data-chapter-section]').forEach((section) => {
       section.hidden = cap !== '' && section.dataset.cap !== cap
+      if (cap !== '' && section.dataset.cap === cap) ribbonText = section.dataset.ribbon ?? ''
     })
+    const ribbon = document.querySelector<HTMLElement>('[data-chapter-ribbon]')
+    if (ribbon) {
+      ribbon.textContent = ribbonText
+      ribbon.hidden = ribbonText === ''
+    }
     document.querySelectorAll<HTMLAnchorElement>('[data-personal-filters] a').forEach((link) => {
       if ((link.dataset.cap ?? '') === cap) link.setAttribute('aria-current', 'true')
       else link.removeAttribute('aria-current')
@@ -230,6 +253,16 @@ const countLine =
   .chapter-filters a[aria-current='true'] {
     color: var(--accent);
     border-bottom-color: var(--accent);
+  }
+
+  /* Cinta manuscrita: contexto del capítulo filtrado, a mano y ladeada */
+  .chapter-ribbon {
+    font-family: var(--font-hand);
+    font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+    color: var(--accent);
+    rotate: -1.5deg;
+    width: fit-content;
+    margin: 1.25rem 0 0;
   }
 
   .chapter {

@@ -10,13 +10,15 @@ interface Props {
 const {lang} = Astro.props
 const dict = ui[lang]
 
-const items: {key: string; label: string}[] = [
-  {key: 'proyectos', label: dict.nav_projects},
-  {key: 'experiencia', label: dict.nav_experience},
-  {key: 'personal', label: dict.nav_personal},
-  {key: 'blog', label: dict.nav_blog},
-  {key: 'cv', label: dict.nav_cv},
-  {key: 'contacto', label: dict.nav_contact},
+// Mini-preview por sección (sesión 3 §3.7-11c): color + palabra clave — el
+// overlay vende cada mundo. Los acentos son los del sistema camaleón.
+const items: {key: string; label: string; accent: string; keyword: string}[] = [
+  {key: 'proyectos', label: dict.nav_projects, accent: '#5B8CFF', keyword: lang === 'en' ? 'what I build' : 'lo que construyo'},
+  {key: 'experiencia', label: dict.nav_experience, accent: '#B06CFF', keyword: lang === 'en' ? 'the journey' : 'el viaje'},
+  {key: 'personal', label: dict.nav_personal, accent: '#FF7847', keyword: lang === 'en' ? 'the person' : 'la persona'},
+  {key: 'blog', label: dict.nav_blog, accent: '#4FD1C5', keyword: lang === 'en' ? 'what I think' : 'lo que pienso'},
+  {key: 'cv', label: dict.nav_cv, accent: '#F4F4F0', keyword: lang === 'en' ? 'the hurry version' : 'para leer con prisa'},
+  {key: 'contacto', label: dict.nav_contact, accent: '#D4FF3F', keyword: lang === 'en' ? 'let’s talk' : 'hablemos'},
 ]
 
 const slugLabel = (key: string) => (lang === 'en' ? `/en/${routeMap[key] ?? key}` : `/${key}`)
@@ -31,11 +33,12 @@ const slugLabel = (key: string) => (lang === 'en' ? `/en/${routeMap[key] ?? key}
       {
         items.map((item) => (
           <li>
-            <a class="menu-item" href={pathFor(item.key, lang)}>
+            <a class="menu-item" href={pathFor(item.key, lang)} style={`--item-accent: ${item.accent}`}>
               <span class="menu-item-slug" aria-hidden="true">{slugLabel(item.key)}</span>
               <span class="menu-item-label" data-text={item.label}>
                 {item.label}
               </span>
+              <span class="menu-item-preview" aria-hidden="true">{item.keyword}</span>
             </a>
           </li>
         ))
@@ -128,7 +131,7 @@ const slugLabel = (key: string) => (lang === 'en' ? `/en/${routeMap[key] ?? key}
     line-height: 1.05;
     letter-spacing: -0.02em;
     color: var(--text);
-    background-image: linear-gradient(to right, var(--accent), var(--accent));
+    background-image: linear-gradient(to right, var(--item-accent, var(--accent)), var(--item-accent, var(--accent)));
     background-repeat: no-repeat;
     background-size: 0% 100%;
     -webkit-background-clip: text;
@@ -141,6 +144,38 @@ const slugLabel = (key: string) => (lang === 'en' ? `/en/${routeMap[key] ?? key}
   .menu-item:focus-visible .menu-item-label {
     color: transparent;
     background-size: 100% 100%;
+  }
+
+  /* Palabra clave de sección: aparece a la derecha con el color del mundo */
+  .menu-item-preview {
+    position: absolute;
+    right: clamp(1.5rem, 8vw, 6rem);
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    letter-spacing: 0.08em;
+    color: var(--item-accent, var(--accent));
+    opacity: 0;
+    translate: -0.75rem 0;
+    transition:
+      opacity var(--dur-micro) var(--ease-out-token),
+      translate var(--dur-micro) var(--ease-out-token);
+    pointer-events: none;
+  }
+  .menu-item:hover .menu-item-preview,
+  .menu-item:focus-visible .menu-item-preview {
+    opacity: 1;
+    translate: 0 0;
+  }
+  @media (max-width: 900px) {
+    .menu-item-preview {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .menu-item-preview {
+      transition: none;
+      translate: 0 0;
+    }
   }
 
   .menu-meta {

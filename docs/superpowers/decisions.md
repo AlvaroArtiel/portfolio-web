@@ -64,3 +64,5 @@
   3. «Estrategia, diseño y código de la misma mano. Así no hay a quién echarle la culpa.» / "Strategy, design and code from the same pair of hands. So there's no one else to blame."
 - **Elegida: la 3.** Condensa el mensaje de marca (punta a punta) con la voz del spec §3.3: seria en la primera frase, remate gamberro en la segunda. Palabras acentuadas con el camaleón vivo: «misma mano» y «culpa».
 - **Pin vs flujo:** en flujo (sin pin) — el manifiesto respira dentro del ritmo de la home sin secuestrar el scroll.
+## 2026-07-11 Elevación (sesión 3) — Task 11e: re-audit de la casa (sin cambios)
+- **Veredicto contra la vara nueva (punto 11, memorabilidad):** PASA. Lo que se recuerda: "el portfolio con una casita jugable donde tu personaje lleva la foto real de cabeza". Props con acento por sección (escritorio azul, estantería violeta, guitarra naranja), sombras de contacto y retícula del sistema en el suelo — la dirección de arte de la sesión 2 se sostiene. No se toca código dentro del presupuesto restante.
