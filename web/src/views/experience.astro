@@ -213,17 +213,32 @@ const description =
     column-gap: clamp(1.5rem, 4vw, 4rem);
   }
 
+  /* El rail SIEMPRE ocupa su columna (display) — ocultarlo con display:none
+     dejaba a .stages auto-colocarse en la columna 1 y saltar a la 2 al
+     activarse el odómetro (CLS 0.18 medido). Solo se enciende con opacity. */
   .journey-rail {
+    grid-column: 1;
     align-self: start;
     position: sticky;
     top: 0;
     height: 100vh;
-    display: none; /* solo cuando el odómetro manda (.is-live) */
+    display: flex;
     align-items: center;
     pointer-events: none;
+    opacity: 0;
   }
   .journey.is-live .journey-rail {
-    display: flex;
+    opacity: 1;
+  }
+  /* Sin odómetro posible (reduced-motion): el documento decide su layout
+     final antes del primer paint — una columna, años en flujo. */
+  @media (prefers-reduced-motion: reduce) {
+    .journey {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .journey-rail {
+      display: none;
+    }
   }
 
   .rail-year {
@@ -253,11 +268,17 @@ const description =
   }
 
   .stages {
+    grid-column: 2;
     list-style: none;
     margin: 0;
     padding: 0;
     position: relative;
     z-index: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stages {
+      grid-column: 1;
+    }
   }
 
   /* Cada etapa es una mini-escena: respira como una escena, no como una fila. */
@@ -280,8 +301,10 @@ const description =
     color: color-mix(in srgb, var(--accent) 26%, transparent);
     margin: 0 0 1.5rem;
   }
+  /* visibility (no display): conserva la geometría exacta cuando el odómetro
+     toma el relevo — cambiarlo con display provocaba CLS 0.18 (medido). */
   .journey.is-live .stage-year {
-    display: none;
+    visibility: hidden;
   }
 
   .stage-kicker {
@@ -434,9 +457,12 @@ const description =
     .journey.is-live .journey-rail {
       display: none;
     }
+    .stages {
+      grid-column: 1;
+    }
     /* En móvil el año en flujo manda siempre, odómetro o no. */
     .journey.is-live .stage-year {
-      display: block;
+      visibility: visible;
     }
     .stage {
       min-height: 0;
