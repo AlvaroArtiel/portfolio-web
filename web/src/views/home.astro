@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro'
 import Hero from '../components/home/Hero.astro'
 import About from '../components/home/About.astro'
 import FeaturedDeck from '../components/home/FeaturedDeck.astro'
+import Manifesto from '../components/home/Manifesto.astro'
 import CtaBand from '../components/home/CtaBand.astro'
 import PersonalTeaser from '../components/home/PersonalTeaser.astro'
 import PostFooter from '../components/PostFooter.astro'
@@ -57,6 +58,7 @@ const jsonLdHome = JSON.stringify(personLd).replace(/</g, '\\u003c')
   <FeaturedDeck lang={lang} projects={featured} />
   <!-- Orden narrativo del camaleón (spec §5.3): deck azul → teaser naranja
        → CTA/contacto lima (el CTA queda pegado al footer de contacto). -->
+  <Manifesto lang={lang} />
   <PersonalTeaser lang={lang} items={teaserItems} />
   <CtaBand lang={lang} />
   <PostFooter slot="post-footer" lang={lang} />

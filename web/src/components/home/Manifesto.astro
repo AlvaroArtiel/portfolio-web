@@ -1,0 +1,119 @@
+---
+/**
+ * Manifiesto palabra a palabra (sesión 3 §3.6, G3 — momento cinetica).
+ * Entre el deck y el teaser personal: la frase se enciende palabra a palabra
+ * con el scroll (scrub). Las palabras clave llevan el acento VIVO del
+ * camaleón (heredan --accent, que muta durante el scroll de la home).
+ * Sin JS o con reduced-motion la frase está completa desde el principio.
+ */
+import type {Lang} from '../../lib/i18n'
+
+interface Props {
+  lang: Lang
+}
+const {lang} = Astro.props
+
+// Redacción Fable (opciones en decisions.md; elegida la 3ª).
+// [texto, ¿acentuada?]
+const words: [string, boolean][] =
+  lang === 'en'
+    ? [
+        ['Strategy,', false],
+        ['design', false],
+        ['and', false],
+        ['code', false],
+        ['from', false],
+        ['the', false],
+        ['same', true],
+        ['pair', true],
+        ['of', true],
+        ['hands.', true],
+        ['So', false],
+        ['there’s', false],
+        ['no', false],
+        ['one', false],
+        ['else', false],
+        ['to', false],
+        ['blame.', true],
+      ]
+    : [
+        ['Estrategia,', false],
+        ['diseño', false],
+        ['y', false],
+        ['código', false],
+        ['de', false],
+        ['la', false],
+        ['misma', true],
+        ['mano.', true],
+        ['Así', false],
+        ['no', false],
+        ['hay', false],
+        ['a', false],
+        ['quién', false],
+        ['echarle', false],
+        ['la', false],
+        ['culpa.', true],
+      ]
+---
+
+<section class="manifesto" data-manifesto aria-label={lang === 'en' ? 'Manifesto' : 'Manifiesto'}>
+  <p class="manifesto-line">
+    {words.map(([word, accented]) => <span class:list={['m-word', {'is-accent': accented}]}>{word}</span>)}
+  </p>
+</section>
+
+<script>
+  import {onReady, getMotion} from '../../lib/motion'
+  import {SCRUB} from '../../lib/motion-tokens'
+
+  onReady(() => {
+    const motion = getMotion()
+    const section = document.querySelector<HTMLElement>('[data-manifesto]')
+    if (!motion || !section) return
+    const {gsap} = motion
+    const words = section.querySelectorAll<HTMLElement>('.m-word')
+
+    gsap.set(words, {opacity: 0.18})
+    gsap.to(words, {
+      opacity: 1,
+      ease: 'none',
+      stagger: 0.08,
+      scrollTrigger: {
+        trigger: section,
+        start: 'top 78%',
+        end: 'center 42%',
+        scrub: SCRUB,
+      },
+    })
+  })
+</script>
+
+<style>
+  .manifesto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(6rem, 18vh, 11rem) clamp(1.5rem, 8vw, 6rem);
+  }
+  .manifesto-line {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: clamp(2rem, 5vw, 4.2rem);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    max-width: 22ch;
+    text-align: center;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .m-word {
+    display: inline-block;
+    margin-right: 0.28em;
+  }
+  .m-word:last-child {
+    margin-right: 0;
+  }
+  .m-word.is-accent {
+    color: var(--accent);
+  }
+</style>
