@@ -43,6 +43,24 @@ body {
   margin: 0 !important;
 }
 
+/* Estructura suiza (sesión 3): en papel las dos columnas se mantienen si
+   caben; el retrato no gasta tinta y el grid de entradas se conserva. */
+.cv-portrait {
+  display: none !important;
+}
+
+.cv-grid {
+  column-gap: 10mm !important;
+}
+
+.cv-header {
+  border-bottom-color: #000 !important;
+}
+
+.cv-label {
+  border-bottom-color: #000 !important;
+}
+
 a {
   color: #000 !important;
   text-decoration: underline;

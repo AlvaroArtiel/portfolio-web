@@ -14,11 +14,22 @@ const dict = ui[lang]
 
 const [experiences, education, settings] = await Promise.all([getExperiences(), getEducation(), getSiteSettings()])
 
-/** Distinct stack values seen across the seed content; sensible fallback per the brief. */
-const skills = ['Figma', 'React', 'Astro', 'Node.js', 'TypeScript', 'Sanity', 'UX/UI', 'SEO']
+/**
+ * Documento suizo (sesión 3 §3.2): mismos datos de Sanity que /experiencia,
+ * en versión condensada y densa — el divorcio es de FORMA, nunca de hechos.
+ * Su concepto es la quietud diseñada: cero efectos de scroll en esta página.
+ */
+
+/** Aptitudes agrupadas (mismo pool declarado que la versión anterior del CV). */
+const skillGroups = [
+  {label: dict.cv_skill_design, items: ['Figma', 'UX/UI']},
+  {label: dict.cv_skill_dev, items: ['React', 'Astro', 'Node.js', 'TypeScript', 'Sanity']},
+  {label: dict.cv_skill_marketing, items: ['SEO']},
+]
 
 const email = settings?.email ?? 'soy@alvaroartiel.com'
 const cvPdfUrl = settings?.cvPdfUrl
+const socials = (settings?.socials ?? []).filter((s) => s.visible !== false)
 
 const heading = ui[lang].nav_cv
 const description = lang === 'en' ? 'Curriculum vitae of Álvaro Artiel.' : 'Currículum de Álvaro Artiel.'
@@ -28,10 +39,10 @@ const description = lang === 'en' ? 'Curriculum vitae of Álvaro Artiel.' : 'Cur
   <link rel="stylesheet" href={printCssUrl} media="print" />
 
   <section class="cv-page">
-    <header class="cv-header" data-reveal>
+    <header class="cv-header">
       <div>
         <h1>Álvaro Artiel</h1>
-        <p class="cv-role">{ui[lang].nav_cv}</p>
+        <p class="cv-tagline">{dict.cv_tagline}</p>
       </div>
       <div class="cv-actions no-print">
         {
@@ -41,78 +52,102 @@ const description = lang === 'en' ? 'Curriculum vitae of Álvaro Artiel.' : 'Cur
             </a>
           ) : (
             <button class="cv-download" type="button" data-print-trigger>
-              {dict.download_pdf}
+              {dict.cv_print}
             </button>
           )
         }
       </div>
     </header>
 
-    <section class="cv-section" data-reveal>
-      <h2 class="cv-section-title">{dict.cv_personal_data}</h2>
-      <p class="cv-personal-data">
-        <a href={`mailto:${email}`}>{email}</a>
-      </p>
-    </section>
+    <div class="cv-grid">
+      {/* -------- Sidebar: quién, dónde, qué sabe hacer -------- */}
+      <aside class="cv-side">
+        <img class="cv-portrait" src="/retrato.png" alt="Álvaro Artiel" width="176" height="176" loading="lazy" />
 
-    <section class="cv-section" data-reveal>
-      <h2 class="cv-section-title">{dict.cv_experience}</h2>
-      <ul class="cv-list">
-        {
-          experiences.map((exp) => {
-            const company = t(exp.company, lang)
-            const role = t(exp.role, lang)
-            const summary = t(exp.summary, lang)
-            const bullets = (exp.bullets ?? []).map((b) => t(b, lang)).filter(Boolean)
-            return (
-              <li class="cv-entry">
-                <p class="cv-entry-dates">{dateRange(exp.startDate, exp.endDate, lang, dict.present)}</p>
-                <h3 class="cv-entry-title">
-                  {role} <span class="cv-entry-at">— {company}</span>
-                </h3>
-                {summary && <p class="cv-entry-summary">{summary}</p>}
-                {bullets.length > 0 && (
-                  <ul class="cv-entry-bullets">
-                    {bullets.map((bullet) => (
-                      <li>{bullet}</li>
-                    ))}
-                  </ul>
-                )}
+        <section class="cv-block">
+          <h2 class="cv-label">{dict.cv_contact}</h2>
+          <ul class="cv-side-list">
+            <li><a href={`mailto:${email}`}>{email}</a></li>
+            <li><a href="https://alvaroartiel.com">alvaroartiel.com</a></li>
+            {socials.map((s) => (
+              <li>
+                <a href={s.url} target="_blank" rel="noopener noreferrer">
+                  {s.label}
+                </a>
               </li>
-            )
-          })
-        }
-      </ul>
-    </section>
+            ))}
+          </ul>
+        </section>
 
-    <section class="cv-section" data-reveal>
-      <h2 class="cv-section-title">{dict.cv_education}</h2>
-      <ul class="cv-list">
-        {
-          education.map((edu) => {
-            const school = t(edu.school, lang)
-            const degree = t(edu.degree, lang)
-            const award = t(edu.award, lang)
-            const desc = t(edu.description, lang)
-            return (
-              <li class="cv-entry">
-                <p class="cv-entry-dates">{dateRange(edu.startDate, edu.endDate, lang, dict.present)}</p>
-                <h3 class="cv-entry-title">
-                  {degree} <span class="cv-entry-at">— {school}</span>
-                </h3>
-                {award && <p class="cv-entry-summary">{award}</p>}
-                {desc && <p class="cv-entry-summary">{desc}</p>}
-              </li>
-            )
-          })
-        }
-      </ul>
-    </section>
+        <section class="cv-block">
+          <h2 class="cv-label">{dict.cv_skills}</h2>
+          {
+            skillGroups.map((group) => (
+              <div class="cv-skill-group">
+                <h3>{group.label}</h3>
+                <p>{group.items.join(' · ')}</p>
+              </div>
+            ))
+          }
+        </section>
 
-    <section class="cv-section" data-reveal>
-      <h2 class="cv-section-title">{dict.cv_skills}</h2>
-      <p class="cv-skills">{skills.join(' · ')}</p>
-    </section>
+        <section class="cv-block">
+          <h2 class="cv-label">{dict.cv_languages}</h2>
+          <p class="cv-side-text">{dict.cv_languages_value}</p>
+        </section>
+      </aside>
+
+      {/* -------- Main: experiencia condensada + formación -------- */}
+      <div class="cv-main">
+        <section class="cv-block">
+          <h2 class="cv-label">{dict.cv_experience}</h2>
+          <ul class="cv-list">
+            {
+              experiences.map((exp) => {
+                const company = t(exp.company, lang)
+                const role = t(exp.role, lang)
+                const summary = t(exp.summary, lang)
+                return (
+                  <li class="cv-entry">
+                    <p class="cv-entry-dates">{dateRange(exp.startDate, exp.endDate, lang, dict.present)}</p>
+                    <div>
+                      <h3 class="cv-entry-title">
+                        {role} <span class="cv-entry-at">— {company}</span>
+                      </h3>
+                      {summary && <p class="cv-entry-summary">{summary}</p>}
+                    </div>
+                  </li>
+                )
+              })
+            }
+          </ul>
+        </section>
+
+        <section class="cv-block">
+          <h2 class="cv-label">{dict.cv_education}</h2>
+          <ul class="cv-list">
+            {
+              education.map((edu) => {
+                const school = t(edu.school, lang)
+                const degree = t(edu.degree, lang)
+                const award = t(edu.award, lang)
+                return (
+                  <li class="cv-entry">
+                    <p class="cv-entry-dates">{dateRange(edu.startDate, edu.endDate, lang, dict.present)}</p>
+                    <div>
+                      <h3 class="cv-entry-title">
+                        {degree} <span class="cv-entry-at">— {school}</span>
+                      </h3>
+                      {award && <p class="cv-entry-summary">{award}</p>}
+                    </div>
+                  </li>
+                )
+              })
+            }
+          </ul>
+        </section>
+      </div>
+    </div>
   </section>
 </Base>
 
@@ -123,19 +158,23 @@ const description = lang === 'en' ? 'Curriculum vitae of Álvaro Artiel.' : 'Cur
 </script>
 
 <style>
+  /* Documento suizo: retícula estricta, jerarquía por peso, hairlines.
+     Deliberadamente SIN reveals ni efectos — la quietud es el concepto. */
   .cv-page {
     padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
-    max-width: 44rem;
+    max-width: 66rem;
     margin-inline: auto;
   }
 
   .cv-header {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 1.5rem;
-    margin-bottom: clamp(3rem, 8vh, 5rem);
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+    margin-bottom: clamp(2.5rem, 6vh, 4rem);
   }
   .cv-header h1 {
     font-family: var(--font-display);
@@ -144,10 +183,10 @@ const description = lang === 'en' ? 'Curriculum vitae of Álvaro Artiel.' : 'Cur
     letter-spacing: -0.03em;
     margin: 0 0 0.35rem;
   }
-  .cv-role {
+  .cv-tagline {
     font-family: var(--font-mono);
     font-size: var(--step-mono-label);
-    color: var(--accent);
+    color: var(--text-muted);
     margin: 0;
   }
 
@@ -155,84 +194,141 @@ const description = lang === 'en' ? 'Curriculum vitae of Álvaro Artiel.' : 'Cur
     font-family: var(--font-mono);
     font-size: var(--step-small);
     color: var(--bg);
-    background: var(--accent);
+    background: var(--text);
     border: 0;
     padding: 0.6rem 1.25rem;
     border-radius: 999px;
     cursor: pointer;
     text-decoration: none;
     display: inline-block;
-    transition: opacity var(--transition-fast);
+    transition: opacity var(--dur-micro) var(--ease-out-token);
   }
   .cv-download:hover {
     opacity: 0.85;
   }
 
-  .cv-section {
-    margin-bottom: clamp(2.5rem, 6vh, 4rem);
-  }
-  .cv-section-title {
-    font-family: var(--font-mono);
-    font-size: var(--step-mono-label);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--accent);
-    margin: 0 0 1.25rem;
+  .cv-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+    column-gap: clamp(2.5rem, 6vw, 5rem);
+    align-items: start;
   }
 
-  .cv-personal-data {
+  /* -------- Sidebar -------- */
+  .cv-side {
+    display: grid;
+    gap: clamp(1.75rem, 4vh, 2.5rem);
+  }
+  .cv-portrait {
+    width: 8.5rem;
+    height: 8.5rem;
+    object-fit: cover;
+    border-radius: 2px;
+    filter: grayscale(1) contrast(1.05);
+  }
+  .cv-side-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+    font-size: var(--step-small);
+  }
+  .cv-side-list a {
+    color: var(--text);
+    text-decoration: none;
+  }
+  .cv-side-list a:hover {
+    text-decoration: underline;
+  }
+  .cv-side-text {
+    font-size: var(--step-small);
     margin: 0;
   }
-  .cv-personal-data a {
-    color: var(--text);
+  .cv-skill-group {
+    margin: 0 0 0.85rem;
+  }
+  .cv-skill-group h3 {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin: 0 0 0.2rem;
+  }
+  .cv-skill-group p {
+    font-size: var(--step-small);
+    margin: 0;
   }
 
+  /* -------- Bloques y etiquetas de sección -------- */
+  .cv-block {
+    margin: 0 0 clamp(2rem, 5vh, 3rem);
+  }
+  .cv-label {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin: 0 0 1.1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  }
+
+  /* -------- Entradas condensadas: fecha | contenido -------- */
   .cv-list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 1.75rem;
+    gap: 1.15rem;
   }
-
+  .cv-entry {
+    display: grid;
+    grid-template-columns: minmax(0, 8.5rem) minmax(0, 1fr);
+    column-gap: 1.5rem;
+    align-items: baseline;
+  }
   .cv-entry-dates {
     font-family: var(--font-mono);
     font-size: var(--step-small);
     color: var(--text-muted);
-    margin: 0 0 0.3rem;
+    margin: 0;
+    white-space: nowrap;
   }
   .cv-entry-title {
     font-family: var(--font-display);
     font-weight: 550;
-    font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+    font-size: 1.05rem;
     letter-spacing: -0.01em;
-    margin: 0 0 0.4rem;
+    margin: 0 0 0.25rem;
   }
   .cv-entry-at {
     font-family: var(--font-text);
     font-weight: 400;
     color: var(--text-muted);
-    font-size: 0.85em;
+    font-size: 0.9em;
   }
   .cv-entry-summary {
     font-size: var(--step-small);
-    line-height: 1.55;
+    line-height: 1.5;
     color: var(--text-muted);
-    margin: 0 0 0.4rem;
-  }
-  .cv-entry-bullets {
-    margin: 0.4rem 0 0;
-    padding-left: 1.15rem;
-    display: grid;
-    gap: 0.3rem;
-    font-size: var(--step-small);
-    color: var(--text-muted);
+    max-width: 60ch;
+    margin: 0;
   }
 
-  .cv-skills {
-    font-family: var(--font-mono);
-    font-size: var(--step-small);
-    margin: 0;
-    max-width: 60ch;
+  /* -------- Móvil: el documento fluye en una columna -------- */
+  @media (max-width: 720px) {
+    .cv-grid {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 2.5rem;
+    }
+    .cv-entry {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 0.2rem;
+    }
   }
 </style>
