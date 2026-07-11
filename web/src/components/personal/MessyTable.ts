@@ -61,7 +61,13 @@ async function initPhysics(): Promise<void> {
     // En la mesa las polaroids van algo más pequeñas: caben sin apilarse en torre
     const width = Math.min(rect.width, 230)
     const height = rect.height * (width / rect.width)
-    el.style.cssText += `position:absolute;left:0;top:0;width:${width}px;margin:0;cursor:grab;will-change:transform;`
+    // user-select/touch-action fuera y sin drag nativo de imagen: el gesto de
+    // agarre no debe competir con seleccionar el pie o arrastrar el <img>
+    // fantasma del navegador (se sentía "raro": pinchabas y seleccionabas).
+    el.style.cssText += `position:absolute;left:0;top:0;width:${width}px;margin:0;cursor:grab;will-change:transform;user-select:none;-webkit-user-select:none;touch-action:none;`
+    el.querySelectorAll('img').forEach((img) => {
+      img.draggable = false
+    })
     return {el, cap, w: width, h: height}
   })
   sections.forEach((section) => (section.style.display = 'none'))
@@ -114,14 +120,24 @@ async function initPhysics(): Promise<void> {
   // Matter añade un listener 'wheel' no-pasivo que hace preventDefault y
   // bloquea el scroll nativo sobre la mesa (120vh): lo quitamos.
   table.removeEventListener('wheel', (mouse as unknown as {mousewheel: EventListener}).mousewheel)
-  const mouseConstraint = MouseConstraint.create(engine, {mouse, constraint: {stiffness: 0.12, damping: 0.12}})
+  // stiffness 0.2: agarre más directo (con 0.12 la polaroid "flotaba" detrás
+  // del cursor y el gesto se sentía irresponsivo)
+  const mouseConstraint = MouseConstraint.create(engine, {mouse, constraint: {stiffness: 0.2, damping: 0.12}})
   Composite.add(engine.world, mouseConstraint)
 
   // Un lanzamiento puede apilar una polaroid más alto que el recorte actual:
   // vuelve al alto generoso mientras se agarra/lanza y hasta que se re-asiente.
-  Events.on(mouseConstraint, 'startdrag', () => {
+  Events.on(mouseConstraint, 'startdrag', (e: {body?: Matter.Body}) => {
     settled = false
     viewport.style.height = `${PHYSICS_HEIGHT_VH}vh`
+    // Feedback de agarre: la mano se cierra sobre la polaroid agarrada
+    table.style.cursor = 'grabbing'
+    const grabbed = e.body ? bodies.indexOf(e.body) : -1
+    if (grabbed >= 0) items[grabbed].el.style.cursor = 'grabbing'
+  })
+  Events.on(mouseConstraint, 'enddrag', () => {
+    table.style.cursor = ''
+    items.forEach((item) => (item.el.style.cursor = 'grab'))
   })
 
   // Clic sin arrastre = abrir el lightbox de esa polaroid
