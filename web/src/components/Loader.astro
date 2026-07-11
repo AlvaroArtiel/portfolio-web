@@ -1,0 +1,140 @@
+---
+/**
+ * Experiencia de carga (sesión 3 §3.6, G1): telón de marca 1-1.5s SOLO en la
+ * primera visita de la sesión. El guard vive en un script inline del <head>
+ * de Base.astro (clase `aa-loading` puesta ANTES del primer paint, sin FOUC
+ * en ninguna dirección). Monograma dibujándose + palabra rotante; sale con
+ * la coreografía del sistema revelando el hero ya estable. Skippable con
+ * click o tecla. Reduced-motion: fade corto. El contenido real permanece en
+ * el DOM debajo (el telón es un overlay aria-hidden).
+ */
+import type {Lang} from '../lib/i18n'
+
+interface Props {
+  lang: Lang
+}
+const {lang} = Astro.props
+const words = lang === 'en' ? ['design', 'code', 'product'] : ['diseño', 'código', 'producto']
+---
+
+<div class="aa-loader" data-loader aria-hidden="true">
+  <svg class="aa-loader-mark" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      class="aa-loader-path"
+      d="M6 90 L50 6 L94 90 H74 L50 42 L26 90 Z M29.2 59.6 H70.8 V69.2 H29.2 Z"
+      stroke="var(--text)"
+      stroke-width="2"
+    ></path>
+  </svg>
+  <p class="aa-loader-word" data-loader-word>{words[0]}</p>
+</div>
+
+<script define:vars={{words}}>
+  const loader = document.querySelector('[data-loader]')
+  const wordEl = document.querySelector('[data-loader-word]')
+  const root = document.documentElement
+
+  if (!loader) {
+    // nada
+  } else if (!root.classList.contains('aa-loading')) {
+    loader.remove()
+  } else {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    let wordIndex = 0
+    const rotator = window.setInterval(() => {
+      wordIndex = (wordIndex + 1) % words.length
+      if (wordEl) wordEl.textContent = words[wordIndex]
+    }, 420)
+
+    let done = false
+    const exit = () => {
+      if (done) return
+      done = true
+      window.clearInterval(rotator)
+      try {
+        sessionStorage.setItem('aa-loaded', '1')
+      } catch {}
+      loader.classList.add('is-exiting')
+      const cleanup = () => {
+        root.classList.remove('aa-loading')
+        loader.remove()
+      }
+      // 900ms = --dur-section (coreografía del sistema); reduced: fade 200ms
+      window.setTimeout(cleanup, reduced ? 220 : 920)
+      window.removeEventListener('click', exit)
+      window.removeEventListener('keydown', exit)
+    }
+
+    // Skippable con click o cualquier tecla
+    window.addEventListener('click', exit)
+    window.addEventListener('keydown', exit)
+
+    // Espera: fuentes listas (revela el hero YA estable) con techo duro de
+    // 1500ms; mínimo 900ms para que la marca respire. Reduced: mínimo.
+    const minimum = new Promise((r) => setTimeout(r, reduced ? 300 : 900))
+    const assets = Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))])
+    Promise.all([minimum, assets]).then(exit)
+  }
+</script>
+
+<style>
+  /* Solo existe visualmente bajo html.aa-loading (guard inline en Base) */
+  .aa-loader {
+    display: none;
+  }
+  :global(html.aa-loading) .aa-loader {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: var(--surface-0);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    transition: translate var(--dur-section, 900ms) var(--ease-inout-token, cubic-bezier(0.65, 0, 0.35, 1));
+  }
+  /* Mientras el telón está, el contenido de debajo no se ve (evita doble pintura) */
+
+  .aa-loader-mark {
+    width: clamp(4.5rem, 10vw, 7rem);
+    height: auto;
+  }
+  .aa-loader-path {
+    stroke-dasharray: 520;
+    stroke-dashoffset: 520;
+    animation: aa-draw 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes aa-draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .aa-loader-word {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    letter-spacing: 0.12em;
+    margin: 0;
+    min-height: 1.4em;
+  }
+
+  :global(html.aa-loading) .aa-loader.is-exiting {
+    translate: 0 -100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.aa-loading) .aa-loader {
+      transition: opacity 200ms linear;
+    }
+    :global(html.aa-loading) .aa-loader.is-exiting {
+      translate: none;
+      opacity: 0;
+    }
+    .aa-loader-path {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
+  }
+</style>
