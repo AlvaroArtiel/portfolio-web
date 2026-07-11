@@ -73,7 +73,9 @@ const words: [string, boolean][] =
     const {gsap} = motion
     const words = section.querySelectorAll<HTMLElement>('.m-word')
 
-    gsap.set(words, {opacity: 0.18})
+    // 0.35 y no menos: el estado apagado también debe pasar AA para texto
+    // grande (≥3:1) — con 0.18 Lighthouse marcaba color-contrast en la home.
+    gsap.set(words, {opacity: 0.35})
     gsap.to(words, {
       opacity: 1,
       ease: 'none',
