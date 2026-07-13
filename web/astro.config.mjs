@@ -13,7 +13,10 @@ export const SITE_URL = process.env.PUBLIC_SITE_URL ?? 'https://dev.alvaroartiel
 // Pages that must stay out of the sitemap and search index (see Base.astro noindex prop).
 const NOINDEX_PATHS = ['/casa/', '/en/house/'];
 
-/** El endpoint PHP debe viajar en TODO build (antes solo lo copiaba deploy.mjs). */
+/**
+ * El endpoint PHP debe viajar en TODO build (antes solo lo copiaba deploy.mjs).
+ * @type {import('astro').AstroIntegration}
+ */
 const copyContactPhp = {
   name: 'copy-contact-php',
   hooks: {
