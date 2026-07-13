@@ -254,7 +254,8 @@ const description =
   .rail-year :global(.jy-col) {
     display: block;
     height: 1em;
-    width: 0.58em; /* columnas iguales: odómetro estable aunque los dígitos no sean tabulares */
+    width: 0.71em; /* columnas iguales al ancho del dígito más ancho ("0" = 0.702em
+       en esta fuente a peso 620): con 0.58em los glifos salían recortados por los lados */
     overflow: hidden;
     text-align: center;
   }

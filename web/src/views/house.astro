@@ -86,6 +86,10 @@ const exitLabel = lang === 'en' ? '← Leave the house' : '← Salir de la casa'
     display: none;
     touch-action: none;
     z-index: 5;
+    /* El HUD es pointer-events:none y la regla scoped `.house-hud > *` no
+       alcanza a este elemento (lo crea controls.ts sin el atributo de scope
+       de Astro): sin esto el joystick se ve pero no recibe ningún toque. */
+    pointer-events: auto;
   }
   .house-joystick-nub {
     position: absolute;
