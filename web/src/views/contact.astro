@@ -205,6 +205,9 @@ const topics = [
       submitButton.classList.add('is-flying')
       label.textContent = form.dataset.flying ?? label.textContent
     }
+    try {
+      sessionStorage.setItem('aa-sent', '1')
+    } catch {}
   })
 
   // --- Email gigante: copiar + microexplosión ------------------------------

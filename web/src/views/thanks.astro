@@ -35,13 +35,23 @@ const description =
   import {mountScene} from '../lib/three-island'
   import {DURATION, EASE} from '../lib/motion-tokens'
 
+  // El premio es para quien envía: llegar directo redirige al formulario.
+  let sent = false
+  try {
+    sent = sessionStorage.getItem('aa-sent') === '1'
+    sessionStorage.removeItem('aa-sent')
+  } catch {}
+  if (!sent) {
+    location.replace(document.documentElement.lang === 'en' ? '/en/contact/' : '/contacto/')
+  }
+
   const stage = document.querySelector<HTMLElement>('[data-thanks-stage]')
-  if (stage) {
+  if (sent && stage) {
     void mountScene(stage, () => import('../scenes/thanks-scene').then((m) => m.default), {eager: true})
   }
 
   // Confeti de bienvenida (una sola vez, respeta reduced-motion)
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (sent && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const colors = ['#D4FF3F', '#4FD1C5', '#B06CFF', '#F4F4F0']
     for (let i = 0; i < 26; i++) {
       const p = document.createElement('span')
