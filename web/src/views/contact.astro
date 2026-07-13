@@ -218,6 +218,12 @@ const topics = [
     try {
       await navigator.clipboard.writeText(text.textContent?.trim() ?? '')
     } catch {
+      // Sin permiso de clipboard: seleccionamos el email para copiar manual (Ctrl+C)
+      const range = document.createRange()
+      range.selectNodeContents(text)
+      const sel = getSelection()
+      sel?.removeAllRanges()
+      sel?.addRange(range)
       return
     }
     const original = text.textContent
