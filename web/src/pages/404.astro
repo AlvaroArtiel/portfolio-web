@@ -1,0 +1,76 @@
+---
+import Base from '../layouts/Base.astro'
+---
+
+<Base
+  title="404 — Álvaro Artiel"
+  description="Esta página no existe."
+  lang="es"
+  section="home"
+  noindex
+>
+  <section class="nf-page">
+    <p class="nf-code" aria-hidden="true">404</p>
+    <h1 data-nf-es>Esta página no existe. De momento.</h1>
+    <h1 data-nf-en hidden>This page doesn't exist. Yet.</h1>
+    <nav class="nf-cta">
+      <a data-nf-es href="/">← Volver al inicio</a>
+      <a data-nf-es href="/proyectos/">Ver proyectos</a>
+      <a data-nf-en hidden href="/en/">← Back home</a>
+      <a data-nf-en hidden href="/en/projects/">See the projects</a>
+    </nav>
+  </section>
+</Base>
+
+<script>
+  // Un único 404.html para todo el site: si la URL rota era /en/*, habla inglés.
+  if (location.pathname.startsWith('/en/')) {
+    document.querySelectorAll<HTMLElement>('[data-nf-es]').forEach((el) => (el.hidden = true))
+    document.querySelectorAll<HTMLElement>('[data-nf-en]').forEach((el) => (el.hidden = false))
+  }
+</script>
+
+<style>
+  .nf-page {
+    min-height: 70vh;
+    display: grid;
+    place-content: center;
+    justify-items: start;
+    gap: 1rem;
+    padding: clamp(1.5rem, 6vw, 4rem);
+  }
+  .nf-code {
+    font-family: var(--font-display);
+    font-weight: 620;
+    font-size: clamp(6rem, 18vw, 12rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: color-mix(in srgb, var(--accent) 26%, transparent);
+    margin: 0;
+  }
+  .nf-page h1 {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: var(--step-h2, clamp(1.6rem, 3.4vw, 2.6rem));
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .nf-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  .nf-cta a {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 0.2em;
+    transition: color var(--dur-micro) var(--ease-out-token);
+  }
+  .nf-cta a:hover {
+    color: var(--accent);
+  }
+</style>
