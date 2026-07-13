@@ -21,6 +21,8 @@ const excerpt = t(post.excerpt, lang)
 const body = (post.body?.[lang] ?? post.body?.es ?? []) as BodyBlock[]
 const minutes = readingTime(body as unknown[])
 
+const ogImage = post.cover ? urlFor(post.cover, {w: 1200, h: 630}).url() : undefined
+
 // "Siguiente entrada": la siguiente más antigua; si no existe, estado con voz.
 const posts = await getPosts()
 const index = posts.findIndex((p) => p.slug.current === post.slug.current)
@@ -40,7 +42,7 @@ function formatDate(date?: string): string {
 }
 ---
 
-<Base title={`${title} — Álvaro Artiel`} description={excerpt || title} lang={lang} section="blog">
+<Base title={`${title} — Álvaro Artiel`} description={excerpt || title} lang={lang} section="blog" ogImage={ogImage}>
   {/* Barra de progreso de lectura (sesión 3 §3.4) */}
   <div class="read-progress" data-read-progress aria-hidden="true"></div>
 
