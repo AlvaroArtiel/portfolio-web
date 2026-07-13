@@ -66,3 +66,7 @@
 - **Pin vs flujo:** en flujo (sin pin) — el manifiesto respira dentro del ritmo de la home sin secuestrar el scroll.
 ## 2026-07-11 Elevación (sesión 3) — Task 11e: re-audit de la casa (sin cambios)
 - **Veredicto contra la vara nueva (punto 11, memorabilidad):** PASA. Lo que se recuerda: "el portfolio con una casita jugable donde tu personaje lleva la foto real de cabeza". Props con acento por sección (escritorio azul, estantería violeta, guitarra naranja), sombras de contacto y retícula del sistema en el suelo — la dirección de arte de la sesión 2 se sostiene. No se toca código dentro del presupuesto restante.
+## 2026-07-13 Task 3: contact.php copiado en TODO build (astro:build:done)
+- **Qué decía la nota operativa anterior:** "Regla desde ahora: SIEMPRE `node scripts/deploy.mjs` antes de zipear" (porque `npm run build` a secas pierde `api/contact.php`).
+- **Qué se hace:** integración Astro inline `copyContactPhp` con hook `astro:build:done` en `web/astro.config.mjs` copia `api/contact.php` → `dist/api/contact.php` en TODO build (incluidos los que corren sin deploy.mjs).
+- **Por qué:** el endpoint PHP es un artefacto de build, no un archivo estático ignorado; debe viajar en TODO `npm run build` sin efectos secundarios. La regla "siempre deploy.mjs" pasa de crítica a recomendación operativa (deploy.mjs sigue siendo el vehículo principal + cifra exacta del tamaño). La integración es idempotente: si deploy.mjs lo copia después, no hay colisión.
