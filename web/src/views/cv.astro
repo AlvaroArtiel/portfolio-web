@@ -20,12 +20,17 @@ const [experiences, education, settings] = await Promise.all([getExperiences(), 
  * Su concepto es la quietud diseñada: cero efectos de scroll en esta página.
  */
 
-/** Aptitudes agrupadas (mismo pool declarado que la versión anterior del CV). */
-const skillGroups = [
+/** Aptitudes agrupadas: editables desde Sanity, con fallback al pool anterior. */
+const fallbackGroups = [
   {label: dict.cv_skill_design, items: ['Figma', 'UX/UI']},
   {label: dict.cv_skill_dev, items: ['React', 'Astro', 'Node.js', 'TypeScript', 'Sanity']},
   {label: dict.cv_skill_marketing, items: ['SEO']},
 ]
+const skillGroups =
+  settings?.cvSkillGroups?.length
+    ? settings.cvSkillGroups.map((g) => ({label: t(g.label, lang), items: g.items ?? []}))
+    : fallbackGroups
+const languagesLine = t(settings?.cvLanguages, lang) || dict.cv_languages_value
 
 const email = settings?.email ?? 'soy@alvaroartiel.com'
 const cvPdfUrl = settings?.cvPdfUrl
@@ -93,7 +98,7 @@ const description = lang === 'en' ? 'Curriculum vitae of Álvaro Artiel.' : 'Cur
 
         <section class="cv-block">
           <h2 class="cv-label">{dict.cv_languages}</h2>
-          <p class="cv-side-text">{dict.cv_languages_value}</p>
+          <p class="cv-side-text">{languagesLine}</p>
         </section>
       </aside>
 

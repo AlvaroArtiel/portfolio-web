@@ -47,6 +47,8 @@ export interface SiteSettings {
   cvPdf?: SanityFileRef
   /** Direct CDN URL of the uploaded CV file, if any (see siteSettingsQuery projection). */
   cvPdfUrl?: string
+  cvSkillGroups?: {label?: LocaleField; items?: string[]; _key?: string}[]
+  cvLanguages?: LocaleField
   seoTitle?: LocaleField
   seoDescription?: LocaleField
 }

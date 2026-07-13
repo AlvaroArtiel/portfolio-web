@@ -808,4 +808,15 @@ export const SITE_SETTINGS = {
     es: 'Portfolio de Álvaro Artiel: diseño de producto digital de punta a punta, proyectos propios y de cliente, experiencia y formación.',
     en: 'Álvaro Artiel’s portfolio: end-to-end digital product design, in-house and client projects, experience and education.',
   },
+  cvSkillGroups: [
+    {_type: 'skillGroup', _key: 'design', label: {es: 'Diseño', en: 'Design'}, items: ['Figma', 'UX/UI']},
+    {
+      _type: 'skillGroup',
+      _key: 'dev',
+      label: {es: 'Desarrollo', en: 'Development'},
+      items: ['React', 'Astro', 'Node.js', 'TypeScript', 'Sanity'],
+    },
+    {_type: 'skillGroup', _key: 'marketing', label: {es: 'Marketing', en: 'Marketing'}, items: ['SEO']},
+  ],
+  cvLanguages: {es: 'Español · Inglés', en: 'Spanish · English'},
 }

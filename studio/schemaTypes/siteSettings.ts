@@ -26,6 +26,22 @@ export const siteSettings = defineType({
       ],
     }),
     defineField({name: 'cvPdf', title: 'CV (PDF)', type: 'file'}),
+    defineField({
+      name: 'cvSkillGroups',
+      title: 'CV — aptitudes agrupadas',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'skillGroup',
+          fields: [
+            {name: 'label', title: 'Grupo', type: 'localeString'},
+            {name: 'items', title: 'Aptitudes', type: 'array', of: [{type: 'string'}]},
+          ],
+        },
+      ],
+    }),
+    defineField({name: 'cvLanguages', title: 'CV — idiomas', type: 'localeString'}),
     defineField({name: 'seoTitle', title: 'Título SEO', type: 'localeString'}),
     defineField({name: 'seoDescription', title: 'Descripción SEO', type: 'localeString'}),
   ],

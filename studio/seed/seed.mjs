@@ -292,6 +292,8 @@ async function main() {
     })),
     seoTitle: SITE_SETTINGS.seoTitle,
     seoDescription: SITE_SETTINGS.seoDescription,
+    cvSkillGroups: SITE_SETTINGS.cvSkillGroups,
+    cvLanguages: SITE_SETTINGS.cvLanguages,
   })
 
   console.log(`Writing ${docs.length} documents with createOrReplace...`)
