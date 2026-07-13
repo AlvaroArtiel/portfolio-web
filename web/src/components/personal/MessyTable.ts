@@ -1,21 +1,23 @@
 /**
- * Mesa revuelta: en desktop las polaroids de la grid se convierten en
- * cuerpos Matter.js dentro de una "mesa" (los bordes de la sección son las
- * paredes). Caen al cargar, se pueden agarrar y lanzar, colisionan y se
- * duermen cuando reposan. Un clic sin arrastre abre el lightbox de siempre.
- * Los filtros de capítulo despiertan (impulso) a su capítulo y atenúan el
- * resto.
+ * Mesa revuelta: las polaroids de la grid se convierten en cuerpos Matter.js
+ * dentro de una "mesa" (los bordes de la sección son las paredes). Caen al
+ * cargar, se pueden agarrar y lanzar, colisionan y se duermen cuando reposan.
+ * Un clic/tap sin arrastre abre el lightbox de siempre. Los filtros de
+ * capítulo despiertan (impulso) a su capítulo y atenúan el resto.
  *
- * Móvil: sin física — flujo de la grid F2 con parallax sutil de giroscopio
- * (permiso tras primer gesto en iOS; sin permiso, estático).
+ * Táctil: misma física. El agarre se conduce con pointer events que solo
+ * actúan cuando el gesto empieza sobre una polaroid (touch-action:none en la
+ * pieza); en el resto de la mesa el scroll de página sigue siendo nativo.
  * Reduced-motion: la grid F2 tal cual, este módulo no hace nada.
  */
 
-const DESKTOP = '(min-width: 721px) and (hover: hover) and (pointer: fine)'
 // La capa de física necesita recorrido vertical generoso para que la caída se
 // sienta bien; el CRECIMIENTO VISIBLE de la mesa (el "viewport" recortado) se
 // ajusta después, al montón ya asentado, para no dejar aire de sobra.
 const PHYSICS_HEIGHT_VH = 120
+// Lo VISIBLE nunca pasa de un alto de pantalla: la capa de física va anclada
+// al fondo del viewport, así que las piezas caen desde fuera de cuadro.
+const VIEWPORT_MAX_VH = 90
 const SETTLED_MARGIN = 1.25 // área visible ≈ montón asentado + 25%
 const SETTLED_MAX_VH = 0.7 // nunca más del 70% del alto de viewport
 const SETTLED_MIN_PX = 240 // suelo razonable para no recortar en seco
@@ -23,8 +25,7 @@ const DRAG_CLICK_THRESHOLD = 6
 
 export function initMessyTable(): void {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-  if (window.matchMedia(DESKTOP).matches) void initPhysics()
-  else initGyroParallax()
+  void initPhysics()
 }
 
 async function initPhysics(): Promise<void> {
@@ -47,7 +48,7 @@ async function initPhysics(): Promise<void> {
   // recortada por su overflow:hidden mientras cae.
   const viewport = document.createElement('div')
   viewport.className = 'messy-table'
-  viewport.style.cssText = `position:relative;height:${PHYSICS_HEIGHT_VH}vh;overflow:hidden;border-block:1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);transition:height var(--dur-element) var(--ease-out-token);`
+  viewport.style.cssText = `position:relative;height:${VIEWPORT_MAX_VH}vh;overflow:hidden;border-block:1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);transition:height var(--dur-element) var(--ease-out-token);`
   sections[0].before(viewport)
 
   const table = document.createElement('div')
@@ -58,8 +59,10 @@ async function initPhysics(): Promise<void> {
     const rect = el.getBoundingClientRect()
     const cap = el.closest<HTMLElement>('[data-chapter-section]')?.dataset.cap ?? ''
     table.appendChild(el)
-    // En la mesa las polaroids van algo más pequeñas: caben sin apilarse en torre
-    const width = Math.min(rect.width, 230)
+    // En la mesa las polaroids van algo más pequeñas: caben sin apilarse en
+    // torre. En pantallas estrechas se reducen más (≈3 por fila): con piezas
+    // al 42% del ancho la pila era tan alta como la mesa y nunca se dormía.
+    const width = Math.min(rect.width, 230, table.clientWidth * 0.32)
     const height = rect.height * (width / rect.width)
     // user-select/touch-action fuera y sin drag nativo de imagen: el gesto de
     // agarre no debe competir con seleccionar el pie o arrastrar el <img>
@@ -103,9 +106,12 @@ async function initPhysics(): Promise<void> {
     }, 250)
   })
 
+  // Margen lateral proporcional: con el fijo de 80px, en mesas estrechas el
+  // recorrido útil colapsaba y todas las piezas caían en la misma franja.
+  const dropMargin = Math.min(80, W * 0.06)
   const bodies = items.map((item, index) => {
     const body = Bodies.rectangle(
-      80 + ((index * 0.61803) % 1) * Math.max(60, W - 160 - item.w), // reparto áureo, sin torres
+      dropMargin + ((index * 0.61803) % 1) * Math.max(60, W - dropMargin * 2 - item.w), // reparto áureo, sin torres
       -((index % 4) * 120) - 100, // en tandas desde arriba
       item.w,
       item.h,
@@ -119,17 +125,58 @@ async function initPhysics(): Promise<void> {
   const mouse = Mouse.create(table)
   // Matter añade un listener 'wheel' no-pasivo que hace preventDefault y
   // bloquea el scroll nativo sobre la mesa (120vh): lo quitamos.
-  table.removeEventListener('wheel', (mouse as unknown as {mousewheel: EventListener}).mousewheel)
+  const rawMouse = mouse as unknown as {
+    mousewheel: EventListener
+    mousedown: EventListener
+    mousemove: EventListener
+    mouseup: EventListener
+    button: number
+  }
+  table.removeEventListener('wheel', rawMouse.mousewheel)
+  // Sus listeners touch* también hacen preventDefault sobre TODA la mesa
+  // (bloquearían el scroll de página en móvil): fuera. El agarre táctil se
+  // conduce a mano más abajo, solo cuando el gesto empieza en una polaroid.
+  table.removeEventListener('touchstart', rawMouse.mousedown)
+  table.removeEventListener('touchmove', rawMouse.mousemove)
+  table.removeEventListener('touchend', rawMouse.mouseup)
   // stiffness 0.2: agarre más directo (con 0.12 la polaroid "flotaba" detrás
   // del cursor y el gesto se sentía irresponsivo)
   const mouseConstraint = MouseConstraint.create(engine, {mouse, constraint: {stiffness: 0.2, damping: 0.12}})
   Composite.add(engine.world, mouseConstraint)
 
+  // Puente táctil: alimenta la posición/botón del Mouse de Matter desde
+  // pointer events. Solo secuestra el gesto si empieza sobre una polaroid
+  // (touch-action:none en la pieza evita que el navegador lo convierta en
+  // scroll); en el resto de la mesa la página scrollea con normalidad.
+  const setMousePosition = (e: PointerEvent) => {
+    const r = table.getBoundingClientRect()
+    mouse.position.x = e.clientX - r.left
+    mouse.position.y = e.clientY - r.top
+  }
+  table.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return // el ratón ya lo gestiona Matter
+    if (!(e.target as HTMLElement).closest('.polaroid')) return
+    setMousePosition(e)
+    rawMouse.button = 0
+  })
+  window.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'mouse' || rawMouse.button !== 0) return
+    setMousePosition(e)
+  })
+  const releaseTouch = (e: PointerEvent) => {
+    if (e.pointerType === 'mouse') return
+    rawMouse.button = -1
+  }
+  window.addEventListener('pointerup', releaseTouch)
+  window.addEventListener('pointercancel', releaseTouch)
+
   // Un lanzamiento puede apilar una polaroid más alto que el recorte actual:
   // vuelve al alto generoso mientras se agarra/lanza y hasta que se re-asiente.
-  Events.on(mouseConstraint, 'startdrag', (e: {body?: Matter.Body}) => {
+  // El evento startdrag lleva `body`, pero los tipos de matter-js solo
+  // declaran IEvent<MouseConstraint>: se amplía aquí.
+  Events.on(mouseConstraint, 'startdrag', (e: Matter.IEvent<Matter.MouseConstraint> & {body?: Matter.Body}) => {
     settled = false
-    viewport.style.height = `${PHYSICS_HEIGHT_VH}vh`
+    viewport.style.height = `${VIEWPORT_MAX_VH}vh`
     // Feedback de agarre: la mano se cierra sobre la polaroid agarrada
     table.style.cursor = 'grabbing'
     const grabbed = e.body ? bodies.indexOf(e.body) : -1
@@ -179,7 +226,7 @@ async function initPhysics(): Promise<void> {
       // El impulso puede levantar el montón por encima del recorte actual:
       // vuelve al alto generoso mientras se re-asienta.
       settled = false
-      viewport.style.height = `${PHYSICS_HEIGHT_VH}vh`
+      viewport.style.height = `${VIEWPORT_MAX_VH}vh`
     })
   })
 
@@ -233,38 +280,4 @@ async function initPhysics(): Promise<void> {
     {rootMargin: '100px'},
   )
   observer.observe(viewport)
-}
-
-/** Parallax sutil por giroscopio en móvil; permiso tras gesto en iOS. */
-function initGyroParallax(): void {
-  const polaroids = Array.from(document.querySelectorAll<HTMLElement>('[data-chapter-section] .polaroid'))
-  if (polaroids.length === 0) return
-
-  const apply = (beta: number, gamma: number) => {
-    polaroids.forEach((el, i) => {
-      const depth = 0.4 + (i % 3) * 0.3
-      el.style.translate = `${gamma * 0.35 * depth}px ${(beta - 45) * 0.2 * depth}px`
-    })
-  }
-  const listen = () => window.addEventListener('deviceorientation', (e) => apply(e.beta ?? 45, e.gamma ?? 0), {passive: true})
-
-  const DOE = window.DeviceOrientationEvent as unknown as
-    | {requestPermission?: () => Promise<'granted' | 'denied'>}
-    | undefined
-  if (DOE?.requestPermission) {
-    // iOS: pedir permiso solo tras el primer gesto del usuario
-    const onFirstTouch = () => {
-      DOE.requestPermission!()
-        .then((res) => {
-          if (res === 'granted') listen()
-        })
-        .catch(() => {
-          /* sin permiso → estático */
-        })
-      window.removeEventListener('touchend', onFirstTouch)
-    }
-    window.addEventListener('touchend', onFirstTouch, {once: true})
-  } else if ('DeviceOrientationEvent' in window) {
-    listen()
-  }
 }
