@@ -70,3 +70,8 @@
 - **Qué decía la nota operativa anterior:** "Regla desde ahora: SIEMPRE `node scripts/deploy.mjs` antes de zipear" (porque `npm run build` a secas pierde `api/contact.php`).
 - **Qué se hace:** integración Astro inline `copyContactPhp` con hook `astro:build:done` en `web/astro.config.mjs` copia `api/contact.php` → `dist/api/contact.php` en TODO build (incluidos los que corren sin deploy.mjs).
 - **Por qué:** el endpoint PHP es un artefacto de build, no un archivo estático ignorado; debe viajar en TODO `npm run build` sin efectos secundarios. La regla "siempre deploy.mjs" pasa de crítica a recomendación operativa (deploy.mjs sigue siendo el vehículo principal + cifra exacta del tamaño). La integración es idempotente: si deploy.mjs lo copia después, no hay colisión.
+## 2026-07-13 Task 1: .htaccess con ErrorDocument para que LiteSpeed sirva 404 de marca
+- **Qué decía el plan (Task 1):** "la 404 de marca se autosirve ante rutas desconocidas gracias a que Astro copia `/404.html` a la raíz de `dist/`".
+- **Qué se constató en la puerta de entrada (staging):** `/404.html` devuelve 200 con nuestra marca, pero `/no-existe/` devuelve un 404 con la página genérica de Hostinger. LiteSpeed NO auto-sirve `dist/404.html` para rutas inexistentes; necesita instrucción explícita.
+- **Qué se hace:** crear `web/public/.htaccess` con exactamente `ErrorDocument 404 /404.html` (línea con salto de línea final opcionalA). Astro copia `public/` verbatim a `dist/`, por lo que la directiva viajaría al servidor. Sin `.htaccess` previo en el repo.
+- **Por qué:** fix puramente configurativo que corrige la suposición del plan. El endpoint PHP es un artefacto de build, no un archivo estático ignorado; debe viajar en TODO `npm run build` sin efectos secundarios.
