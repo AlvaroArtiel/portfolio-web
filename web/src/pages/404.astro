@@ -27,6 +27,7 @@ import Base from '../layouts/Base.astro'
   if (location.pathname.startsWith('/en/')) {
     document.querySelectorAll<HTMLElement>('[data-nf-es]').forEach((el) => (el.hidden = true))
     document.querySelectorAll<HTMLElement>('[data-nf-en]').forEach((el) => (el.hidden = false))
+    document.documentElement.lang = 'en'
   }
 </script>
 
