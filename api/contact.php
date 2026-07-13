@@ -8,6 +8,15 @@ $email = trim($_POST['email'] ?? '');
 $message = trim($_POST['message'] ?? '');
 $honeypot = trim($_POST['website'] ?? ''); // campo oculto anti-bots
 $lang = ($_POST['lang'] ?? 'es') === 'en' ? 'en' : 'es';
+$topics = [
+  'es' => ['producto' => 'un producto', 'web' => 'una web', 'idea' => 'una idea', 'otra' => 'otra cosa'],
+  'en' => ['producto' => 'a product', 'web' => 'a website', 'idea' => 'an idea', 'otra' => 'something else'],
+];
+$topic = trim($_POST['topic'] ?? '');
+if ($topic !== '' && isset($topics[$lang][$topic])) {
+  $pre = $lang === 'en' ? 'In the works: ' : 'Tengo entre manos: ';
+  $message = '[' . $pre . $topics[$lang][$topic] . '] ' . $message;
+}
 if ($honeypot !== '') { header('Location: ' . ($lang === 'en' ? '/en/thanks' : '/gracias')); exit; } // bot: fingir éxito
 if ($name === '' || $message === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
   http_response_code(422); echo json_encode(['error' => 'invalid']); exit;
