@@ -47,6 +47,16 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
   const stage = document.getElementById('hero-stage')
   const titleEl = document.getElementById('hero-title')
   const skip = document.getElementById('hero-skip') as HTMLButtonElement | null
+  const scrollHint = document.querySelector<HTMLElement>('.hero-scroll-hint')
+
+  if (scrollHint) {
+    const retireHint = () => {
+      if (window.scrollY <= 40) return
+      scrollHint.style.opacity = '0'
+      window.removeEventListener('scroll', retireHint)
+    }
+    window.addEventListener('scroll', retireHint, {passive: true})
+  }
 
   if (stage && titleEl && skip) {
     void mountScene(stage, () => import('../../scenes/hero-particles').then((m) => m.default), {eager: true}).then(
@@ -288,6 +298,7 @@ const subtitle = t(settings?.heroSubtitle, lang) || 'diseño · código · produ
     font-size: var(--step-mono-label);
     color: var(--text-muted);
     margin: 0;
+    transition: opacity var(--dur-element) var(--ease-out-token);
   }
 
   .hero-skip {
