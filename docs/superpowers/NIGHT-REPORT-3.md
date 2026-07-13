@@ -60,3 +60,30 @@ Orden cronológico + coda 2026 en experiencia · métricas solo respaldadas · i
 | **Personal** | La mesa revuelta de siempre, ahora con una nota manuscrita que cambia según el capítulo que cotilleas. |
 | **La casa** | Tu personaje lleva la cara real de Álvaro. Eso no se olvida. |
 | **Global** | El cursor deja de ser el del sistema: la web te responde desde el primer píxel, y la primera visita entra por un telón con la marca dibujándose. |
+
+---
+
+## Addendum — Post-auditoría aplicada (2026-07-13)
+
+Ejecución del plan `2026-07-11-mejoras-post-auditoria.md` (SDD: subagente por tarea, task-review por tarea, gates de navegador por Fable contra `dev.alvaroartiel.com`). 13 tareas, todas verdes. Deploy solo a staging; producción PREPARADA (no activada). Studio redesplegado.
+
+**Hallazgos de la auditoría resueltos:**
+
+- **G1 — 404 propia:** `web/src/pages/404.astro` con voz (ES/EN por `pathname`) + `web/public/.htaccess` con `ErrorDocument 404 /404.html`. El gate en navegador reveló que LiteSpeed NO auto-sirve `dist/404.html`; el `.htaccess` lo corrige. `documentElement.lang` pasa a `en` en rutas rotas `/en/*` (a11y).
+- **G2 — producción preparada:** `SITE_URL` parametrizado por `PUBLIC_SITE_URL` (por defecto staging; sin cambios sin la env). Guía «Salida a producción» en `scripts/DEPLOY.md`.
+- **G4 — trampa del deploy:** integración `astro:build:done` copia `api/contact.php` en TODO build; `deploy.mjs` sigue siendo idempotente.
+- **G5 — topic sin JS:** `api/contact.php` antepone el mad-lib server-side cuando el `topic` llega por POST (sin JS). Camino CON-JS intacto (sin duplicar). Uso solo como clave de allowlist → sin inyección.
+- **CV editable:** aptitudes agrupadas + idiomas desde Sanity (`siteSettings`), con fallback a los valores actuales. Schema + seed + tipos + `cv.astro`.
+- **OG por entrada de blog:** `og:image` desde el `cover` (Sanity CDN 1200×630); fallback de sección intacto.
+- **a11y filtro proyectos:** región `aria-live` que anuncia el recuento por **estado objetivo** (síncrono, sin timeouts frágiles).
+- **Prefetch del siguiente proyecto** al hover (`{once:true}`, un `<link rel=prefetch>` por destino).
+- **/gracias tras enviar:** guard con `sessionStorage['aa-sent']`; visita directa redirige (ES/EN), el flag se consume, recargar redirige.
+- **Odómetro protegido:** validación `startDate`/`endDate` en el Studio (regex `YYYY` o `MM/YYYY`).
+- **Copiar email robusto:** fallback de selección (`Range`/`Selection`) cuando el Clipboard API no está disponible.
+- **Retoques:** el hint del hero se retira al scrollear; títulos descriptivos (`title`+`aria-label`) en el selector de idioma.
+
+**Verificación (navegador, staging, hard-reload):** 404 ES/EN servida por LiteSpeed; POST del topic sin JS → 302; grupos+idiomas del CV desde Sanity en vivo; filtro anuncia 6/3/1/10; prefetch único al hover; guard de /gracias directo/consumo/recarga; fallback de clipboard selecciona el email; hint→opacity 0; labels de idioma. **Lighthouse/perf:** home LCP 361ms · ficha LCP 211ms · CLS 0.00. Revisión final de rama (opus): *Ready to merge*, sin Critical/Important.
+
+**Minors aceptados y documentados:** wording del prefijo del topic difiere JS vs no-JS (cosmético); posible frame del telón de /gracias antes del redirect (enfoque del plan); `createOrReplace` del seed pisa `cvPdf` subido a mano en re-seed (pre-existente).
+
+**Nota operativa:** la caché de navegador provocó falsos negativos en los primeros gates (bundles hasheados viejos); el servidor estaba correcto. Verificar siempre con `ignoreCache`/`no-store` tras deploy + purga de caché Hostinger.
