@@ -93,3 +93,20 @@ const href = next.slug?.current
     }
   }
 </style>
+
+<script>
+  // Precarga el HTML del siguiente proyecto al pasar el ratón: la navegación
+  // se siente instantánea. Un <link rel="prefetch"> por URL, una sola vez.
+  document.querySelectorAll<HTMLAnchorElement>('.next-project').forEach((a) => {
+    a.addEventListener(
+      'mouseenter',
+      () => {
+        const link = document.createElement('link')
+        link.rel = 'prefetch'
+        link.href = a.href
+        document.head.appendChild(link)
+      },
+      {once: true},
+    )
+  })
+</script>
