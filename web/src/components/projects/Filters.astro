@@ -28,6 +28,8 @@ const filters: {value: string; es: string; en: string}[] = [
   }
 </nav>
 
+<p class="sr-only" data-filter-status aria-live="polite"></p>
+
 <script>
   // Filtrado progresivo: lee ?cat=, oculta tarjetas no coincidentes y evita recargas.
   function updateCurrent(cat: string): void {
@@ -37,11 +39,19 @@ const filters: {value: string; es: string; en: string}[] = [
     })
   }
 
+  function announceCount(): void {
+    const visible = document.querySelectorAll('[data-category]:not([hidden])').length
+    const status = document.querySelector<HTMLElement>('[data-filter-status]')
+    const isEn = document.documentElement.lang === 'en'
+    if (status) status.textContent = isEn ? `${visible} projects shown` : `${visible} proyectos mostrados`
+  }
+
   function applyFilter(cat: string): void {
     document.querySelectorAll<HTMLElement>('[data-category]').forEach((card) => {
       card.hidden = cat !== '' && card.dataset.category !== cat
     })
     updateCurrent(cat)
+    announceCount()
   }
 
   function currentCat(): string {
@@ -58,7 +68,12 @@ const filters: {value: string; es: string; en: string}[] = [
       // si nadie lo reclama, corte directo.
       const claimed = !document.dispatchEvent(new CustomEvent('deck:filter', {detail: {cat}, cancelable: true}))
       if (!claimed) applyFilter(cat)
-      else updateCurrent(cat)
+      else {
+        updateCurrent(cat)
+        // Deck.ts anima la salida/entrada de cartas (~0.75s); espera a que
+        // termine para que el recuento anunciado refleje el estado final.
+        setTimeout(announceCount, 800)
+      }
     })
   })
 
@@ -89,5 +104,17 @@ const filters: {value: string; es: string; en: string}[] = [
   .filters a[aria-current='true'] {
     color: var(--accent);
     border-bottom-color: var(--accent);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 </style>
