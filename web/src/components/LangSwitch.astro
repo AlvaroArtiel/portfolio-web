@@ -12,9 +12,9 @@ const enHref = altPath(pathname, 'en')
 ---
 
 <nav class="lang-switch" aria-label={lang === 'en' ? 'Language' : 'Idioma'}>
-  <a href={esHref} aria-current={lang === 'es' ? 'true' : undefined} lang="es">ES</a>
+  <a href={esHref} aria-current={lang === 'es' ? 'true' : undefined} lang="es" title="Español" aria-label="Español">ES</a>
   <span aria-hidden="true">/</span>
-  <a href={enHref} aria-current={lang === 'en' ? 'true' : undefined} lang="en">EN</a>
+  <a href={enHref} aria-current={lang === 'en' ? 'true' : undefined} lang="en" title="English" aria-label="English">EN</a>
 </nav>
 
 <style>
