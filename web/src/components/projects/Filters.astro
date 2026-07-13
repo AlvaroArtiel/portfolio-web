@@ -39,8 +39,9 @@ const filters: {value: string; es: string; en: string}[] = [
     })
   }
 
-  function announceCount(): void {
-    const visible = document.querySelectorAll('[data-category]:not([hidden])').length
+  function announceCount(cat: string): void {
+    const all = document.querySelectorAll<HTMLElement>('[data-category]')
+    const visible = cat === '' ? all.length : Array.from(all).filter((c) => c.dataset.category === cat).length
     const status = document.querySelector<HTMLElement>('[data-filter-status]')
     const isEn = document.documentElement.lang === 'en'
     if (status) status.textContent = isEn ? `${visible} projects shown` : `${visible} proyectos mostrados`
@@ -51,7 +52,7 @@ const filters: {value: string; es: string; en: string}[] = [
       card.hidden = cat !== '' && card.dataset.category !== cat
     })
     updateCurrent(cat)
-    announceCount()
+    announceCount(cat)
   }
 
   function currentCat(): string {
@@ -70,9 +71,7 @@ const filters: {value: string; es: string; en: string}[] = [
       if (!claimed) applyFilter(cat)
       else {
         updateCurrent(cat)
-        // Deck.ts anima la salida/entrada de cartas (~0.75s); espera a que
-        // termine para que el recuento anunciado refleje el estado final.
-        setTimeout(announceCount, 800)
+        announceCount(cat)
       }
     })
   })
