@@ -40,9 +40,10 @@ const {index, label, reveal = false, align = 'start'} = Astro.props
   .is-center {
     text-align: center;
   }
-  /* El kicker acompaña a las cartas del deck, no al borde de la página */
+  /* El kicker acompaña a las cartas del deck (que ahora ocupan el ancho de
+     contenido completo de la sección, como el resto de la home) */
   .is-deck {
-    width: min(88%, 74rem);
+    width: 100%;
     margin-inline: auto;
   }
 </style>
