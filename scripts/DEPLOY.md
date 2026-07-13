@@ -44,3 +44,11 @@ if it is only a placeholder/test page at this stage).
   and locally, it only prepares `web/dist`.
 
 > **Nota operativa (2026-07-10):** `hosting_deployStaticWebsite` devuelve un 500 en el paso de deploy si el zip se genera con `bsdtar` (`tar -a`). Crear el archivo con PowerShell `Compress-Archive -Path web/dist/* -DestinationPath dist_YYYYMMDD_HHMMSS.zip` — con ese formato el deploy es aceptado. El subdominio `dev` ya existe; no hace falta `hosting_createWebsiteSubdomainV1`.
+
+## Salida a producción (cuando el usuario lo apruebe)
+
+1. Build con la URL canónica real:
+   `PUBLIC_SITE_URL=https://alvaroartiel.com node scripts/deploy.mjs`
+   (en PowerShell: `$env:PUBLIC_SITE_URL='https://alvaroartiel.com'; node scripts/deploy.mjs`)
+2. Verificar en `web/dist/index.html` que canonical/hreflang/OG apuntan a alvaroartiel.com.
+3. Deploy al vhost de producción SOLO con aprobación explícita del usuario.
