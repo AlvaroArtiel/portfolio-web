@@ -11,9 +11,9 @@ const [first, second, third] = media
 
 <!--
   Composición editorial asimétrica de las 2-3 heroMedia: cada slot tiene
-  posición y tamaño propios (no es una galería). En F4 se convierten en lonas.
+  posición y tamaño propios (no es una galería).
 -->
-<div class={`hero-media count-${media.length}`} data-curtain-media id="hero-media">
+<div class={`hero-media count-${media.length}`}>
   {
     first && (
       <figure class="hm-slot hm-a">
@@ -36,15 +36,6 @@ const [first, second, third] = media
     )
   }
 </div>
-
-<script>
-  import {mountScene} from '../../lib/three-island'
-
-  const container = document.querySelector<HTMLElement>('[data-curtain-media]')
-  if (container) {
-    void mountScene(container, () => import('../../scenes/curtain-media').then((m) => m.default))
-  }
-</script>
 
 <style>
   .hero-media {
@@ -75,7 +66,11 @@ const [first, second, third] = media
     grid-row: 1;
     margin-top: clamp(4rem, 14vw, 12rem);
     z-index: 1;
-    box-shadow: 12px -12px 0 0 var(--bg);
+  }
+  /* Sombra suave (no un offset duro en color de fondo, que sobre capturas
+     reales parecía un marco negro): eleva B sobre A con profundidad limpia. */
+  .hm-b img {
+    box-shadow: 0 1.5rem 3rem -1rem rgb(0 0 0 / 0.45);
   }
   /* Slot C: nota pequeña descolgada a la derecha */
   .hm-c {
