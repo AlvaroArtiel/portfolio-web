@@ -236,7 +236,7 @@ async function main() {
       nextProject: p.nextProjectId
         ? {_type: 'reference', _ref: p.nextProjectId}
         : undefined,
-      visible: true,
+      visible: p.visible !== false,
       order: p.order,
     })
   }
