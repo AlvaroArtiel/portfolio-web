@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro'
 import Hero from '../components/home/Hero.astro'
 import About from '../components/home/About.astro'
 import FeaturedDeck from '../components/home/FeaturedDeck.astro'
+import GamificationBand from '../components/home/GamificationBand.astro'
 import Manifesto from '../components/home/Manifesto.astro'
 import CtaBand from '../components/home/CtaBand.astro'
 import PersonalTeaser from '../components/home/PersonalTeaser.astro'
@@ -17,7 +18,10 @@ interface Props {
 const {lang} = Astro.props
 
 const settings = await getSiteSettings()
-const featured = (await getProjects()).filter((p) => p.featured).slice(0, 4)
+const allProjects = await getProjects()
+const featured = allProjects.filter((p) => p.featured).slice(0, 4)
+// Proyectos con la especialidad de gamificación (fuente única: la etiqueta del stack).
+const gamified = allProjects.filter((p) => (p.stack ?? []).includes('Gamificación'))
 const chapters = await getChaptersWithItems()
 const teaserItems = chapters.flatMap((chapter) => chapter.items.slice(0, 1))
 
@@ -45,6 +49,14 @@ const personLd = {
   url: siteUrl.toString(),
   jobTitle: 'Product Lead & Digital Product Designer',
   email: settings?.email ? `mailto:${settings.email}` : 'mailto:soy@alvaroartiel.com',
+  knowsAbout: [
+    'Gamification',
+    'Gamificación',
+    'Product Design',
+    'UX/UI Design',
+    'E-learning',
+    'SaaS',
+  ],
   ...(sameAs.length > 0 && {sameAs}),
 }
 
@@ -56,6 +68,7 @@ const jsonLdHome = JSON.stringify(personLd).replace(/</g, '\\u003c')
   <Hero lang={lang} settings={settings} />
   <About lang={lang} settings={settings} />
   <FeaturedDeck lang={lang} projects={featured} />
+  {gamified.length > 0 && <GamificationBand lang={lang} projects={gamified} />}
   <!-- Orden narrativo del camaleón (spec §5.3): deck azul → teaser naranja
        → CTA/contacto lima (el CTA queda pegado al footer de contacto). -->
   <Manifesto lang={lang} />
@@ -72,6 +85,7 @@ const jsonLdHome = JSON.stringify(personLd).replace(/</g, '\\u003c')
   initChameleon([
     {selector: '.hero', accent: '#d4ff3f'},
     {selector: '.featured', accent: '#5b8cff'},
+    {selector: '.gamification', accent: '#d4ff3f'},
     {selector: '.personal-teaser', accent: '#ff7847'},
     {selector: '.cta-band', accent: '#d4ff3f'},
   ])

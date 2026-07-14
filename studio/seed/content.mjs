@@ -352,7 +352,7 @@ export const PROJECTS = [
     featured: true,
     year: '2025',
     role: {es: 'Product Lead & Diseño', en: 'Product Lead & Design'},
-    stack: ['Figma', 'Astro', 'Node.js'],
+    stack: ['Figma', 'Astro', 'Node.js', 'Gamificación'],
     summary: {
       es: 'Producto propio de Ceustack para crear ligas fotográficas gamificadas: los participantes suben fotos desde el móvil, el jurado puntúa sobre 100 y el ranking se actualiza en directo. Como Product Lead lidero producto y diseño.',
       en: 'Ceustack’s own product for running gamified photography leagues: participants upload photos from their phones, a jury scores each one out of 100 and the ranking updates live. As Product Lead I drive product and design.',
@@ -420,7 +420,7 @@ export const PROJECTS = [
     featured: true,
     year: '2025',
     role: {es: 'Product & Digital Lead', en: 'Product & Digital Lead'},
-    stack: ['Figma', 'Astro', 'Node.js'],
+    stack: ['Figma', 'Astro', 'Node.js', 'Gamificación'],
     summary: {
       es: 'La nueva plataforma e-learning a medida de TenTuPlaza, academia nº1 de España en oposiciones de ADIF y RENFE con más de 5.000 alumnos. Dirijo producto y diseño del área del alumno: estudiar el temario, practicar con un motor de tests y analizar el rendimiento frente al grupo. En construcción por fases.',
       en: 'TenTuPlaza’s new custom e-learning platform — Spain’s nº1 academy for ADIF and RENFE public exams, with 5,000+ students. I lead product and design of the student area: studying the syllabus, practising with a test engine and analysing performance against the group. Being built in phases.',
@@ -517,7 +517,7 @@ export const PROJECTS = [
     featured: false,
     year: '2024',
     role: {es: 'UX/UI & Branding', en: 'UX/UI & Branding'},
-    stack: ['Figma', 'Branding', 'Prototyping'],
+    stack: ['Figma', 'Branding', 'Prototyping', 'Gamificación'],
     summary: {
       es: 'Web app para el mundo de los esports, los eventos en directo y la vida social online: BeNext Sphere, un "resort virtual" con arenas de competición, streaming y zonas sociales, envuelto en una estética futurista y neón. Diseño de producto y marca, del research a la iteración.',
       en: 'A web app for esports, live events and online social life: BeNext Sphere, a "virtual resort" with competition arenas, streaming and social zones, wrapped in a futuristic neon aesthetic. Product and brand design, from research to iteration.',
@@ -548,7 +548,7 @@ export const PROJECTS = [
     featured: false,
     year: '2025',
     role: {es: 'Diseño de producto y web', en: 'Product & Web Design'},
-    stack: ['Figma', 'WordPress', 'Design System', 'E-learning'],
+    stack: ['Figma', 'WordPress', 'Design System', 'E-learning', 'Gamificación'],
     summary: {
       es: 'Un año como diseñador en AuraProds, escuela de formación 3D y audiovisual con +14.000 alumnos: renové toda su web pública y construí desde cero el campus de e-learning, con un sistema de gamificación (puntos, rangos, desafíos y retos) que mantiene a los alumnos volviendo.',
       en: 'A year as designer at AuraProds, a 3D and audiovisual training school with 14,000+ students: I redesigned its whole public site and built the e-learning campus from scratch, with a gamification system (points, ranks, challenges and monthly briefs) that keeps students coming back.',
@@ -819,12 +819,12 @@ export const SITE_SETTINGS = {
     en: 'I design digital products end to end',
   },
   heroSubtitle: {
-    es: 'Product Lead · UX/UI · E-learning · SaaS · IA aplicada',
-    en: 'Product Lead · UX/UI · E-learning · SaaS · Applied AI',
+    es: 'Product Lead · Gamificación · UX/UI · E-learning · SaaS · IA aplicada',
+    en: 'Product Lead · Gamification · UX/UI · E-learning · SaaS · Applied AI',
   },
   about: {
-    es: 'Soy Álvaro Artiel, diseñador de producto. Llevo ideas desde el primer boceto hasta la interfaz que usa gente de verdad, tanto en productos propios (Ceustack) como en equipos de cliente. Me interesa el diseño que resuelve antes que el que decora.',
-    en: 'I’m Álvaro Artiel, a product designer. I take ideas from the first sketch to the interface real people use, both on my own products (Ceustack) and inside client teams. I care about design that solves before it decorates.',
+    es: 'Soy Álvaro Artiel, diseñador de producto. Llevo ideas desde el primer boceto hasta la interfaz que usa gente de verdad, tanto en productos propios (Ceustack) como en equipos de cliente. Me interesa el diseño que resuelve antes que el que decora. Una de mis obsesiones es la gamificación: puntos, rangos y retos que hacen que la gente quiera volver.',
+    en: 'I’m Álvaro Artiel, a product designer. I take ideas from the first sketch to the interface real people use, both on my own products (Ceustack) and inside client teams. I care about design that solves before it decorates. One of my obsessions is gamification: points, ranks and challenges that make people want to come back.',
   },
   email: 'soy@alvaroartiel.com',
   socials: [
@@ -832,14 +832,20 @@ export const SITE_SETTINGS = {
     {label: 'GitHub', url: '#', visible: true},
   ],
   seoTitle: {
-    es: 'Álvaro Artiel — Diseño de producto',
-    en: 'Álvaro Artiel — Product Design',
+    es: 'Álvaro Artiel — Diseño de producto y gamificación',
+    en: 'Álvaro Artiel — Product Design & Gamification',
   },
   seoDescription: {
-    es: 'Portfolio de Álvaro Artiel: diseño de producto digital de punta a punta, proyectos propios y de cliente, experiencia y formación.',
-    en: 'Álvaro Artiel’s portfolio: end-to-end digital product design, in-house and client projects, experience and education.',
+    es: 'Portfolio de Álvaro Artiel: diseño de producto digital de punta a punta, especializado en gamificación (puntos, rangos, retos, rankings) para e-learning, SaaS y comunidades.',
+    en: 'Álvaro Artiel’s portfolio: end-to-end digital product design, specialized in gamification (points, ranks, challenges, leaderboards) for e-learning, SaaS and communities.',
   },
   cvSkillGroups: [
+    {
+      _type: 'skillGroup',
+      _key: 'gamification',
+      label: {es: 'Gamificación', en: 'Gamification'},
+      items: ['Puntos y rangos', 'Retos y rankings', 'Rachas', 'Recompensas'],
+    },
     {_type: 'skillGroup', _key: 'design', label: {es: 'Diseño', en: 'Design'}, items: ['Figma', 'UX/UI']},
     {
       _type: 'skillGroup',

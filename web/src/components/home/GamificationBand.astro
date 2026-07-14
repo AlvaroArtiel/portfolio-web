@@ -1,0 +1,285 @@
+---
+import type {Lang} from '../../lib/i18n'
+import {t} from '../../lib/i18n'
+import type {Project} from '../../lib/queries'
+import SectionKicker from '../SectionKicker.astro'
+
+interface Props {
+  lang: Lang
+  projects: Project[]
+}
+const {lang, projects} = Astro.props
+const en = lang === 'en'
+
+const projectHref = (slug: string) => (en ? `/en/projects/${slug}/` : `/proyectos/${slug}/`)
+
+const copy = en
+  ? {
+      kicker: 'Specialty',
+      headline: 'I design systems people come back to.',
+      body:
+        'Points, ranks, challenges, streaks and leaderboards that turn a task into something worth repeating. I use it in e-learning, SaaS and communities.',
+      hint: 'Collect the points',
+      countLabel: 'points',
+      complete: 'Level complete!',
+      stat: `${projects.length} products with real gamification`,
+      chipsIntro: 'See it in action:',
+    }
+  : {
+      kicker: 'Especialidad',
+      headline: 'Diseño sistemas que enganchan y hacen volver.',
+      body:
+        'Puntos, rangos, retos, rachas y rankings que convierten una tarea en algo que apetece repetir. Lo aplico en e-learning, SaaS y comunidades.',
+      hint: 'Recoge los puntos',
+      countLabel: 'puntos',
+      complete: '¡Nivel completado!',
+      stat: `${projects.length} productos con gamificación real`,
+      chipsIntro: 'Míralo en acción:',
+    }
+---
+
+<section class="gamification" data-reveal id="gami-band">
+  <SectionKicker index="03" label={copy.kicker} align="center" />
+
+  <div class="gami-content">
+    <h2 class="gami-headline">{copy.headline}</h2>
+    <p class="gami-body">{copy.body}</p>
+
+    <div class="gami-play">
+      <!-- Badge de recompensa: desbloqueado por defecto (estado estático); la
+           escena lo bloquea al entrar en modo jugable y lo vuelve a desbloquear
+           al completar. -->
+      <div class="gami-badge" aria-hidden="true">
+        <span class="gami-badge-icon">★</span>
+        <span class="gami-badge-label">{copy.complete}</span>
+      </div>
+
+      <!-- Estado estático (sin WebGL / reduced-motion): stat en vez del juego. -->
+      <p class="gami-stat">{copy.stat}</p>
+
+      <!-- Estado jugable (solo con la escena montada). -->
+      <div class="gami-meter" aria-hidden="true">
+        <div class="gami-bar-track"><span class="gami-bar" data-gami-bar></span></div>
+        <p class="gami-count"><b data-gami-count>0</b> <span>{copy.countLabel}</span></p>
+      </div>
+      <p class="gami-hint" aria-hidden="true">{copy.hint} <span class="gami-hint-cursor">👆</span></p>
+    </div>
+
+    {
+      projects.length > 0 && (
+        <p class="gami-chips">
+          <span class="gami-chips-intro">{copy.chipsIntro}</span>
+          {projects.map((p) => (
+            <a class="gami-chip" href={projectHref(p.slug.current)}>
+              {t(p.title, lang)}
+            </a>
+          ))}
+        </p>
+      )
+    }
+  </div>
+</section>
+
+<script>
+  import {mountScene} from '../../lib/three-island'
+
+  const band = document.getElementById('gami-band')
+  if (band) {
+    // Si la escena no monta (sin WebGL2 / reduced-motion), la banda se queda en
+    // su estado estático "completado" — no hay nada más que hacer.
+    void mountScene(band, () => import('../../scenes/gamification').then((m) => m.default))
+  }
+</script>
+
+<style>
+  .gamification {
+    position: relative;
+    padding: clamp(3rem, 8vh, 6rem) clamp(1.5rem, 6vw, 4rem);
+    overflow: hidden;
+  }
+  /* El canvas de la escena cubre la banda por detrás y no roba el clic. */
+  .gamification :global(canvas) {
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .gami-content {
+    position: relative;
+    z-index: 1;
+    max-width: 52rem;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .gami-headline {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    margin: 0 0 1rem;
+  }
+  .gami-body {
+    font-size: clamp(1.05rem, 2vw, 1.3rem);
+    line-height: 1.55;
+    color: var(--text-muted);
+    max-width: 46ch;
+    margin: 0 auto;
+  }
+
+  .gami-play {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    min-height: 9rem;
+    margin: clamp(2rem, 5vh, 3.5rem) 0 clamp(1.5rem, 4vh, 2.5rem);
+  }
+
+  /* --- Badge de recompensa --- */
+  .gami-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text);
+  }
+  .gami-badge-icon {
+    color: var(--accent);
+    font-size: 1.1em;
+  }
+
+  /* --- Estado estático (por defecto) --- */
+  .gami-stat {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0;
+  }
+  /* Medidor y pista solo en modo jugable */
+  .gami-meter,
+  .gami-hint {
+    display: none;
+  }
+
+  /* --- Estado jugable (escena montada) --- */
+  .gamification.is-interactive .gami-stat {
+    display: none;
+  }
+  .gamification.is-interactive .gami-meter {
+    display: block;
+    width: min(22rem, 80vw);
+  }
+  .gamification.is-interactive .gami-hint {
+    display: block;
+  }
+  /* Badge bloqueado mientras se juega y aún no se completa */
+  .gamification.is-interactive:not(.is-complete) .gami-badge {
+    opacity: 0.4;
+    filter: grayscale(1);
+    border-style: dashed;
+  }
+
+  .gami-bar-track {
+    height: 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text-muted) 22%, transparent);
+    overflow: hidden;
+  }
+  .gami-bar {
+    display: block;
+    height: 100%;
+    width: 100%; /* estático = lleno; la escena la fija a 0 y la sube */
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent);
+    transition: width 0.35s var(--ease-out-token, ease-out);
+  }
+  .gami-count {
+    margin: 0.55rem 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+  }
+  .gami-count b {
+    color: var(--accent);
+  }
+
+  .gami-hint {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin: 0;
+  }
+  .gami-hint-cursor {
+    display: inline-block;
+    animation: gami-poke 1.4s ease-in-out infinite;
+  }
+  @keyframes gami-poke {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  /* Al completar: se oculta la pista, badge "pop" + chips resaltados */
+  .gamification.is-complete .gami-hint {
+    display: none;
+  }
+  .gamification.is-complete .gami-badge {
+    animation: gami-pop 0.5s var(--ease-out-token, ease-out);
+  }
+  @keyframes gami-pop {
+    0% { transform: scale(0.8); }
+    55% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+
+  .gami-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin: 0;
+  }
+  .gami-chips-intro {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    margin-right: 0.25rem;
+  }
+  .gami-chip {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text);
+    text-decoration: none;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    border: var(--border-soft);
+    background: var(--surface-1);
+    transition:
+      border-color var(--transition-fast),
+      color var(--transition-fast);
+  }
+  .gami-chip:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .gamification.is-complete .gami-chip {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gami-hint-cursor,
+    .gamification.is-complete .gami-badge {
+      animation: none;
+    }
+    .gami-bar {
+      transition: none;
+    }
+  }
+</style>
