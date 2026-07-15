@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://dev.alvaroartiel.com/sitemap-index.xml
