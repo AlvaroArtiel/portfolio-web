@@ -21,6 +21,7 @@ const TEXT = '#F4F4F0'
 const PAGES = [
   { filename: 'default', title: 'Álvaro Artiel', accent: '#D4FF3F' },
   { filename: 'home', title: 'Álvaro Artiel', accent: '#D4FF3F' },
+  { filename: 'especialidades', title: 'Especialidades', accent: '#FFC53D' },
   { filename: 'proyectos', title: 'Proyectos', accent: '#5B8CFF' },
   { filename: 'experiencia', title: 'Experiencia', accent: '#B06CFF' },
   { filename: 'personal', title: 'Personal', accent: '#FF7847' },

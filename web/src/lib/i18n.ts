@@ -19,6 +19,12 @@ type UiDictionary = Record<string, string>
 export const ui: Record<Lang, UiDictionary> = {
   es: {
     nav_projects: 'Proyectos',
+    nav_expertise: 'Especialidades',
+    expertise_cases: 'Casos reales',
+    expertise_faq: 'Preguntas frecuentes',
+    expertise_cta: 'Cuéntame tu proyecto →',
+    expertise_case_of: 'Este proyecto es un caso de',
+    expertise_count: '3 formas de ayudarte',
     nav_experience: 'Experiencia',
     nav_personal: 'Personal',
     nav_blog: 'Blog',
@@ -105,6 +111,12 @@ export const ui: Record<Lang, UiDictionary> = {
   },
   en: {
     nav_projects: 'Projects',
+    nav_expertise: 'Expertise',
+    expertise_cases: 'Real cases',
+    expertise_faq: 'FAQ',
+    expertise_cta: 'Tell me about your project →',
+    expertise_case_of: 'This project is a case of',
+    expertise_count: '3 ways I can help',
     nav_experience: 'Experience',
     nav_personal: 'Personal',
     nav_blog: 'Blog',
