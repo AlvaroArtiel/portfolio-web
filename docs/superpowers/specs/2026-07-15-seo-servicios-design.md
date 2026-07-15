@@ -1,4 +1,4 @@
-# SEO por keywords: sección de Servicios + estrategia de contenido
+# SEO por keywords: sección de Especialidades + estrategia de contenido
 
 **Fecha:** 2026-07-15
 **Estado:** Aprobado (diseño validado en conversación)
@@ -14,6 +14,11 @@ Posicionar la web en el mercado español para keywords comerciales de consultor�
 
 Finalidad: captar clientes de consultoría. Mercado: España, en español; las versiones en inglés
 existen solo para mantener la paridad hreflang del sitio y son más ligeras.
+
+**Naming:** la sección se llama **"Especialidades"** (no "Servicios") en menú, hub y URLs —
+tono personal, no comercial. La orientación a keyword comercial vive en el `seoTitle`, el H1
+y el contenido de cada landing, no en el nombre de la sección. Internamente (Sanity, JSON-LD)
+el documento sigue llamándose `service` porque el tipo schema.org es `Service`.
 
 ## Contexto actual
 
@@ -45,21 +50,21 @@ keyword, EN más ligero), siguiendo el flujo de seed existente del proyecto.
 
 ## Sección 2 — Rutas y páginas en Astro
 
-- Rutas: `/servicios/` (hub) y `/servicios/[slug]/`, espejo `/en/services/` y
-  `/en/services/[slug]/`. Añadir `servicios: 'services'` al `routeMap` de
+- Rutas: `/especialidades/` (hub) y `/especialidades/[slug]/`, espejo `/en/expertise/` y
+  `/en/expertise/[slug]/`. Añadir `especialidades: 'expertise'` al `routeMap` de
   `web/src/lib/routes.ts`.
 - Vistas nuevas reutilizando `Base.astro` y `BodyBlocks`:
-  - `web/src/views/services.astro` — hub: intro corta + tres cartas de servicio.
-  - `web/src/views/service-detail.astro` — landing: intro (H1), body, casos relacionados,
+  - `web/src/views/expertise.astro` — hub: intro corta + tres cartas de especialidad.
+  - `web/src/views/expertise-detail.astro` — landing: intro (H1), body, casos relacionados,
     FAQ, CTA a contacto.
-- `Base.astro`: nueva sección `services` en el tipo `Section` con su imagen OG
-  (`/og/servicios.png`, añadir a `web/scripts/generate-og.mjs`).
-- Navegación: "Servicios" entra en Header/MenuOverlay y en el Footer.
+- `Base.astro`: nueva sección `expertise` en el tipo `Section` con su imagen OG
+  (`/og/especialidades.png`, añadir a `web/scripts/generate-og.mjs`).
+- Navegación: "Especialidades" / "Expertise" entra en Header/MenuOverlay y en el Footer.
 - Enlazado interno:
-  - Ficha de proyecto → su servicio: si un `service` referencia el proyecto en
+  - Ficha de proyecto → su especialidad: si un `service` referencia el proyecto en
     `relatedProjects`, la ficha muestra un enlace tipo "Este proyecto es un caso de
-    [servicio]".
-  - Home → hub de servicios desde el `CtaBand`.
+    [especialidad]".
+  - Home → hub de especialidades desde el `CtaBand`.
   - Cada landing → contacto (CTA) y → sus proyectos relacionados.
 - Queries GROQ nuevas en `web/src/lib/queries.ts` (lista de servicios visibles ordenados;
   detalle por slug con proyectos expandidos; servicio que referencia un proyecto dado).
@@ -81,14 +86,14 @@ este trabajo.
 
 | Artículo (título orientativo) | Keyword | Enlaza a |
 |---|---|---|
-| Gamificación en e-learning: qué funciona y qué no | gamificación e-learning | /servicios/gamificacion |
-| Cómo gamificar una app sin convertirla en un casino | gamificar una app | /servicios/gamificacion |
-| Cómo validar un producto digital antes de desarrollarlo | validar producto digital | /servicios/diseno-de-producto |
-| Qué hace un consultor de diseño de producto (y cuándo contratarlo) | consultor diseño de producto | /servicios/diseno-de-producto |
-| Cuánto cuesta diseñar un producto digital en 2026 | cuánto cuesta diseñar una app | /servicios/diseno-de-producto |
-| Cómo gestionar un proyecto digital con un equipo externo | gestión de proyectos digitales | /servicios/gestion-de-proyectos |
-| Errores típicos al externalizar el desarrollo de tu producto | externalizar desarrollo | /servicios/gestion-de-proyectos |
-| Sistemas de puntos, niveles y recompensas: guía práctica | sistemas de gamificación | /servicios/gamificacion |
+| Gamificación en e-learning: qué funciona y qué no | gamificación e-learning | /especialidades/gamificacion |
+| Cómo gamificar una app sin convertirla en un casino | gamificar una app | /especialidades/gamificacion |
+| Cómo validar un producto digital antes de desarrollarlo | validar producto digital | /especialidades/diseno-de-producto |
+| Qué hace un consultor de diseño de producto (y cuándo contratarlo) | consultor diseño de producto | /especialidades/diseno-de-producto |
+| Cuánto cuesta diseñar un producto digital en 2026 | cuánto cuesta diseñar una app | /especialidades/diseno-de-producto |
+| Cómo gestionar un proyecto digital con un equipo externo | gestión de proyectos digitales | /especialidades/gestion-de-proyectos |
+| Errores típicos al externalizar el desarrollo de tu producto | externalizar desarrollo | /especialidades/gestion-de-proyectos |
+| Sistemas de puntos, niveles y recompensas: guía práctica | sistemas de gamificación | /especialidades/gamificacion |
 
 ## Fuera de alcance
 
@@ -103,5 +108,5 @@ este trabajo.
   y validan su JSON-LD (`Service` + `FAQPage`) en el validador de schema.org.
 - Cada landing tiene title/description únicos orientados a su keyword, H1 con la keyword,
   FAQs y al menos un proyecto relacionado enlazado.
-- "Servicios" es accesible desde el menú y el footer en ambos idiomas.
+- "Especialidades" es accesible desde el menú y el footer en ambos idiomas.
 - La ficha de un proyecto referenciado por un servicio enlaza de vuelta a la landing.
