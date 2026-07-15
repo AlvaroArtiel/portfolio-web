@@ -194,14 +194,14 @@ const projectBySlugQuery = /* groq */ `
 const servicesQuery = /* groq */ `
   *[_type == 'service' && visible != false] | order(order asc) {
     ...,
-    "relatedProjects": relatedProjects[]->{_id, title, slug, cover, summary, visible}[visible != false]
+    "relatedProjects": relatedProjects[@->visible != false]->{_id, title, slug, cover, summary}
   }
 `
 
 const serviceBySlugQuery = /* groq */ `
   *[_type == 'service' && slug.current == $slug && visible != false][0]{
     ...,
-    "relatedProjects": relatedProjects[]->{_id, title, slug, cover, summary, visible}[visible != false]
+    "relatedProjects": relatedProjects[@->visible != false]->{_id, title, slug, cover, summary}
   }
 `
 

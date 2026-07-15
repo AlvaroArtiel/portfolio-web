@@ -1,0 +1,238 @@
+---
+import Base from '../layouts/Base.astro'
+import BodyBlocks from '../components/projects/BodyBlocks.astro'
+import type {Lang} from '../lib/i18n'
+import {t, ui} from '../lib/i18n'
+import type {Service} from '../lib/queries'
+import {pathFor} from '../lib/routes'
+import {urlFor} from '../lib/sanity'
+
+interface Props {
+  lang: Lang
+  service: Service
+}
+const {lang, service} = Astro.props
+const dict = ui[lang]
+
+const title = t(service.title, lang)
+const intro = t(service.intro, lang)
+const seoTitle = t(service.seoTitle, lang) || `${title} — Álvaro Artiel`
+const seoDescription = t(service.seoDescription, lang) || intro
+const body = service.body?.[lang] ?? service.body?.es ?? []
+const faqs = (service.faqs ?? []).filter((f) => t(f.question, lang) && t(f.answer, lang))
+const related = service.relatedProjects ?? []
+
+const siteUrl = Astro.site ?? new URL('https://dev.alvaroartiel.com')
+
+// JSON-LD Service (schema.org): la landing declara el servicio con Álvaro como provider.
+const serviceLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: title,
+  serviceType: title,
+  description: seoDescription,
+  areaServed: 'ES',
+  provider: {
+    '@type': 'Person',
+    name: 'Álvaro Artiel',
+    url: siteUrl.toString(),
+  },
+}
+
+const faqLd =
+  faqs.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map((f) => ({
+          '@type': 'Question',
+          name: t(f.question, lang),
+          acceptedAnswer: {'@type': 'Answer', text: t(f.answer, lang)},
+        })),
+      }
+    : null
+
+const jsonLdService = JSON.stringify(serviceLd).replace(/</g, '\\u003c')
+const jsonLdFaq = faqLd ? JSON.stringify(faqLd).replace(/</g, '\\u003c') : null
+// Astro 7 drops a static slot="head" element when a sibling assigned to the same
+// named slot is wrapped in a conditional JS expression — rendering both scripts
+// from a single map() keeps them both in the output regardless of order/count.
+const jsonLdBlocks = [jsonLdService, jsonLdFaq].filter((block): block is string => Boolean(block))
+---
+
+<Base title={seoTitle} description={seoDescription} lang={lang} section="expertise">
+  {jsonLdBlocks.map((block) => <script type="application/ld+json" slot="head" is:inline set:html={block} />)}
+
+  <article class="svc-detail">
+    <header class="svc-hero" data-reveal>
+      <p class="svc-breadcrumb">
+        <a href={pathFor('especialidades', lang)}>← {dict.nav_expertise}</a>
+      </p>
+      <h1>{title}</h1>
+      {intro && <p class="svc-intro">{intro}</p>}
+    </header>
+
+    <section class="svc-body">
+      <BodyBlocks blocks={body} />
+    </section>
+
+    {
+      related.length > 0 && (
+        <section class="svc-cases" data-reveal>
+          <h2>{dict.expertise_cases}</h2>
+          <ul class="svc-case-list">
+            {related.map((project) => (
+              <li>
+                <a href={`${pathFor('proyectos', lang)}${project.slug.current}/`} data-cursor="view">
+                  {project.cover && (
+                    <img src={urlFor(project.cover, {w: 640, h: 400}).url()} alt="" width="640" height="400" loading="lazy" />
+                  )}
+                  <span class="svc-case-title">{t(project.title, lang)}</span>
+                  {t(project.summary, lang) && <span class="svc-case-summary">{t(project.summary, lang)}</span>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      faqs.length > 0 && (
+        <section class="svc-faq" data-reveal>
+          <h2>{dict.expertise_faq}</h2>
+          {faqs.map((f) => (
+            <details>
+              <summary>{t(f.question, lang)}</summary>
+              <p>{t(f.answer, lang)}</p>
+            </details>
+          ))}
+        </section>
+      )
+    }
+
+    <footer class="svc-cta" data-reveal>
+      <a href={pathFor('contacto', lang)}>{dict.expertise_cta}</a>
+    </footer>
+  </article>
+</Base>
+
+<style>
+  .svc-detail {
+    padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
+    max-width: 70rem;
+    margin-inline: auto;
+  }
+
+  .svc-breadcrumb {
+    margin: 0 0 1.5rem;
+  }
+  .svc-breadcrumb a {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  .svc-breadcrumb a:hover {
+    color: var(--accent);
+  }
+
+  .svc-hero h1 {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    letter-spacing: -0.035em;
+    line-height: 0.98;
+    margin: 0 0 1.5rem;
+    max-width: 16ch;
+  }
+  .svc-intro {
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    line-height: 1.5;
+    color: var(--text-muted);
+    max-width: 52ch;
+    margin: 0 0 clamp(2.5rem, 8vh, 4rem);
+  }
+
+  .svc-body {
+    margin-bottom: clamp(3rem, 10vh, 5rem);
+  }
+
+  .svc-cases h2,
+  .svc-faq h2 {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 0 0 1.5rem;
+  }
+
+  .svc-case-list {
+    list-style: none;
+    margin: 0 0 clamp(3rem, 8vh, 5rem);
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1.5rem;
+  }
+  .svc-case-list a {
+    display: grid;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: var(--text);
+  }
+  .svc-case-list img {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
+  .svc-case-title {
+    font-family: var(--font-display);
+    font-weight: 560;
+    font-size: 1.15rem;
+  }
+  .svc-case-list a:hover .svc-case-title {
+    color: var(--accent);
+  }
+  .svc-case-summary {
+    color: var(--text-muted);
+    font-size: var(--step-small);
+    line-height: 1.5;
+  }
+
+  .svc-faq details {
+    border-top: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
+    padding-block: 1rem;
+  }
+  .svc-faq summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+  .svc-faq details p {
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 65ch;
+    margin: 0.75rem 0 0;
+  }
+
+  .svc-cta {
+    margin-top: clamp(3rem, 8vh, 5rem);
+    border-top: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
+    padding-top: 2rem;
+  }
+  .svc-cta a {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  .svc-cta a:hover {
+    color: var(--accent);
+  }
+</style>
