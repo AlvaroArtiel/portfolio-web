@@ -94,6 +94,9 @@ const description =
             const year = yearOf(exp.startDate)
             const prevYear = i > 0 ? yearOf(stages[i - 1].startDate) : ''
             const showYear = year !== prevYear
+            // De 2024 en adelante no mostramos localización (petición del
+            // usuario); la modalidad sí se mantiene.
+            const loc = year && Number(year) >= 2024 ? '' : location
             const related = (exp.relatedProjects ?? [])
               .map((ref) => projectById.get(ref._ref))
               .filter((p): p is {slug: string; title: string; preview: string} => Boolean(p))
@@ -107,7 +110,7 @@ const description =
                 )}
                 <p class="stage-kicker">
                   {dateRange(exp.startDate, exp.endDate, lang, dict.present)}
-                  {(location || modality) && ` · ${[location, modality].filter(Boolean).join(' · ')}`}
+                  {(loc || modality) && ` · ${[loc, modality].filter(Boolean).join(' · ')}`}
                 </p>
                 {exp.logo ? (
                   <img
