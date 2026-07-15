@@ -22,6 +22,8 @@ const copy = en
       hint: 'Collect the points',
       countLabel: 'points',
       complete: 'Level complete!',
+      best: 'Best',
+      reset: 'Play again',
       stat: `${projects.length} products with real gamification`,
       chipsIntro: 'See it in action:',
     }
@@ -33,6 +35,8 @@ const copy = en
       hint: 'Recoge los puntos',
       countLabel: 'puntos',
       complete: '¡Nivel completado!',
+      best: 'Mejor',
+      reset: 'Reiniciar',
       stat: `${projects.length} productos con gamificación real`,
       chipsIntro: 'Míralo en acción:',
     }
@@ -63,6 +67,14 @@ const copy = en
         <p class="gami-count"><b data-gami-count>0</b> <span>{copy.countLabel}</span></p>
       </div>
       <p class="gami-hint" aria-hidden="true">{copy.hint} <span class="gami-hint-cursor">👆</span></p>
+
+      <!-- Cronómetro + mejor tiempo + reinicio (solo modo jugable). El botón es
+           decorativo (el juego es opcional): aria-hidden + tabindex=-1. -->
+      <div class="gami-timerbar" aria-hidden="true">
+        <span class="gami-timer">⏱ <b data-gami-timer>—</b></span>
+        <span class="gami-best" data-gami-best data-label={copy.best} hidden></span>
+        <button type="button" class="gami-reset" data-gami-reset tabindex="-1">{copy.reset}</button>
+      </div>
     </div>
 
     {
@@ -161,9 +173,10 @@ const copy = en
     color: var(--text-muted);
     margin: 0;
   }
-  /* Medidor y pista solo en modo jugable */
+  /* Medidor, pista y barra de crono solo en modo jugable */
   .gami-meter,
-  .gami-hint {
+  .gami-hint,
+  .gami-timerbar {
     display: none;
   }
 
@@ -177,6 +190,41 @@ const copy = en
   }
   .gamification.is-interactive .gami-hint {
     display: block;
+  }
+  .gamification.is-interactive .gami-timerbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+  }
+  .gami-timer b {
+    color: var(--accent);
+    font-weight: 550;
+  }
+  .gami-best {
+    color: var(--text-muted);
+  }
+  .gami-reset {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text);
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    border: var(--border-soft);
+    background: var(--surface-1);
+    cursor: pointer;
+    transition:
+      border-color var(--transition-fast),
+      color var(--transition-fast),
+      background var(--transition-fast);
+  }
+  .gami-reset:hover {
+    color: var(--accent);
+    border-color: var(--accent);
   }
   /* Badge bloqueado mientras se juega y aún no se completa */
   .gamification.is-interactive:not(.is-complete) .gami-badge {
