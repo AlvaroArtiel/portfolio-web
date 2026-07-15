@@ -757,7 +757,7 @@ export const PERSONAL_ITEMS = [
     id: 'personalItem-teatro-2',
     kind: 'photo',
     chapterId: 'personalChapter-teatro',
-    caption: {es: 'El trío al completo', en: 'The whole trio'},
+    caption: {es: 'Haciendo un sketch de Tricicle', en: 'Doing a Tricicle sketch'},
     date: '2016',
   },
   {
@@ -814,7 +814,10 @@ export const PERSONAL_ITEMS = [
   {
     id: 'personalItem-playa',
     kind: 'photo',
-    caption: {es: 'Escapada a la playa', en: 'A day at the beach'},
+    caption: {
+      es: 'Cuando te obligan a hacer de modelo siendo fotógrafo 😅',
+      en: 'When they make you model even though you’re the photographer 😅',
+    },
     date: '2019',
   },
   {
