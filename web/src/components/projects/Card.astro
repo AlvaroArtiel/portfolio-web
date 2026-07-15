@@ -160,6 +160,17 @@ const category = project.category ? categoryLabels[project.category]?.[lang] : u
     transition: transform var(--dur-element) var(--ease-out-token);
   }
 
+  /* En el deck de escritorio las cartas se fijan (sticky) al top: la carta
+     entera debe caber en el viewport o la descripción (abajo) queda fuera de
+     cuadro y no se lee. A ancho completo el 21/9 se dispara en alto, así que se
+     le pone tope dejando sitio al offset del sticky, la pestaña y el cuerpo.
+     object-fit:cover recorta sin deformar. */
+  @media (min-width: 721px) {
+    .pc-media img {
+      max-height: calc(100dvh - 22rem);
+    }
+  }
+
   .project-card a:hover .pc-media img {
     transform: scale(1.03);
   }
