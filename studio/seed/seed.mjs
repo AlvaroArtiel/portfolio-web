@@ -58,8 +58,9 @@ async function loadRootEnv() {
 
 const RELATED_PROJECTS = {
   'experience-tentuplaza': ['project-tentuplaza-plataforma'],
-  'experience-ceustack': ['project-ranquea', 'project-ultracarta', 'project-vaultz'],
+  'experience-ceustack': ['project-ranquea', 'project-ultracarta'],
   'experience-consultor-independiente': [
+    'project-vaultz',
     'project-watcheers',
     'project-benext',
     'project-controlfacturacion',
@@ -67,6 +68,7 @@ const RELATED_PROJECTS = {
   'experience-esperando-render': [],
   'experience-auraprods': ['project-campus-auraprods'],
   'experience-iurban': ['project-crm-iurban'],
+  'experience-freelance-inicios': [],
   'experience-8pecados': [],
 }
 
@@ -257,7 +259,7 @@ async function main() {
       _id: item.id,
       _type: 'personalItem',
       kind: item.kind,
-      chapter: {_type: 'reference', _ref: item.chapterId},
+      chapter: item.chapterId ? {_type: 'reference', _ref: item.chapterId} : undefined,
       image: imageField(personalAssets[item.id]),
       caption: item.caption,
       date: item.date,
