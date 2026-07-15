@@ -36,16 +36,10 @@ const copyContactPhp = {
 // https://astro.build/config
 export default defineConfig({
   site: SITE_URL,
-  compressHTML: false,
   integrations: [
     sitemap({
       filter: (page) => !NOINDEX_PATHS.some((path) => new URL(page).pathname === path),
     }),
     copyContactPhp,
   ],
-  vite: {
-    build: {
-      minify: false,
-    },
-  },
 });
