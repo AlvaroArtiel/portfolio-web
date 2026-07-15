@@ -2,25 +2,32 @@
  * Mesa revuelta: las polaroids de la grid se convierten en cuerpos Matter.js
  * dentro de una "mesa" (los bordes de la sección son las paredes). Caen al
  * cargar, se pueden agarrar y lanzar, colisionan y se duermen cuando reposan.
- * Un clic/tap sin arrastre abre el lightbox de siempre. Los filtros de
- * capítulo despiertan (impulso) a su capítulo y atenúan el resto.
+ * Un clic/tap sin arrastre abre el lightbox de siempre.
  *
  * Táctil: misma física. El agarre se conduce con pointer events que solo
  * actúan cuando el gesto empieza sobre una polaroid (touch-action:none en la
  * pieza); en el resto de la mesa el scroll de página sigue siendo nativo.
- * Reduced-motion: la grid F2 tal cual, este módulo no hace nada.
+ * Reduced-motion: la grid tal cual, este módulo no hace nada.
  */
 
-// La capa de física necesita recorrido vertical generoso para que la caída se
-// sienta bien; el CRECIMIENTO VISIBLE de la mesa (el "viewport" recortado) se
-// ajusta después, al montón ya asentado, para no dejar aire de sobra.
-const PHYSICS_HEIGHT_VH = 120
-// Lo VISIBLE nunca pasa de un alto de pantalla: la capa de física va anclada
-// al fondo del viewport, así que las piezas caen desde fuera de cuadro.
-const VIEWPORT_MAX_VH = 90
-const SETTLED_MARGIN = 1.25 // área visible ≈ montón asentado + 25%
-const SETTLED_MAX_VH = 0.7 // nunca más del 70% del alto de viewport
-const SETTLED_MIN_PX = 240 // suelo razonable para no recortar en seco
+// La capa de física necesita recorrido vertical para que la caída se sienta
+// bien; el alto VISIBLE de la mesa se fija de forma determinista (ver
+// computeViewportHeight) y NO cambia al interactuar: así ni varía entre cargas
+// ni salta al agarrar/lanzar.
+const PHYSICS_HEIGHT_VH = 110
+// El alto visible nunca pasa del 70% del viewport (antes llegaba al 90%) y
+// nunca baja de un suelo razonable. Las piezas van algo más pequeñas (ver más
+// abajo) para que las 12 quepan en ~2 filas sin recortarse.
+const VIEWPORT_MAX_VH = 0.7
+const VIEWPORT_MIN_PX = 240
+// Al asentarse, el viewport se ajusta a la altura REAL del montón + un pelín de
+// aire. Se mide una sola vez y se CONGELA: no se re-expande al agarrar/lanzar
+// (esa re-expansión era lo que se sentía "raro").
+const SETTLED_MARGIN = 1.05
+// Ancho útil máximo del montón (centrado). En pantallas anchas, sin esto las 12
+// piezas caben en una sola fila y la mesa queda bajísima; confinándolo se
+// apilan en ~2-3 filas y se ve como un montón de verdad.
+const TABLE_MAX_W = 1180
 const DRAG_CLICK_THRESHOLD = 6
 
 export function initMessyTable(): void {
@@ -29,27 +36,22 @@ export function initMessyTable(): void {
 }
 
 async function initPhysics(): Promise<void> {
-  const page = document.querySelector<HTMLElement>('.personal-page')
-  const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-chapter-section]'))
-  const polaroids = Array.from(document.querySelectorAll<HTMLElement>('[data-chapter-section] .polaroid'))
-  if (!page || polaroids.length === 0) return
+  const container = document.querySelector<HTMLElement>('[data-photo-table]')
+  const grid = container?.querySelector<HTMLElement>('.polaroid-grid')
+  const polaroids = Array.from(container?.querySelectorAll<HTMLElement>('.polaroid') ?? [])
+  if (!container || !grid || polaroids.length === 0) return
 
   const Matter = await import('matter-js')
-  const {Engine, Bodies, Body, Composite, Mouse, MouseConstraint, Runner, Sleeping, Events} = Matter
+  const {Engine, Bodies, Body, Composite, Mouse, MouseConstraint, Runner, Events} = Matter
 
-  // Con deep-link ?cap= el filtro de la página puede haber ocultado secciones
-  // antes de llegar aquí: en modo física todo es visible (el filtro atenúa).
-  sections.forEach((section) => (section.hidden = false))
-
-  // La mesa sustituye a las secciones de capítulo (que quedan como fallback oculto).
-  // `viewport` es lo que ocupa espacio en la página (se recorta al montón
-  // asentado); `table` es la capa de física, con recorrido vertical generoso
-  // para que la caída se sienta bien, anclada al fondo del viewport y
-  // recortada por su overflow:hidden mientras cae.
+  // La mesa sustituye a la grid (que queda como fallback oculto). `viewport` es
+  // lo que ocupa espacio en la página; `table` es la capa de física, con
+  // recorrido vertical generoso, anclada al fondo del viewport y recortada por
+  // su overflow:hidden mientras las piezas caen.
   const viewport = document.createElement('div')
   viewport.className = 'messy-table'
-  viewport.style.cssText = `position:relative;height:${VIEWPORT_MAX_VH}vh;overflow:hidden;border-block:1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);transition:height var(--dur-element) var(--ease-out-token);`
-  sections[0].before(viewport)
+  viewport.style.cssText = `position:relative;width:100%;overflow:hidden;border-block:1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);transition:height var(--dur-element, 240ms) var(--ease-out-token, ease-out);`
+  grid.before(viewport)
 
   const table = document.createElement('div')
   table.style.cssText = `position:absolute;left:0;bottom:0;width:100%;height:${PHYSICS_HEIGHT_VH}vh;`
@@ -57,40 +59,64 @@ async function initPhysics(): Promise<void> {
 
   const items = polaroids.map((el) => {
     const rect = el.getBoundingClientRect()
-    const cap = el.closest<HTMLElement>('[data-chapter-section]')?.dataset.cap ?? ''
     table.appendChild(el)
-    // En la mesa las polaroids van algo más pequeñas: caben sin apilarse en
-    // torre. En pantallas estrechas se reducen más (≈3 por fila): con piezas
-    // al 42% del ancho la pila era tan alta como la mesa y nunca se dormía.
-    const width = Math.min(rect.width, 230, table.clientWidth * 0.32)
+    // En la mesa las polaroids van bastante más pequeñas que en la grid: así
+    // las 12 caben en ~2 filas y el montón no obliga a una mesa altísima. En
+    // pantallas estrechas se reducen aún más (≈3 por fila).
+    const width = Math.min(rect.width, 190, table.clientWidth * 0.27)
     const height = rect.height * (width / rect.width)
     // user-select/touch-action fuera y sin drag nativo de imagen: el gesto de
     // agarre no debe competir con seleccionar el pie o arrastrar el <img>
-    // fantasma del navegador (se sentía "raro": pinchabas y seleccionabas).
+    // fantasma del navegador.
     el.style.cssText += `position:absolute;left:0;top:0;width:${width}px;margin:0;cursor:grab;will-change:transform;user-select:none;-webkit-user-select:none;touch-action:none;`
     el.querySelectorAll('img').forEach((img) => {
       img.draggable = false
     })
-    return {el, cap, w: width, h: height}
+    return {el, w: width, h: height}
   })
-  sections.forEach((section) => (section.style.display = 'none'))
+  grid.style.display = 'none'
+
+  // Alto visible INICIAL (mientras las piezas caen): estimación del "footprint"
+  // por nº/ancho/alto para no abrir un hueco enorme durante la caída. Al
+  // asentarse, settleTable() lo recorta al montón real. Como la estimación
+  // suele quedar cerca del montón, el ajuste final apenas se nota.
+  const computeViewportHeight = (): number => {
+    const W = table.clientWidth
+    const gap = 18
+    const maxW = Math.max(...items.map((i) => i.w))
+    const avgH = items.reduce((sum, i) => sum + i.h, 0) / items.length
+    const perRow = Math.max(1, Math.floor((W + gap) / (maxW + gap)))
+    const rows = Math.ceil(items.length / perRow)
+    // Las piezas se apilan con solape (0.82 de fila) + un margen de aire.
+    const est = rows * avgH * 0.82 + avgH * 0.55
+    return Math.max(VIEWPORT_MIN_PX, Math.min(est, window.innerHeight * VIEWPORT_MAX_VH))
+  }
+  viewport.style.height = `${computeViewportHeight()}px`
 
   const bounds = () => ({w: table.clientWidth, h: table.clientHeight})
   let {w: W, h: H} = bounds()
+  // Columna útil centrada (ver TABLE_MAX_W).
+  let contentW = Math.min(W, TABLE_MAX_W)
+  let ox = (W - contentW) / 2
 
   const engine = Engine.create({enableSleeping: true})
   engine.gravity.y = 1
 
   const wallOpts = {isStatic: true, restitution: 0.4}
+  // El suelo se sube 40px respecto al borde inferior de la mesa (superficie en
+  // H-40): así las esquinas de las polaroids GIRADAS, que sobresalen de su caja
+  // física, no asoman por debajo del recorte del viewport.
+  const FLOOR_TOP = 40
+  const floorY = () => H + 60 - FLOOR_TOP // centro; superficie = centro-60 = H-40
   const walls = [
-    Bodies.rectangle(W / 2, H + 60, W + 400, 120, wallOpts), // suelo
-    Bodies.rectangle(-60, H / 2, 120, H * 3, wallOpts),
-    Bodies.rectangle(W + 60, H / 2, 120, H * 3, wallOpts),
+    Bodies.rectangle(W / 2, floorY(), W + 400, 120, wallOpts), // suelo
+    Bodies.rectangle(ox - 60, H / 2, 120, H * 3, wallOpts), // pared izq (columna)
+    Bodies.rectangle(ox + contentW + 60, H / 2, 120, H * 3, wallOpts), // pared der (columna)
     Bodies.rectangle(W / 2, -H - 60, W + 400, 120, wallOpts), // techo alto: deja caer desde arriba
   ]
   Composite.add(engine.world, walls)
 
-  // Reajustar paredes si la mesa cambia de tamaño (resize de ventana)
+  // Reajustar alto visible y paredes si la mesa cambia de tamaño (resize).
   let resizeTimer: ReturnType<typeof setTimeout> | undefined
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer)
@@ -98,33 +124,63 @@ async function initPhysics(): Promise<void> {
       const next = bounds()
       W = next.w
       H = next.h
-      Body.setPosition(walls[0], {x: W / 2, y: H + 60})
-      Body.setPosition(walls[1], {x: -60, y: H / 2})
-      Body.setPosition(walls[2], {x: W + 60, y: H / 2})
+      contentW = Math.min(W, TABLE_MAX_W)
+      ox = (W - contentW) / 2
+      Body.setPosition(walls[0], {x: W / 2, y: floorY()})
+      Body.setPosition(walls[1], {x: ox - 60, y: H / 2})
+      Body.setPosition(walls[2], {x: ox + contentW + 60, y: H / 2})
       Body.setPosition(walls[3], {x: W / 2, y: -H - 60})
+      // Ya asentada → re-mide el montón; si aún cae, estimación inicial.
       if (settled) settleTable()
+      else viewport.style.height = `${computeViewportHeight()}px`
     }, 250)
   })
 
-  // Margen lateral proporcional: con el fijo de 80px, en mesas estrechas el
-  // recorrido útil colapsaba y todas las piezas caían en la misma franja.
-  const dropMargin = Math.min(80, W * 0.06)
+  // Margen lateral proporcional dentro de la columna útil: con el fijo de 80px,
+  // en columnas estrechas el recorrido colapsaba y todo caía en la misma franja.
+  const dropMargin = Math.min(80, contentW * 0.06)
   const bodies = items.map((item, index) => {
     const body = Bodies.rectangle(
-      dropMargin + ((index * 0.61803) % 1) * Math.max(60, W - dropMargin * 2 - item.w), // reparto áureo, sin torres
+      ox + dropMargin + ((index * 0.61803) % 1) * Math.max(60, contentW - dropMargin * 2 - item.w), // reparto áureo dentro de la columna
       -((index % 4) * 120) - 100, // en tandas desde arriba
       item.w,
       item.h,
-      {restitution: 0.25, friction: 0.6, frictionAir: 0.015, angle: (Math.random() - 0.5) * 0.5},
+      {restitution: 0.25, friction: 0.6, frictionAir: 0.015, angle: (Math.random() - 0.5) * 0.4},
     )
     Composite.add(engine.world, body)
     return body
   })
 
+  // Ajuste snug al montón asentado: se mide la altura real de las piezas ya en
+  // reposo y se recorta el viewport a esa altura + un pelín de aire (nunca por
+  // encima del tope). Se hace UNA vez y se congela — no se re-expande al
+  // interactuar.
+  let settled = false
+  const settleTable = () => {
+    // Se mide sobre las CAJAS REALES del DOM (con la rotación aplicada), no
+    // sobre la altura física: una polaroid girada ocupa más caja y, si no se
+    // cuenta, su esquina superior asoma y se recorta. Las piezas reposan en el
+    // fondo de la mesa, así que basta encuadrar desde la cima visible del
+    // montón hasta el fondo del viewport.
+    const tableTop = table.getBoundingClientRect().top
+    let minTop = Infinity
+    for (const {el} of items) {
+      const top = el.getBoundingClientRect().top - tableTop
+      if (top < minTop) minTop = top
+    }
+    const pileHeight = table.clientHeight - minTop + 12 // + un pelín de aire arriba
+    // En escritorio el tope es firme (nunca "demasiado alta"); en móvil, donde
+    // las piezas hacen más filas y se scrollea igual, se deja subir más para no
+    // recortar ninguna.
+    const maxVh = window.innerWidth < 720 ? 0.85 : VIEWPORT_MAX_VH
+    const target = Math.min(pileHeight * SETTLED_MARGIN, window.innerHeight * maxVh)
+    viewport.style.height = `${Math.max(target, VIEWPORT_MIN_PX)}px`
+  }
+
   // Agarrar y lanzar
   const mouse = Mouse.create(table)
   // Matter añade un listener 'wheel' no-pasivo que hace preventDefault y
-  // bloquea el scroll nativo sobre la mesa (120vh): lo quitamos.
+  // bloquea el scroll nativo sobre la mesa: lo quitamos.
   const rawMouse = mouse as unknown as {
     mousewheel: EventListener
     mousedown: EventListener
@@ -170,14 +226,9 @@ async function initPhysics(): Promise<void> {
   window.addEventListener('pointerup', releaseTouch)
   window.addEventListener('pointercancel', releaseTouch)
 
-  // Un lanzamiento puede apilar una polaroid más alto que el recorte actual:
-  // vuelve al alto generoso mientras se agarra/lanza y hasta que se re-asiente.
-  // El evento startdrag lleva `body`, pero los tipos de matter-js solo
-  // declaran IEvent<MouseConstraint>: se amplía aquí.
+  // Feedback de agarre: la mano se cierra sobre la polaroid agarrada. El alto
+  // de la mesa NO cambia al agarrar/lanzar (era una de las fuentes del salto).
   Events.on(mouseConstraint, 'startdrag', (e: Matter.IEvent<Matter.MouseConstraint> & {body?: Matter.Body}) => {
-    settled = false
-    viewport.style.height = `${VIEWPORT_MAX_VH}vh`
-    // Feedback de agarre: la mano se cierra sobre la polaroid agarrada
     table.style.cursor = 'grabbing'
     const grabbed = e.body ? bodies.indexOf(e.body) : -1
     if (grabbed >= 0) items[grabbed].el.style.cursor = 'grabbing'
@@ -208,46 +259,6 @@ async function initPhysics(): Promise<void> {
     {capture: true},
   )
 
-  // Filtros: el capítulo elegido despierta; el resto se atenúa
-  document.querySelectorAll<HTMLAnchorElement>('[data-personal-filters] a').forEach((link) => {
-    link.addEventListener('click', () => {
-      const cap = link.dataset.cap ?? ''
-      items.forEach((item, i) => {
-        const match = cap === '' || item.cap === cap
-        item.el.style.opacity = match ? '1' : '0.3'
-        if (match) {
-          Sleeping.set(bodies[i], false)
-          Body.applyForce(bodies[i], bodies[i].position, {
-            x: (Math.random() - 0.5) * 0.12,
-            y: -0.14 - Math.random() * 0.08,
-          })
-        }
-      })
-      // El impulso puede levantar el montón por encima del recorte actual:
-      // vuelve al alto generoso mientras se re-asienta.
-      settled = false
-      viewport.style.height = `${VIEWPORT_MAX_VH}vh`
-    })
-  })
-
-  // Recorta el viewport visible a la altura real del montón asentado + ~25%
-  // de margen de juego, sin superar nunca el 70% del alto de ventana. La capa
-  // de física (table) no cambia: solo se ajusta cuánto de ella se ve.
-  let settled = false
-  const settleTable = () => {
-    let minTop = Infinity
-    let maxBottom = -Infinity
-    for (let i = 0; i < items.length; i++) {
-      const {h} = items[i]
-      const {y} = bodies[i].position
-      if (y - h / 2 < minTop) minTop = y - h / 2
-      if (y + h / 2 > maxBottom) maxBottom = y + h / 2
-    }
-    const pileHeight = maxBottom - minTop
-    const target = Math.min(pileHeight * SETTLED_MARGIN, window.innerHeight * SETTLED_MAX_VH)
-    viewport.style.height = `${Math.max(target, SETTLED_MIN_PX)}px`
-  }
-
   // Sincronizar DOM ↔ física
   Events.on(engine, 'afterUpdate', () => {
     for (let i = 0; i < items.length; i++) {
@@ -255,19 +266,12 @@ async function initPhysics(): Promise<void> {
       const body = bodies[i]
       el.style.transform = `translate(${body.position.x - w / 2}px, ${body.position.y - h / 2}px) rotate(${body.angle}rad)`
     }
+    // Primera vez que todo reposa: recortar al montón y congelar.
     if (!settled && bodies.every((b) => b.isSleeping)) {
       settled = true
       settleTable()
     }
   })
-
-  // Estado inicial de atenuación si se entra con ?cap= en la URL
-  const initialCap = new URLSearchParams(location.search).get('cap') ?? ''
-  if (initialCap) {
-    items.forEach((item) => {
-      item.el.style.opacity = item.cap === initialCap ? '1' : '0.3'
-    })
-  }
 
   const runner = Runner.create()
   Runner.run(runner, engine)

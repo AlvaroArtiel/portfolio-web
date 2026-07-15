@@ -208,6 +208,14 @@ export function getChaptersWithItems(): Promise<PersonalChapterWithItems[]> {
   return sanityClient.fetch(chaptersWithItemsQuery)
 }
 
+const allPersonalItemsQuery = /* groq */ `
+  *[_type == 'personalItem' && visible != false] | order(date asc)
+`
+
+export function getAllPersonalItems(): Promise<PersonalItem[]> {
+  return sanityClient.fetch(allPersonalItemsQuery)
+}
+
 export function getPosts(): Promise<BlogPost[]> {
   return sanityClient.fetch(postsQuery)
 }

@@ -1,9 +1,9 @@
 ---
 import Base from '../layouts/Base.astro'
 import PolaroidCard from '../components/personal/PolaroidCard.astro'
-import {t, ui} from '../lib/i18n'
+import {ui} from '../lib/i18n'
 import type {Lang} from '../lib/i18n'
-import {getChaptersWithItems} from '../lib/queries'
+import {getAllPersonalItems} from '../lib/queries'
 
 interface Props {
   lang: Lang
@@ -11,49 +11,29 @@ interface Props {
 const {lang} = Astro.props
 const dict = ui[lang]
 
-const chapters = await getChaptersWithItems()
+const allItems = await getAllPersonalItems()
+const items = allItems.filter((item) =>
+  item.kind === 'video' ? !!item.youtubeUrl : !!item.image,
+)
+
+/**
+ * Photo items get a page-wide index (in render order) so Lightbox.ts can
+ * navigate prev/next across the whole pile. Video items are excluded from
+ * that count: they open an inline embed instead of the lightbox.
+ */
+let photoCounter = 0
+const withIndex = items.map((item) => {
+  const photoIndex = item.kind === 'video' ? undefined : photoCounter++
+  return {item, photoIndex}
+})
 
 const heading = dict.nav_personal
 const description =
   lang === 'en'
-    ? 'Photos and videos from outside the day job: hobbies, trips and everything that does not fit on a CV.'
-    : 'Fotos y vídeos de fuera del horario laboral: aficiones, viajes y todo lo que no cabe en un CV.'
-
-/**
- * Each chapter keeps its items, but photo items also get a page-wide index
- * (in render order) so Lightbox.ts can navigate prev/next across chapters.
- * Video items are excluded from that count: they open an inline embed
- * instead of the lightbox (see the `data-video-facade` script below).
- */
-let photoCounter = 0
-const chapterData = chapters
-  .map((chapter) => {
-    const items = (chapter.items ?? []).filter((item) =>
-      item.kind === 'video' ? !!item.youtubeUrl : !!item.image,
-    )
-    const withIndex = items.map((item) => {
-      const photoIndex = item.kind === 'video' ? undefined : photoCounter++
-      return {item, photoIndex}
-    })
-    return {chapter, items: withIndex}
-  })
-  .filter(({items}) => items.length > 0)
-
-// Cinta manuscrita por capítulo (sesión 3 §3.7-11d): frase ambiental al
-// filtrar — voz, no biografía (el material es placeholder declarado).
-const RIBBONS: Record<string, {es: string; en: string}> = {
-  'personalChapter-cocina': {es: 'aquí se quema algo de vez en cuando', en: 'something burns here every now and then'},
-  'personalChapter-teatro': {es: 'los nervios de antes de salir a escena', en: 'pre-curtain jitters'},
-  'personalChapter-guitarra': {es: 'seis cuerdas y poca vergüenza', en: 'six strings, zero shame'},
-  'personalChapter-fotografia': {es: 'la luz buena dura diez minutos', en: 'the good light lasts ten minutes'},
-}
-
-// Segunda voz tipográfica (sesión 3): recuento real derivado de los datos.
-const totalItems = chapterData.reduce((n, {items}) => n + items.length, 0)
+    ? 'Photos from outside the day job: hobbies, trips and everything that does not fit on a CV.'
+    : 'Fotos de fuera del horario laboral: aficiones, viajes y todo lo que no cabe en un CV.'
 const countLine =
-  lang === 'en'
-    ? `${chapterData.length} chapters · ${totalItems} memories`
-    : `${chapterData.length} capítulos · ${totalItems} recuerdos`
+  lang === 'en' ? `${items.length} memories` : `${items.length} recuerdos`
 ---
 
 <Base title={`${heading} — Álvaro Artiel`} description={description} lang={lang} section="personal">
@@ -62,46 +42,15 @@ const countLine =
       <h1>{heading}</h1>
       <p class="page-count">{countLine}</p>
       <p class="lede">{description}</p>
-      <nav
-        class="chapter-filters"
-        aria-label={lang === 'en' ? 'Filter by chapter' : 'Filtrar por capítulo'}
-        data-personal-filters
-      >
-        <a href="?" data-cap="" aria-current="true">
-          {lang === 'en' ? 'All' : 'Todo'}
-        </a>
-        {
-          chapterData.map(({chapter}) => (
-            <a href={`?cap=${chapter._id}`} data-cap={chapter._id}>
-              {chapter.emoji} {t(chapter.title, lang)}
-            </a>
-          ))
-        }
-      </nav>
-      <p class="chapter-ribbon" data-chapter-ribbon aria-live="polite" hidden></p>
     </header>
 
-    {
-      chapterData.map(({chapter, items}) => (
-        <section
-          class="chapter"
-          data-chapter-section
-          data-cap={chapter._id}
-          data-ribbon={RIBBONS[chapter._id]?.[lang]}
-          data-reveal
-        >
-          <h2>
-            {chapter.emoji} {t(chapter.title, lang)}
-          </h2>
-          {t(chapter.description, lang) && <p class="chapter-desc">{t(chapter.description, lang)}</p>}
-          <div class="polaroid-grid">
-            {items.map(({item, photoIndex}) => (
-              <PolaroidCard lang={lang} item={item} photoIndex={photoIndex} />
-            ))}
-          </div>
-        </section>
-      ))
-    }
+    <section class="photo-table" data-photo-table data-reveal>
+      <div class="polaroid-grid">
+        {withIndex.map(({item, photoIndex}) => (
+          <PolaroidCard lang={lang} item={item} photoIndex={photoIndex} />
+        ))}
+      </div>
+    </section>
   </section>
 
   <dialog id="lightbox" class="lightbox" aria-label={lang === 'en' ? 'Photo viewer' : 'Visor de fotos'}>
@@ -142,42 +91,6 @@ const countLine =
   // Patrón camaleón suave (A3): tinte del acento naranja durante el scroll.
   import {initChameleonTint} from '../lib/chameleon'
   initChameleonTint('#ff7847')
-
-  // Chapter filters: progressive links (?cap=<chapterId>), same pattern as
-  // components/projects/Filters.astro but toggling whole chapter sections
-  // (which carry their own intro) instead of individual cards.
-  function applyFilter(cap: string): void {
-    let ribbonText = ''
-    document.querySelectorAll<HTMLElement>('[data-chapter-section]').forEach((section) => {
-      section.hidden = cap !== '' && section.dataset.cap !== cap
-      if (cap !== '' && section.dataset.cap === cap) ribbonText = section.dataset.ribbon ?? ''
-    })
-    const ribbon = document.querySelector<HTMLElement>('[data-chapter-ribbon]')
-    if (ribbon) {
-      ribbon.textContent = ribbonText
-      ribbon.hidden = ribbonText === ''
-    }
-    document.querySelectorAll<HTMLAnchorElement>('[data-personal-filters] a').forEach((link) => {
-      if ((link.dataset.cap ?? '') === cap) link.setAttribute('aria-current', 'true')
-      else link.removeAttribute('aria-current')
-    })
-  }
-
-  function currentCap(): string {
-    return new URLSearchParams(location.search).get('cap') ?? ''
-  }
-
-  document.querySelectorAll<HTMLAnchorElement>('[data-personal-filters] a').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      event.preventDefault()
-      const cap = link.dataset.cap ?? ''
-      const url = cap ? `?cap=${cap}` : location.pathname
-      history.replaceState(null, '', url)
-      applyFilter(cap)
-    })
-  })
-
-  applyFilter(currentCap())
 
   // Video facade: swap the YouTube-thumbnail button for a live embed on click,
   // same lazy-load trick as components/projects/BodyBlocks.astro.
@@ -228,56 +141,7 @@ const countLine =
     font-size: var(--step-body);
     color: var(--text-muted);
     max-width: 48ch;
-    margin: 0 0 2rem;
-  }
-
-  .chapter-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.5rem;
-  }
-  .chapter-filters a {
-    font-family: var(--font-mono);
-    font-size: var(--step-small);
-    color: var(--text-muted);
-    text-decoration: none;
-    padding-bottom: 0.2em;
-    border-bottom: 1px solid transparent;
-    transition:
-      color var(--transition-fast),
-      border-color var(--transition-fast);
-  }
-  .chapter-filters a:hover {
-    color: var(--text);
-  }
-  .chapter-filters a[aria-current='true'] {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
-
-  /* Cinta manuscrita: contexto del capítulo filtrado, a mano y ladeada */
-  .chapter-ribbon {
-    font-family: var(--font-hand);
-    font-size: clamp(1.3rem, 2.2vw, 1.7rem);
-    color: var(--accent);
-    rotate: -1.5deg;
-    width: fit-content;
-    margin: 1.25rem 0 0;
-  }
-
-  .chapter {
-    margin-bottom: clamp(3.5rem, 10vh, 6rem);
-  }
-  .chapter h2 {
-    font-family: var(--font-display);
-    font-size: var(--step-h3);
-    letter-spacing: -0.02em;
-    margin: 0 0 0.75rem;
-  }
-  .chapter-desc {
-    max-width: 60ch;
-    color: var(--text-muted);
-    margin: 0 0 2rem;
+    margin: 0;
   }
 
   .polaroid-grid {
