@@ -37,6 +37,14 @@ export function initCursor(): void {
     html.has-custom-cursor select,
     html.has-custom-cursor label,
     html.has-custom-cursor [role="button"] { cursor: none; }
+    /* Un <dialog> abierto vive en el top-layer, por encima del punto/aro
+       (z-index 999 en el body): el cursor propio no lo alcanza y quedaría
+       invisible. Sobre el diálogo se recupera el cursor nativo. */
+    html.has-custom-cursor dialog[open],
+    html.has-custom-cursor dialog[open] img { cursor: auto; }
+    html.has-custom-cursor dialog[open] a,
+    html.has-custom-cursor dialog[open] button,
+    html.has-custom-cursor dialog[open] [role="button"] { cursor: pointer; }
     .aa-cursor-dot {
       position: fixed; top: 0; left: 0; width: 7px; height: 7px;
       border-radius: 50%; background: var(--accent);
