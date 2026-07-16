@@ -278,13 +278,13 @@ export const EDUCATION = [
   {
     id: 'education-uma',
     school: {es: 'Universidad de Málaga (UMA)', en: 'University of Málaga (UMA)'},
-    degree: {es: 'Grado en Ingeniería Informática', en: 'BSc in Computer Engineering'},
+    degree: {es: 'Grado en Comunicación Audiovisual', en: 'BA in Audiovisual Communication'},
     startDate: '2015',
     endDate: '2019',
     award: {es: '', en: ''},
     description: {
-      es: 'Base técnica en desarrollo de software que más tarde reorienté hacia el diseño de producto y la experiencia de usuario.',
-      en: 'Technical foundation in software development that I later steered towards product design and user experience.',
+      es: 'Base en comunicación y narrativa audiovisual que más tarde reorienté hacia el diseño de producto y la experiencia de usuario.',
+      en: 'Foundation in communication and audiovisual storytelling that I later steered towards product design and user experience.',
     },
     order: 1,
     visible: true,
@@ -894,8 +894,8 @@ export const SITE_SETTINGS = {
   },
   email: 'soy@alvaroartiel.com',
   socials: [
-    {label: 'LinkedIn', url: '#', visible: true},
-    {label: 'GitHub', url: '#', visible: true},
+    {label: 'LinkedIn', url: 'https://www.linkedin.com/in/alvaroartiel/', visible: true},
+    {label: 'GitHub', url: '#', visible: false},
   ],
   seoTitle: {
     es: 'Álvaro Artiel — Diseño de producto y gamificación',
