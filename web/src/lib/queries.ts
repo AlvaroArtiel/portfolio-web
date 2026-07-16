@@ -206,7 +206,7 @@ const serviceBySlugQuery = /* groq */ `
 `
 
 const serviceForProjectQuery = /* groq */ `
-  *[_type == 'service' && visible != false && references($projectId)][0]{title, slug}
+  *[_type == 'service' && visible != false && references($projectId)] | order(order asc)[0]{title, slug}
 `
 
 const chaptersWithItemsQuery = /* groq */ `
