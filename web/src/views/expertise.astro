@@ -1,0 +1,119 @@
+---
+import Base from '../layouts/Base.astro'
+import type {Lang} from '../lib/i18n'
+import {t, ui} from '../lib/i18n'
+import {getServices} from '../lib/queries'
+import {pathFor} from '../lib/routes'
+
+interface Props {
+  lang: Lang
+}
+const {lang} = Astro.props
+const dict = ui[lang]
+
+const services = await getServices()
+const heading = dict.nav_expertise
+const basePath = pathFor('especialidades', lang)
+
+const title =
+  lang === 'en'
+    ? 'Expertise: product design, gamification & project management — Álvaro Artiel'
+    : 'Especialidades: diseño de producto, gamificación y gestión de proyectos — Álvaro Artiel'
+const description =
+  lang === 'en'
+    ? 'Three ways I can help: digital product design consulting, gamification and digital project management. Real cases included.'
+    : 'Tres formas de ayudarte: consultoría de diseño de producto digital, gamificación y gestión de proyectos digitales. Con casos reales.'
+---
+
+<Base title={title} description={description} lang={lang} section="expertise">
+  <section class="expertise-page">
+    <header class="expertise-header" data-reveal>
+      <h1>{heading}</h1>
+      <p class="page-count">{dict.expertise_count}</p>
+    </header>
+
+    <ol class="expertise-list">
+      {
+        services.map((service, i) => (
+          <li class="expertise-item" data-reveal>
+            <a href={`${basePath}${service.slug.current}/`} data-cursor="view">
+              <span class="expertise-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <span class="expertise-body">
+                <h2 class="expertise-title">{t(service.title, lang)}</h2>
+                {t(service.intro, lang) && <p class="expertise-intro">{t(service.intro, lang)}</p>}
+              </span>
+              <span class="expertise-arrow" aria-hidden="true">→</span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+</Base>
+
+<style>
+  .expertise-page {
+    padding: clamp(6rem, 16vh, 9rem) clamp(1.5rem, 6vw, 4rem) clamp(3rem, 8vh, 5rem);
+    max-width: 70rem;
+    margin-inline: auto;
+  }
+
+  .expertise-header h1 {
+    font-family: var(--font-display);
+    font-weight: 580;
+    font-size: clamp(2.75rem, 8vw, 6rem);
+    letter-spacing: -0.035em;
+    line-height: 0.98;
+    margin: 0 0 0.75rem;
+  }
+  .page-count {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--accent);
+    margin: 0 0 clamp(2rem, 6vh, 4rem);
+  }
+
+  .expertise-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .expertise-item + .expertise-item {
+    border-top: 1px solid color-mix(in srgb, var(--text-muted) 20%, transparent);
+  }
+  .expertise-item a {
+    display: flex;
+    align-items: baseline;
+    gap: clamp(1rem, 3vw, 2rem);
+    padding-block: clamp(1.5rem, 4vh, 2.5rem);
+    text-decoration: none;
+    color: var(--text);
+  }
+  .expertise-index {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--accent);
+  }
+  .expertise-title {
+    font-family: var(--font-display);
+    font-weight: 560;
+    font-size: clamp(1.6rem, 4vw, 2.75rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.5rem;
+    transition: color var(--transition-fast);
+  }
+  .expertise-item a:hover .expertise-title {
+    color: var(--accent);
+  }
+  .expertise-intro {
+    color: var(--text-muted);
+    line-height: 1.55;
+    max-width: 58ch;
+    margin: 0;
+  }
+  .expertise-arrow {
+    margin-left: auto;
+    font-size: 1.5rem;
+    color: var(--accent);
+  }
+</style>

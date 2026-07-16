@@ -27,12 +27,12 @@ const teaserItems = chapters.flatMap((chapter) => chapter.items.slice(0, 1))
 
 const title = t(settings?.seoTitle, lang) ||
   (lang === 'en'
-    ? 'Álvaro Artiel — Digital product design & development'
-    : 'Álvaro Artiel — Diseño y desarrollo de productos digitales')
+    ? 'Álvaro Artiel — Product design consulting, gamification & digital project management'
+    : 'Álvaro Artiel — Consultoría de diseño de producto, gamificación y gestión de proyectos digitales')
 const description = t(settings?.seoDescription, lang) ||
   (lang === 'en'
-    ? "Álvaro Artiel's portfolio: end-to-end digital product design and development."
-    : 'Portfolio de Álvaro Artiel: diseño y desarrollo de productos digitales de punta a punta.')
+    ? 'Digital product consultant: end-to-end product design, gamification and digital project management.'
+    : 'Consultor de producto digital: diseño de producto, gamificación y gestión de proyectos digitales de punta a punta.')
 
 const siteUrl = Astro.site ?? new URL('https://dev.alvaroartiel.com')
 
@@ -53,6 +53,9 @@ const personLd = {
     'Gamification',
     'Gamificación',
     'Product Design',
+    'Consultoría de diseño de producto',
+    'Gestión de proyectos digitales',
+    'Product Management',
     'UX/UI Design',
     'E-learning',
     'SaaS',

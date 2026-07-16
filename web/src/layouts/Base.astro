@@ -7,11 +7,12 @@ import MenuOverlay from '../components/MenuOverlay.astro'
 import {altPath} from '../lib/routes'
 import type {Lang} from '../lib/i18n'
 
-export type Section = 'home' | 'projects' | 'experience' | 'personal' | 'blog' | 'cv'
+export type Section = 'home' | 'expertise' | 'projects' | 'experience' | 'personal' | 'blog' | 'cv'
 
 /** Default OG image filename (under /og/) per section; matches web/scripts/generate-og.mjs. */
 const OG_IMAGE_BY_SECTION: Record<Section, string> = {
   home: '/og/home.png',
+  expertise: '/og/especialidades.png',
   projects: '/og/proyectos.png',
   experience: '/og/experiencia.png',
   personal: '/og/personal.png',

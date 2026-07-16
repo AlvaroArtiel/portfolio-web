@@ -5,6 +5,7 @@ import type {Lang} from './i18n'
  * root (`/proyectos`), English ones under `/en/` (`/en/projects`).
  */
 export const routeMap: Record<string, string> = {
+  especialidades: 'expertise',
   proyectos: 'projects',
   experiencia: 'experience',
   personal: 'personal',

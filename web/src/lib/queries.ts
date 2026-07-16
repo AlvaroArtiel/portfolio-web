@@ -105,6 +105,28 @@ export interface Project {
   order?: number
 }
 
+export interface ServiceFaq {
+  question?: LocaleField
+  answer?: LocaleField
+  _key?: string
+}
+
+export interface Service {
+  _id: string
+  _type: 'service'
+  title?: LocaleField
+  slug: SanitySlug
+  seoTitle?: LocaleField
+  seoDescription?: LocaleField
+  intro?: LocaleField
+  body?: {es?: BodyBlock[]; en?: BodyBlock[]}
+  faqs?: ServiceFaq[]
+  /** Dereferenced in list and detail queries; only visible projects. */
+  relatedProjects?: Project[]
+  order?: number
+  visible?: boolean
+}
+
 export interface PersonalChapter {
   _id: string
   _type: 'personalChapter'
@@ -169,6 +191,24 @@ const projectBySlugQuery = /* groq */ `
   }
 `
 
+const servicesQuery = /* groq */ `
+  *[_type == 'service' && visible != false] | order(order asc) {
+    ...,
+    "relatedProjects": relatedProjects[@->visible != false]->{_id, title, slug, cover, summary}
+  }
+`
+
+const serviceBySlugQuery = /* groq */ `
+  *[_type == 'service' && slug.current == $slug && visible != false][0]{
+    ...,
+    "relatedProjects": relatedProjects[@->visible != false]->{_id, title, slug, cover, summary}
+  }
+`
+
+const serviceForProjectQuery = /* groq */ `
+  *[_type == 'service' && visible != false && references($projectId)] | order(order asc)[0]{title, slug}
+`
+
 const chaptersWithItemsQuery = /* groq */ `
   *[_type == 'personalChapter'] | order(order asc) {
     ...,
@@ -202,6 +242,20 @@ export function getProjects(): Promise<Project[]> {
 
 export function getProject(slug: string): Promise<Project | null> {
   return sanityClient.fetch(projectBySlugQuery, {slug})
+}
+
+export function getServices(): Promise<Service[]> {
+  return sanityClient.fetch(servicesQuery)
+}
+
+export function getService(slug: string): Promise<Service | null> {
+  return sanityClient.fetch(serviceBySlugQuery, {slug})
+}
+
+export function getServiceForProject(
+  projectId: string,
+): Promise<Pick<Service, 'title' | 'slug'> | null> {
+  return sanityClient.fetch(serviceForProjectQuery, {projectId})
 }
 
 export function getChaptersWithItems(): Promise<PersonalChapterWithItems[]> {

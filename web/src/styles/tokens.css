@@ -139,6 +139,10 @@
   --accent: #5b8cff;
 }
 
+[data-section='expertise'] {
+  --accent: #ffc53d;
+}
+
 [data-section='experience'] {
   --accent: #b06cff;
 }

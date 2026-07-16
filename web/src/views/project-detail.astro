@@ -6,6 +6,7 @@ import NextProject from '../components/projects/NextProject.astro'
 import type {Lang} from '../lib/i18n'
 import {t, ui} from '../lib/i18n'
 import type {Project} from '../lib/queries'
+import {getServiceForProject} from '../lib/queries'
 import {pathFor} from '../lib/routes'
 
 interface Props {
@@ -28,6 +29,9 @@ const categoryLabels: Record<string, {es: string; en: string}> = {
   personal: {es: 'Personal', en: 'Personal'},
 }
 const category = project.category ? categoryLabels[project.category]?.[lang] : undefined
+
+// Enlace inverso al hub SEO: la especialidad que referencia este proyecto.
+const service = await getServiceForProject(project._id)
 
 // CreativeWork JSON-LD (schema.org) for the project detail page.
 const creativeWorkLd = {
@@ -108,6 +112,14 @@ const jsonLdProject = JSON.stringify(creativeWorkLd).replace(/</g, '\\u003c')
           <a class="pd-external" href={project.externalUrl} target="_blank" rel="noopener noreferrer">
             {dict.external_link} ↗
           </a>
+        )
+      }
+      {
+        service && (
+          <p class="pd-service">
+            {dict.expertise_case_of}{' '}
+            <a href={`${pathFor('especialidades', lang)}${service.slug.current}/`}>{t(service.title, lang)}</a>
+          </p>
         )
       }
     </footer>
@@ -256,6 +268,22 @@ const jsonLdProject = JSON.stringify(creativeWorkLd).replace(/</g, '\\u003c')
     transition: color var(--transition-fast);
   }
   .pd-external:hover {
+    color: var(--accent);
+  }
+  .pd-service {
+    font-family: var(--font-mono);
+    font-size: var(--step-small);
+    color: var(--text-muted);
+    margin: 0;
+    width: 100%;
+  }
+  .pd-service a {
+    color: var(--text);
+    border-bottom: 1px solid var(--accent);
+    text-decoration: none;
+    padding-bottom: 0.15em;
+  }
+  .pd-service a:hover {
     color: var(--accent);
   }
 </style>

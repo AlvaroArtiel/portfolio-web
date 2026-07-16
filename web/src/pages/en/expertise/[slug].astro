@@ -1,0 +1,15 @@
+---
+import ExpertiseDetail from '../../../views/expertise-detail.astro'
+import {getServices, getService} from '../../../lib/queries'
+
+export async function getStaticPaths() {
+  const services = await getServices()
+  return services.map((service) => ({params: {slug: service.slug.current}}))
+}
+
+const {slug} = Astro.params
+const service = await getService(slug!)
+if (!service) return Astro.redirect('/en/expertise/')
+---
+
+<ExpertiseDetail lang="en" service={service} />

@@ -17,6 +17,11 @@ const dict = ui[lang]
   <a class="cta-link" href={pathFor('contacto', lang)} id="cta-liquid-target">
     {dict.work_together}
   </a>
+  <p class="cta-secondary">
+    <a href={pathFor('especialidades', lang)}>
+      {lang === 'en' ? 'or see how I can help →' : 'o mira en qué puedo ayudarte →'}
+    </a>
+  </p>
 </section>
 
 <script>
@@ -60,5 +65,19 @@ const dict = ui[lang]
   }
   .cta-link.is-covered:focus-visible {
     color: var(--text);
+  }
+
+  .cta-secondary {
+    margin: 1.25rem 0 0;
+  }
+  .cta-secondary a {
+    font-family: var(--font-mono);
+    font-size: var(--step-mono-label);
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+  .cta-secondary a:hover {
+    color: var(--accent);
   }
 </style>
