@@ -13,12 +13,13 @@ const dict = ui[lang]
 // Mini-preview por sección (sesión 3 §3.7-11c): color + palabra clave — el
 // overlay vende cada mundo. Los acentos son los del sistema camaleón.
 const items: {key: string; label: string; accent: string; keyword: string}[] = [
-  {key: 'proyectos', label: dict.nav_projects, accent: '#5B8CFF', keyword: lang === 'en' ? 'what I build' : 'lo que construyo'},
-  {key: 'experiencia', label: dict.nav_experience, accent: '#B06CFF', keyword: lang === 'en' ? 'the journey' : 'el viaje'},
-  {key: 'personal', label: dict.nav_personal, accent: '#FF7847', keyword: lang === 'en' ? 'the person' : 'la persona'},
-  {key: 'blog', label: dict.nav_blog, accent: '#4FD1C5', keyword: lang === 'en' ? 'what I think' : 'lo que pienso'},
-  {key: 'cv', label: dict.nav_cv, accent: '#F4F4F0', keyword: lang === 'en' ? 'the hurry version' : 'para leer con prisa'},
-  {key: 'contacto', label: dict.nav_contact, accent: '#D4FF3F', keyword: lang === 'en' ? 'let’s talk' : 'hablemos'},
+  {key: "especialidades", label: dict.nav_expertise, accent: "#FFC53D", keyword: lang === "en" ? "how I can help" : "en qué ayudo"},
+  {key: "proyectos", label: dict.nav_projects, accent: "#5B8CFF", keyword: lang === "en" ? "what I build" : "lo que construyo"},
+  {key: "experiencia", label: dict.nav_experience, accent: "#B06CFF", keyword: lang === "en" ? "the journey" : "el viaje"},
+  {key: "personal", label: dict.nav_personal, accent: "#FF7847", keyword: lang === "en" ? "the person" : "la persona"},
+  {key: "blog", label: dict.nav_blog, accent: "#4FD1C5", keyword: lang === "en" ? "what I think" : "lo que pienso"},
+  {key: "cv", label: dict.nav_cv, accent: "#F4F4F0", keyword: lang === "en" ? "the hurry version" : "para leer con prisa"},
+  {key: "contacto", label: dict.nav_contact, accent: "#D4FF3F", keyword: lang === "en" ? "let’s talk" : "hablemos"},
 ]
 
 const slugLabel = (key: string) => (lang === 'en' ? `/en/${routeMap[key] ?? key}` : `/${key}`)

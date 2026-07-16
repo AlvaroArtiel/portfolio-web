@@ -15,6 +15,7 @@ const email = settings?.email ?? 'soy@alvaroartiel.com'
 const socials = (settings?.socials ?? []).filter((s) => s.visible !== false)
 
 const navItems: {key: string; label: string}[] = [
+  {key: 'especialidades', label: dict.nav_expertise},
   {key: 'proyectos', label: dict.nav_projects},
   {key: 'experiencia', label: dict.nav_experience},
   {key: 'personal', label: dict.nav_personal},
