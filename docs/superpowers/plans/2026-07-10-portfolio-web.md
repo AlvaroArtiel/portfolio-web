@@ -46,7 +46,7 @@
 
 - [ ] Verificar Node ≥ 20: `node --version`
 - [ ] **Sanity YA CONFIGURADO (pre-flight hecho el 2026-07-10):** proyecto `1qxvh1it` ("web-portfolio"), dataset `production` (aclMode public), token Editor en `.env` raíz (`SANITY_AUTH_TOKEN`, `SANITY_PROJECT_ID`, `SANITY_DATASET`). Ciclo write/read/delete verificado por API. NO crear proyecto nuevo.
-- [ ] **Hostinger YA CONFIGURADO:** site `dev.alvaroartiel.com` creado y activo (username `u706501682`, root `/home/u706501682/domains/dev.alvaroartiel.com/public_html`). NO crear otro site.
+- [ ] **Hostinger YA CONFIGURADO:** site `dev.alvaroartiel.com` creado y activo (username y root del hosting: ver `.env` local / panel de Hostinger). NO crear otro site.
 - [ ] Verificar que el token sigue vivo: `curl` de lectura GROQ a `https://1qxvh1it.api.sanity.io/v2021-06-07/data/query/production?query=*%5B0..0%5D`.
 - [ ] Verificar GitHub: `gh auth status` → logged in como AlvaroArtiel.
 - [ ] Verificar Hostinger MCP: cargar vía ToolSearch `hosting_listWebsitesV1` y llamarlo → responde lista de sites.
