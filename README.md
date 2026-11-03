@@ -27,6 +27,9 @@ scripts/  Build y notas de despliegue
 
 ## Desarrollo
 
+Usa Node.js 24 LTS, o Node.js 22.23.4 o posterior dentro de la rama 22.
+Instala con `npm ci` para reproducir las versiones verificadas del lockfile.
+
 ```bash
 # Sitio
 cd web && npm install && npm run dev     # http://localhost:4321
@@ -39,6 +42,26 @@ cd studio && npm install && npm run dev
 Variables de entorno: copia `.env.example` a `.env`. El sitio necesita el ID de proyecto y el
 dataset de Sanity para leer contenido; el Studio y los scripts de seed necesitan además un token
 de escritura.
+
+## Actualizaciones de seguridad
+
+El sitio conserva Astro 7 y el CMS Sanity 6. El Studio usa ESLint 10 con la
+configuración oficial de Sanity 7 y TypeScript 6.
+
+Los `overrides` de `studio/package.json` corrigen dependencias transitivas que sus
+consumidores aún fijan en versiones vulnerables:
+
+- `minimatch` 10 → 11.0.4: evita la amplificación de patrones glob. Se limita a
+  consumidores de la API moderna; la actualización de ESLint elimina los consumidores de v3.
+- `@vercel/frameworks`: `js-yaml` 3.15.2 y `smol-toml` 1.9.1, dentro de sus respectivas ramas mayores.
+- `@module-federation/dts-plugin`: `undici` 7.30.1, dentro de la misma rama mayor.
+
+Retira cada override cuando el paquete consumidor permita una versión corregida.
+Después de cualquier actualización, ejecuta `npm ci`, `npm audit` y `npm run build`
+en ambos directorios. Comprueba también `npm run astro -- check` en `web`, y
+`npx tsc --noEmit --incremental false`, `npx eslint .` y
+`npm run build -- --no-auto-updates` en `studio`; este último compila las
+dependencias locales sin recurrir a las actualizaciones automáticas del Studio.
 
 ## Detalles con algo de gracia
 
